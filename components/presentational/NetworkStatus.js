@@ -21,12 +21,12 @@ const StatusContainer = styled.div`
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: ${props => props.online ? 'transparent' : 'rgba(255, 0, 0, 0.1)'};
+  background-color: ${props => props.$online ? 'transparent' : 'rgba(255, 0, 0, 0.1)'};
   border-radius: 4px;
-  margin-bottom: ${props => (props.online && !props.hasQueuedMessages) ? '0' : '1rem'};
+  margin-bottom: ${props => (props.$online && !props.$hasQueuedMessages) ? '0' : '1rem'};
   transition: all 0.3s ease;
-  opacity: ${props => (props.online && !props.hasQueuedMessages) ? '0.7' : '1'};
-  border: 1px solid ${props => props.online ? 'transparent' : '#f8d7da'};
+  opacity: ${props => (props.$online && !props.$hasQueuedMessages) ? '0.7' : '1'};
+  border: 1px solid ${props => props.$online ? 'transparent' : '#f8d7da'};
   
   &:hover {
     opacity: 1;
@@ -37,15 +37,15 @@ const StatusIndicator = styled.div`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: ${props => props.online ? '#28a745' : '#dc3545'};
+  background-color: ${props => props.$online ? '#28a745' : '#dc3545'};
   margin-right: 0.5rem;
-  animation: ${props => props.online ? 'none' : pulse} 2s infinite ease-in-out;
+  animation: ${props => props.$online ? 'none' : pulse} 2s infinite ease-in-out;
 `;
 
 const StatusText = styled.span`
   font-size: 0.85rem;
-  color: ${props => props.online ? '#28a745' : '#dc3545'};
-  font-weight: ${props => props.online ? 'normal' : 'bold'};
+  color: ${props => props.$online ? '#28a745' : '#dc3545'};
+  font-weight: ${props => props.$online ? 'normal' : 'bold'};
 `;
 
 const QueuedMessageCount = styled.span`
@@ -140,11 +140,11 @@ const NetworkStatus = () => {
   
   return (
     <StatusContainer 
-      online={online} 
-      hasQueuedMessages={queuedMessages.length > 0}
+      $online={online} 
+      $hasQueuedMessages={queuedMessages.length > 0}
     >
-      <StatusIndicator online={online} />
-      <StatusText online={online}>
+      <StatusIndicator $online={online} />
+      <StatusText $online={online}>
         {online ? 'Online' : 'Offline'}
         {queuedMessages.length > 0 && (
           <>

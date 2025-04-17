@@ -3,8 +3,23 @@ import { GlobalStyles } from '../styles/globalStyles';
 import { theme } from '../styles/theme';
 import Layout from '../components/presentational/Layout';
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
+  // Register service worker for offline support
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(function(error) {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+  }, []);
   return (
     <>
       <Head>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { importKeyFromBase64, decryptData } from '../../lib/cryptoUtils';
+import { importKeyFromBase64, decryptData, encryptData } from '../../lib/cryptoUtils';
 import DecryptDisplay from '../presentational/DecryptDisplay';
 import styled from 'styled-components';
 import EncryptForm from '../presentational/EncryptForm';

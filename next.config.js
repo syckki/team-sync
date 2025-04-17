@@ -23,10 +23,11 @@ module.exports = withPWA({
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
+          // Commented out to allow app to run in Replit's iframe environment
+          // {
+          //   key: 'X-Frame-Options',
+          //   value: 'DENY',
+          // },
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',

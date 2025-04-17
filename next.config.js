@@ -1,11 +1,13 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: false, // Enable in development and production
+  disable: process.env.NODE_ENV === 'development' ? false : false, // Enable in both dev and prod
   register: true,
   skipWaiting: true,
+  buildExcludes: [/middleware-manifest\.json$/],
   fallbacks: {
     // Fallback pages for different content types
     document: '/offline', // Fallback for document/HTML requests
+    image: '/static/images/fallback.png',
   },
   runtimeCaching: [
     // Cache the app shell and static assets with CacheFirst strategy

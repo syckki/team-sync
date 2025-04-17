@@ -212,15 +212,39 @@ const DecryptionContainer = ({ id, key64 }) => {
     // Register callbacks
     const handleOnline = () => {
       setNetworkStatus(true);
-      syncQueuedMessages(); // Try to send any queued messages
+      
+      // Add a small delay to ensure the connection is stable
+      setTimeout(() => {
+        syncQueuedMessages(); // Try to send any queued messages
+      }, 1000);
     };
     
     const handleOffline = () => {
       setNetworkStatus(false);
     };
     
+    // Register for sync events to react after messages are sent
+    const handleMessagesSynced = (event) => {
+      console.log('Messages synchronized in thread view', event.detail);
+      
+      // If we're in a thread and messages were synced, reload the page to show the new messages
+      if (isMessageQueued) {
+        setIsMessageQueued(false);
+        
+        // Reload after a short delay to show all synced messages
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    };
+    
     onOnline(handleOnline);
     onOffline(handleOffline);
+    
+    // Add event listener for sync events
+    if (typeof window !== 'undefined') {
+      window.addEventListener('messages-synced', handleMessagesSynced);
+    }
     
     // Cleanup on unmount
     return () => {
@@ -228,9 +252,10 @@ const DecryptionContainer = ({ id, key64 }) => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('messages-synced', handleMessagesSynced);
       }
     };
-  }, []);
+  }, [isMessageQueued]);
 
   // Fetch all messages from the thread
   useEffect(() => {

@@ -106,15 +106,41 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
     // Register callbacks
     const handleOnline = () => {
       setNetworkStatus(true);
-      syncQueuedMessages(); // Try to send any queued messages
+      
+      // Give a small delay before syncing to allow for stable connection
+      setTimeout(() => {
+        syncQueuedMessages(); // Try to send any queued messages
+      }, 1000);
     };
     
     const handleOffline = () => {
       setNetworkStatus(false);
     };
     
+    // Register for sync events to react after messages are sent
+    const handleMessagesSynced = (event) => {
+      console.log('Messages synchronized', event.detail);
+      
+      // If we're on the initial encryption page, we might need to update UI
+      if (isQueued && encryptedResult && encryptedResult.queued) {
+        // The messages have been synced, update UI to reflect this
+        setIsQueued(false);
+        
+        // If we're not on a thread reply page, this might be a good time to reload or redirect
+        if (!isReply) {
+          // Show a message that the sync was successful
+          alert("Your queued message has been sent successfully.");
+        }
+      }
+    };
+    
     onOnline(handleOnline);
     onOffline(handleOffline);
+    
+    // Add event listener for sync events
+    if (typeof window !== 'undefined') {
+      window.addEventListener('messages-synced', handleMessagesSynced);
+    }
     
     // Cleanup on unmount
     return () => {
@@ -122,9 +148,10 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('messages-synced', handleMessagesSynced);
       }
     };
-  }, []);
+  }, [isQueued, encryptedResult, isReply]);
 
   const handleEncrypt = async (content) => {
     setIsEncrypting(true);

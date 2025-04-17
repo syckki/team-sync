@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ThemeProvider } from 'styled-components';
 import Head from 'next/head';
+import { initNetworkMonitoring, startPeriodicConnectivityChecks } from '../lib/networkService';
 
+// Create a theme
 const theme = {
   colors: {
     primary: '#3498db',
@@ -30,38 +32,20 @@ const theme = {
   }
 };
 
-function MyApp({ Component, pageProps }) {
-  // PWA registration handling
+// This default export is required in a new `pages/_app.js` file.
+export default function MyApp({ Component, pageProps }) {
+  // Initialize network monitoring and PWA support
   useEffect(() => {
-    // Register Service Worker when running in the browser and in production
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      const handleOnline = () => {
-        console.log('App detected online status');
-        // Dispatch custom event that components can listen for
-        window.dispatchEvent(new Event('app-online'));
-      };
+    if (typeof window !== 'undefined') {
+      // Initialize network monitoring service
+      initNetworkMonitoring();
       
-      const handleOffline = () => {
-        console.log('App detected offline status');
-        // Dispatch custom event that components can listen for
-        window.dispatchEvent(new Event('app-offline'));
-      };
+      // Start periodic connectivity checks
+      const stopChecks = startPeriodicConnectivityChecks(30000);
       
-      // Register event listeners for online/offline status
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-      
-      // Log initial service worker registration
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(reg => {
-          console.log('Service worker is active:', reg);
-        });
-      }
-      
-      // Cleanup
       return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
+        // Clean up the periodic checks when the component unmounts
+        stopChecks();
       };
     }
   }, []);
@@ -84,5 +68,3 @@ function MyApp({ Component, pageProps }) {
     </>
   );
 }
-
-export default MyApp;

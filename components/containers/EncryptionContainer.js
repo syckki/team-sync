@@ -49,11 +49,25 @@ const SuccessMessage = styled.p`
   font-weight: 600;
 `;
 
-const EncryptionContainer = () => {
+const ReplyBadge = styled.div`
+  display: inline-block;
+  background-color: ${({ theme }) => theme.colors.backgroundAlt};
+  color: ${({ theme }) => theme.colors.primary};
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [encryptedResult, setEncryptedResult] = useState(null);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // Use a longer delay for replies to ensure user sees the confirmation
+  const redirectDelay = isReply ? 2500 : 1500;
 
   const handleEncrypt = async (content) => {
     setIsEncrypting(true);
@@ -64,8 +78,24 @@ const EncryptionContainer = () => {
       // Generate a new AES-GCM 128-bit key
       const key = await generateKey();
       
+      // Create data object with reply information if needed
+      const dataObj = {
+        title: content.title,
+        message: content.message,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Add reply metadata if this is a reply
+      if (isReply && replyToId) {
+        dataObj.isReply = true;
+        dataObj.replyToId = replyToId;
+      }
+      
+      // Convert to JSON string
+      const jsonData = JSON.stringify(dataObj);
+      
       // Encrypt the content
-      const { ciphertext, iv } = await encryptData(content, key);
+      const { ciphertext, iv } = await encryptData(jsonData, key);
       
       // Convert the combined ciphertext and IV to ArrayBuffer for upload
       const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
@@ -94,6 +124,11 @@ const EncryptionContainer = () => {
       const secureUrl = `${window.location.origin}${url}#${keyBase64}`;
       
       setEncryptedResult({ url: secureUrl });
+      
+      // Automatically redirect to the secure URL after a delay
+      setTimeout(() => {
+        window.location.href = secureUrl;
+      }, redirectDelay);
     } catch (err) {
       console.error('Encryption error:', err);
       setError(`Encryption failed: ${err.message}`);
@@ -115,10 +150,15 @@ const EncryptionContainer = () => {
 
   return (
     <>
+      {isReply && replyToId && (
+        <ReplyBadge>Replying to message ID: {replyToId}</ReplyBadge>
+      )}
+      
       <EncryptForm 
         onSubmit={handleEncrypt} 
         isLoading={isEncrypting} 
         error={error}
+        isReply={isReply}
       />
       
       {encryptedResult && (
@@ -134,6 +174,11 @@ const EncryptionContainer = () => {
           <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
             Note: The encryption key is only included in the URL fragment (after the #) and is never sent to the server.
           </p>
+          {isReply && (
+            <p style={{ fontStyle: 'italic', marginTop: '0.5rem' }}>
+              Redirecting to your secure message in a moment...
+            </p>
+          )}
         </ResultContainer>
       )}
     </>

@@ -90,7 +90,7 @@ const ErrorMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-const EncryptForm = ({ onSubmit, isLoading, error }) => {
+const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   const [formValues, setFormValues] = useState({
     title: '',
     message: '',
@@ -103,22 +103,14 @@ const EncryptForm = ({ onSubmit, isLoading, error }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Create a JSON object to encrypt
-    const contentToEncrypt = {
-      title: formValues.title.trim(),
-      message: formValues.message.trim(),
-      timestamp: new Date().toISOString(),
-    };
-    
-    onSubmit(JSON.stringify(contentToEncrypt));
+    onSubmit(formValues);
   };
 
   const isFormValid = formValues.title.trim() && formValues.message.trim();
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Title>Create Encrypted Message</Title>
+      <Title>{isReply ? 'Send Encrypted Reply' : 'Create Encrypted Message'}</Title>
       
       {error && <ErrorMessage>{error}</ErrorMessage>}
       
@@ -130,7 +122,7 @@ const EncryptForm = ({ onSubmit, isLoading, error }) => {
           name="title"
           value={formValues.title}
           onChange={handleChange}
-          placeholder="Enter a title for your message"
+          placeholder={isReply ? "Reply: Enter a title" : "Enter a title for your message"}
           required
         />
       </FormGroup>
@@ -142,13 +134,13 @@ const EncryptForm = ({ onSubmit, isLoading, error }) => {
           name="message"
           value={formValues.message}
           onChange={handleChange}
-          placeholder="Enter your confidential message here"
+          placeholder={isReply ? "Type your secure reply here..." : "Enter your confidential message here"}
           required
         />
       </FormGroup>
       
       <Button type="submit" disabled={isLoading || !isFormValid}>
-        {isLoading ? 'Encrypting...' : 'Encrypt & Create Secure Link'}
+        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Encrypt & Create Secure Link')}
       </Button>
     </Form>
   );

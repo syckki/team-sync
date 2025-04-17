@@ -1,11 +1,18 @@
 import styled from 'styled-components';
 import Header from './Header';
+import NetworkStatus from './NetworkStatus';
 
 const Main = styled.main`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   min-height: calc(100vh - 120px); /* Adjust based on header and footer height */
+`;
+
+const NetworkContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 `;
 
 const Footer = styled.footer`
@@ -21,6 +28,9 @@ const Layout = ({ children }) => {
   return (
     <>
       <Header />
+      <NetworkContainer>
+        <NetworkStatus />
+      </NetworkContainer>
       <Main>{children}</Main>
       <Footer>
         <p>&copy; {new Date().getFullYear()} SecureShare - End-to-End Encrypted Messaging</p>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { importKeyFromBase64, decryptData, encryptData } from '../../lib/cryptoUtils';
+import { queueMessage } from '../../lib/dbService';
+import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
 import DecryptDisplay from '../presentational/DecryptDisplay';
 import styled from 'styled-components';
 import EncryptForm from '../presentational/EncryptForm';
@@ -150,13 +152,43 @@ const ViewButton = styled.button`
 `;
 
 const MessageBadge = styled.span`
-  background-color: ${props => props.$isCreator ? '#e74c3c' : props.$isCurrentUser ? '#3498db' : '#7f8c8d'};
+  background-color: ${props => 
+    props.$isQueued ? '#f39c12' :
+    props.$isCreator ? '#e74c3c' : 
+    props.$isCurrentUser ? '#3498db' : 
+    '#7f8c8d'
+  };
   color: white;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
   margin-left: 1rem;
   font-weight: bold;
+`;
+
+const OfflineNotification = styled.div`
+  padding: 0.75rem;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const OfflineStatus = styled.span`
+  font-weight: bold;
+`;
+
+const QueuedMessage = styled.div`
+  padding: 0.75rem;
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  border-radius: 4px;
+  margin-bottom: 1rem;
 `;
 
 const DecryptionContainer = ({ id, key64 }) => {
@@ -169,6 +201,36 @@ const DecryptionContainer = ({ id, key64 }) => {
   const [authorId, setAuthorId] = useState(null);
   const [isThreadCreator, setIsThreadCreator] = useState(false);
   const [viewMode, setViewMode] = useState('all'); // 'all', 'mine', or 'creator'
+  const [networkStatus, setNetworkStatus] = useState(true); // Default to online
+  const [isMessageQueued, setIsMessageQueued] = useState(false);
+
+  // Initialize network monitoring
+  useEffect(() => {
+    const online = initNetworkMonitoring();
+    setNetworkStatus(online);
+    
+    // Register callbacks
+    const handleOnline = () => {
+      setNetworkStatus(true);
+      syncQueuedMessages(); // Try to send any queued messages
+    };
+    
+    const handleOffline = () => {
+      setNetworkStatus(false);
+    };
+    
+    onOnline(handleOnline);
+    onOffline(handleOffline);
+    
+    // Cleanup on unmount
+    return () => {
+      // Remove event listeners
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
+    };
+  }, []);
 
   // Fetch all messages from the thread
   useEffect(() => {
@@ -263,6 +325,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   const handleAddMessage = async (formData) => {
     setIsAddingMessage(true);
     setAddMessageError(null);
+    setIsMessageQueued(false);
     
     try {
       // Import the key from the URL fragment
@@ -287,34 +350,72 @@ const DecryptionContainer = ({ id, key64 }) => {
       combinedData.set(iv, 0);
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
-      // Upload to the server with the thread ID and author ID in headers
-      const response = await fetch(`/api/upload?threadId=${id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'X-Author-ID': authorId
-        },
-        body: combinedData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to add message to thread');
+      // Check if we're online before trying to send to the server
+      if (isOnline()) {
+        // Online - upload the encrypted data to the server
+        const response = await fetch(`/api/upload?threadId=${id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'X-Author-ID': authorId
+          },
+          body: combinedData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to add message to thread');
+        }
+        
+        // Add the new message to the UI immediately
+        setThreadMessages(prev => [...prev, {
+          ...dataToEncrypt,
+          index: prev.length,
+          isCurrentUser: true,
+        }]);
+        
+        // Hide the form
+        setShowAddForm(false);
+        
+        // Show success message and reload after a delay
+        alert("Message added successfully! The page will refresh to show the updated thread.");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        // Offline - queue the message for later sending
+        console.log('You are offline. Message will be queued for later upload.');
+        
+        // Metadata for the queued message
+        const metadata = {
+          authorId,
+          title: formData.title,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Queue the message in IndexedDB
+        await queueMessage(
+          id, // threadId
+          combinedData, // encrypted data
+          metadata     // metadata about the message
+        );
+        
+        // Let the user know the message was queued
+        setIsMessageQueued(true);
+        
+        // Add the new message to the UI immediately with a "queued" flag
+        setThreadMessages(prev => [...prev, {
+          ...dataToEncrypt,
+          index: prev.length,
+          isCurrentUser: true,
+          isQueued: true
+        }]);
+        
+        // Hide the form
+        setShowAddForm(false);
+        
+        // No reload - queued messages will be sent when back online
+        alert("You are currently offline. Your message has been saved and will be sent when you're back online.");
       }
-      
-      // Add the new message to the UI immediately
-      setThreadMessages(prev => [...prev, {
-        ...dataToEncrypt,
-        index: prev.length
-      }]);
-      
-      // Hide the form
-      setShowAddForm(false);
-      
-      // Show success message and reload after a delay
-      alert("Message added successfully! The page will refresh to show the updated thread.");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     } catch (err) {
       console.error('Error adding message:', err);
       setAddMessageError(`Failed to add message: ${err.message}`);
@@ -365,6 +466,22 @@ const DecryptionContainer = ({ id, key64 }) => {
 
   return (
     <>
+      {/* Show offline notification when needed */}
+      {!networkStatus && (
+        <OfflineNotification>
+          <div>
+            <OfflineStatus>You are offline.</OfflineStatus> Messages will be queued and sent automatically when your connection is restored.
+          </div>
+        </OfflineNotification>
+      )}
+      
+      {/* Show queued message notification */}
+      {isMessageQueued && (
+        <QueuedMessage>
+          Your message has been queued and will be sent automatically when your connection is restored.
+        </QueuedMessage>
+      )}
+      
       <MessagesContainer>
         <ThreadTitle>
           Encrypted Thread 
@@ -410,13 +527,16 @@ const DecryptionContainer = ({ id, key64 }) => {
               <MessageHeader>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <MessageTitle>{message.title}</MessageTitle>
-                  {message.isCurrentUser && (
+                  {message.isQueued && (
+                    <MessageBadge $isQueued={true}>Queued</MessageBadge>
+                  )}
+                  {!message.isQueued && message.isCurrentUser && (
                     <MessageBadge $isCurrentUser={true}>You</MessageBadge>
                   )}
-                  {message.isCreator && !message.isCurrentUser && (
+                  {!message.isQueued && message.isCreator && !message.isCurrentUser && (
                     <MessageBadge $isCreator={true}>Creator</MessageBadge>
                   )}
-                  {!message.isCreator && !message.isCurrentUser && (
+                  {!message.isQueued && !message.isCreator && !message.isCurrentUser && (
                     <MessageBadge>Other</MessageBadge>
                   )}
                 </div>

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateKey, encryptData, exportKeyToBase64 } from '../../lib/cryptoUtils';
+import { queueMessage } from '../../lib/dbService';
+import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
 import EncryptForm from '../presentational/EncryptForm';
 import styled from 'styled-components';
 
@@ -60,19 +62,75 @@ const ReplyBadge = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
+const OfflineNotification = styled.div`
+  padding: 0.75rem;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const OfflineStatus = styled.span`
+  font-weight: bold;
+`;
+
+const QueuedMessage = styled.div`
+  padding: 0.75rem;
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+`;
+
 const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [encryptedResult, setEncryptedResult] = useState(null);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState(true); // Default to online
+  const [isQueued, setIsQueued] = useState(false);
   
   // Use a longer delay for replies to ensure user sees the confirmation
   const redirectDelay = isReply ? 2500 : 1500;
+  
+  // Initialize network monitoring
+  useEffect(() => {
+    const online = initNetworkMonitoring();
+    setNetworkStatus(online);
+    
+    // Register callbacks
+    const handleOnline = () => {
+      setNetworkStatus(true);
+      syncQueuedMessages(); // Try to send any queued messages
+    };
+    
+    const handleOffline = () => {
+      setNetworkStatus(false);
+    };
+    
+    onOnline(handleOnline);
+    onOffline(handleOffline);
+    
+    // Cleanup on unmount
+    return () => {
+      // Remove event listeners
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
+    };
+  }, []);
 
   const handleEncrypt = async (content) => {
     setIsEncrypting(true);
     setError(null);
     setCopySuccess(false);
+    setIsQueued(false);
     
     try {
       // Generate a new AES-GCM 128-bit key
@@ -112,39 +170,84 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       combinedData.set(iv, 0);
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
-      // Upload the encrypted data to the server with author ID metadata
-      // Include threadId in the query if available for reply scenarios
-      const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
-      
-      const response = await fetch(uploadEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'X-Author-ID': authorId
-        },
-        body: combinedData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload encrypted data');
+      // Check if we're online before trying to send to the server
+      if (isOnline()) {
+        // Online - upload the encrypted data to the server
+        // Include threadId in the query if available for reply scenarios
+        const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
+        
+        const response = await fetch(uploadEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'X-Author-ID': authorId
+          },
+          body: combinedData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload encrypted data');
+        }
+        
+        const responseData = await response.json();
+        const threadId = responseData.threadId;
+        const responseUrl = responseData.url;
+        
+        // Export the key to Base64 format (for URL fragment)
+        const keyBase64 = await exportKeyToBase64(key);
+        
+        // Create a complete URL with the key as a fragment
+        const secureUrl = `${window.location.origin}${responseUrl}#${keyBase64}`;
+        
+        setEncryptedResult({ url: secureUrl });
+        
+        // Automatically redirect to the secure URL after a delay
+        setTimeout(() => {
+          window.location.href = secureUrl;
+        }, redirectDelay);
+      } else {
+        // Offline - queue the message for later sending
+        console.log('You are offline. Message will be queued for later upload.');
+        
+        // Metadata for the queued message
+        const metadata = {
+          authorId,
+          title: content.title,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Queue the message in IndexedDB
+        await queueMessage(
+          replyToId, // threadId (null for new threads)
+          combinedData, // encrypted data
+          metadata     // metadata about the message
+        );
+        
+        // Let the user know the message was queued
+        setIsQueued(true);
+        
+        // Store temporarily in localStorage for later retrieval when online
+        // Save a reference to this message for showing to the user
+        try {
+          // Export the key for later use
+          const keyBase64 = await exportKeyToBase64(key);
+          
+          // Create a pseudo "secure link" for when we're back online
+          const tempLink = replyToId
+            ? `/view/${replyToId}#${keyBase64}`
+            : `/view/pending_${Date.now().toString(36)}#${keyBase64}`;
+          
+          // Set a result so the user can see something was encrypted
+          setEncryptedResult({ 
+            url: tempLink,
+            queued: true,
+            title: content.title,
+            replyToId: replyToId
+          });
+        } catch (storageErr) {
+          console.error('Error storing temporary data:', storageErr);
+        }
       }
-      
-      const responseData = await response.json();
-      const threadId = responseData.threadId;
-      const responseUrl = responseData.url;
-      
-      // Export the key to Base64 format (for URL fragment)
-      const keyBase64 = await exportKeyToBase64(key);
-      
-      // Create a complete URL with the key as a fragment
-      const secureUrl = `${window.location.origin}${responseUrl}#${keyBase64}`;
-      
-      setEncryptedResult({ url: secureUrl });
-      
-      // Automatically redirect to the secure URL after a delay
-      setTimeout(() => {
-        window.location.href = secureUrl;
-      }, redirectDelay);
     } catch (err) {
       console.error('Encryption error:', err);
       setError(`Encryption failed: ${err.message}`);
@@ -170,6 +273,15 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         <ReplyBadge>Replying to thread: {replyToId}</ReplyBadge>
       )}
       
+      {/* Network status indicator */}
+      {!networkStatus && (
+        <OfflineNotification>
+          <div>
+            <OfflineStatus>You are offline.</OfflineStatus> Messages will be queued and sent automatically when your connection is restored.
+          </div>
+        </OfflineNotification>
+      )}
+      
       <EncryptForm 
         onSubmit={handleEncrypt} 
         isLoading={isEncrypting} 
@@ -177,23 +289,47 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         isReply={isReply}
       />
       
+      {/* Show queued message notification */}
+      {isQueued && (
+        <QueuedMessage>
+          Your message has been queued and will be sent automatically when your connection is restored.
+        </QueuedMessage>
+      )}
+      
       {encryptedResult && (
         <ResultContainer>
-          <SuccessMessage>Content encrypted successfully!</SuccessMessage>
-          <p>Share this secure link (includes the encryption key after the # symbol):</p>
-          <SecureLink href={encryptedResult.url} target="_blank" rel="noopener noreferrer">
-            {encryptedResult.url}
-          </SecureLink>
-          <CopyButton onClick={copyToClipboard}>
-            {copySuccess ? 'Copied!' : 'Copy Secure Link'}
-          </CopyButton>
-          <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-            Note: The encryption key is only included in the URL fragment (after the #) and is never sent to the server.
-          </p>
-          {isReply && (
-            <p style={{ fontStyle: 'italic', marginTop: '0.5rem' }}>
-              Redirecting to your secure message in a moment...
-            </p>
+          <SuccessMessage>
+            {encryptedResult.queued 
+              ? 'Content encrypted and queued for sending!' 
+              : 'Content encrypted successfully!'}
+          </SuccessMessage>
+          
+          {encryptedResult.queued ? (
+            <>
+              <p>Your message will be accessible once you're back online.</p>
+              <p>The encryption key has been stored securely and will be used when your connection is restored.</p>
+              {encryptedResult.replyToId && (
+                <p>Your message will be added to thread: {encryptedResult.replyToId}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <p>Share this secure link (includes the encryption key after the # symbol):</p>
+              <SecureLink href={encryptedResult.url} target="_blank" rel="noopener noreferrer">
+                {encryptedResult.url}
+              </SecureLink>
+              <CopyButton onClick={copyToClipboard}>
+                {copySuccess ? 'Copied!' : 'Copy Secure Link'}
+              </CopyButton>
+              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+                Note: The encryption key is only included in the URL fragment (after the #) and is never sent to the server.
+              </p>
+              {isReply && !encryptedResult.queued && (
+                <p style={{ fontStyle: 'italic', marginTop: '0.5rem' }}>
+                  Redirecting to your secure message in a moment...
+                </p>
+              )}
+            </>
           )}
         </ResultContainer>
       )}

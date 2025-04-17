@@ -128,6 +128,37 @@ const ToggleButton = styled.button`
   }
 `;
 
+const ViewControls = styled.div`
+  display: flex;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+`;
+
+const ViewButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${props => props.active ? '#3498db' : '#e0e0e0'};
+  color: ${props => props.active ? '#fff' : '#333'};
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.active ? '#2980b9' : '#d0d0d0'};
+  }
+`;
+
+const MessageBadge = styled.span`
+  background-color: ${props => props.isCreator ? '#e74c3c' : props.isCurrentUser ? '#3498db' : '#7f8c8d'};
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 1rem;
+  font-weight: bold;
+`;
+
 const DecryptionContainer = ({ id, key64 }) => {
   const [threadMessages, setThreadMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -295,6 +326,25 @@ const DecryptionContainer = ({ id, key64 }) => {
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
   };
+  
+  // Filter messages based on view mode
+  const getFilteredMessages = () => {
+    if (!isThreadCreator && viewMode === 'all') {
+      // Non-creators shouldn't have an "all" view - default to their messages
+      return threadMessages.filter(message => message.isCurrentUser);
+    }
+    
+    switch (viewMode) {
+      case 'mine':
+        return threadMessages.filter(message => message.isCurrentUser);
+      case 'creator':
+        return threadMessages.filter(message => message.isCreator);
+      case 'all':
+        return threadMessages;
+      default:
+        return threadMessages;
+    }
+  };
 
   if (isLoading) {
     return <LoadingContainer>Loading encrypted thread...</LoadingContainer>;
@@ -308,16 +358,68 @@ const DecryptionContainer = ({ id, key64 }) => {
     return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
   }
 
+  // Get visible messages based on filters
+  const filteredMessages = getFilteredMessages();
+  const filteredCount = filteredMessages.length;
+  const totalCount = threadMessages.length;
+
   return (
     <>
       <MessagesContainer>
-        <ThreadTitle>Encrypted Thread ({threadMessages.length} messages)</ThreadTitle>
+        <ThreadTitle>
+          Encrypted Thread 
+          {filteredCount !== totalCount ? 
+            ` (Showing ${filteredCount} of ${totalCount} messages)` : 
+            ` (${totalCount} messages)`}
+        </ThreadTitle>
+        
+        {/* View controls - only show to thread creator */}
+        {isThreadCreator && (
+          <ViewControls>
+            <ViewButton 
+              active={viewMode === 'all'} 
+              onClick={() => setViewMode('all')}
+            >
+              All Messages
+            </ViewButton>
+            <ViewButton 
+              active={viewMode === 'mine'} 
+              onClick={() => setViewMode('mine')}
+            >
+              My Messages
+            </ViewButton>
+            <ViewButton 
+              active={viewMode === 'creator'} 
+              onClick={() => setViewMode('creator')}
+            >
+              Creator Messages
+            </ViewButton>
+          </ViewControls>
+        )}
+        
+        {/* If user is not the creator, show info message about visibility */}
+        {!isThreadCreator && (
+          <ErrorContainer style={{ backgroundColor: '#f8f9fa', color: '#495057', borderLeft: '4px solid #6c757d' }}>
+            Note: You can only see messages you've created in this thread.
+          </ErrorContainer>
+        )}
         
         <MessagesList>
-          {threadMessages.map((message, index) => (
+          {filteredMessages.map((message, index) => (
             <MessageItem key={index}>
               <MessageHeader>
-                <MessageTitle>{message.title}</MessageTitle>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <MessageTitle>{message.title}</MessageTitle>
+                  {message.isCurrentUser && (
+                    <MessageBadge isCurrentUser>You</MessageBadge>
+                  )}
+                  {message.isCreator && !message.isCurrentUser && (
+                    <MessageBadge isCreator>Creator</MessageBadge>
+                  )}
+                  {!message.isCreator && !message.isCurrentUser && (
+                    <MessageBadge>Other</MessageBadge>
+                  )}
+                </div>
                 {message.timestamp && (
                   <MessageDate>{formatDate(message.timestamp)}</MessageDate>
                 )}

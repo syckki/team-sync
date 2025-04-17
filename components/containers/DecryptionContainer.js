@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { importKeyFromBase64, decryptData } from '../../lib/cryptoUtils';
 import DecryptDisplay from '../presentational/DecryptDisplay';
 import styled from 'styled-components';
+import EncryptForm from '../presentational/EncryptForm';
 
 const ErrorContainer = styled.div`
   padding: 1rem;
@@ -62,14 +63,82 @@ const formatDate = (dateString) => {
   return date.toLocaleString();
 };
 
+const AddMessageForm = styled.div`
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const ThreadTitle = styled.h3`
+  margin-bottom: 1rem;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const MessagesContainer = styled.div`
+  margin-top: 2rem;
+`;
+
+const MessagesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const MessageItem = styled.div`
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.colors.card};
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+const MessageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const MessageTitle = styled.h4`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const MessageDate = styled.span`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors.textLight};
+`;
+
+const MessageContent = styled.div`
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+`;
+
+const ToggleButton = styled.button`
+  padding: 0.6rem 1.2rem;
+  background-color: ${({ theme }) => theme.colors.secondary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.secondaryDark};
+  }
+`;
+
 const DecryptionContainer = ({ id, key64 }) => {
-  const [decryptedContent, setDecryptedContent] = useState(null);
+  const [threadMessages, setThreadMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [relatedMessages, setRelatedMessages] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [isAddingMessage, setIsAddingMessage] = useState(false);
+  const [addMessageError, setAddMessageError] = useState(null);
 
+  // Fetch all messages from the thread
   useEffect(() => {
-    const fetchAndDecrypt = async () => {
+    const fetchAndDecryptAll = async () => {
       if (!id || !key64) {
         setIsLoading(false);
         return;
@@ -81,96 +150,167 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
         
-        // Fetch the encrypted data
-        const response = await fetch(`/api/download?id=${id}`);
+        // Fetch all encrypted messages from the thread
+        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
         
         if (!response.ok) {
-          throw new Error('Failed to fetch encrypted data');
+          throw new Error('Failed to fetch thread messages');
         }
         
-        // Get the encrypted data as ArrayBuffer
-        const encryptedData = await response.arrayBuffer();
+        const threadData = await response.json();
+        const decryptedMessages = [];
         
-        // Log for debugging
-        console.log('Received encrypted data size:', encryptedData.byteLength);
-        
-        // Extract the IV (first 12 bytes) and ciphertext (rest)
-        const iv = new Uint8Array(encryptedData.slice(0, 12));
-        const ciphertext = encryptedData.slice(12);
-        
-        // Decrypt the data
-        const decrypted = await decryptData(ciphertext, key, iv);
-        
-        // Parse the decrypted JSON
-        const content = JSON.parse(new TextDecoder().decode(decrypted));
-        
-        setDecryptedContent(content);
-        
-        // Check if this is a reply to another message or has replies
-        if (content.replyToId) {
-          // Store the parent message ID
-          const parentMessageId = content.replyToId;
-          setRelatedMessages(prev => [...prev, {
-            id: parentMessageId,
-            type: 'parent',
-            title: 'Original Message'
-          }]);
+        // Decrypt each message in the thread
+        for (const message of threadData.messages) {
+          try {
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
+            
+            // Extract IV and ciphertext
+            const iv = encryptedBytes.slice(0, 12);
+            const ciphertext = encryptedBytes.slice(12);
+            
+            // Decrypt the data
+            const decrypted = await decryptData(ciphertext, key, iv);
+            
+            // Parse the decrypted JSON
+            const content = JSON.parse(new TextDecoder().decode(decrypted));
+            
+            decryptedMessages.push({
+              index: message.index,
+              ...content,
+              timestamp: content.timestamp || message.metadata?.timestamp
+            });
+          } catch (decryptError) {
+            console.error(`Error decrypting message ${message.index}:`, decryptError);
+          }
         }
         
-        // In a real app, we would fetch related replies here
-        // For this demo, we'll just show a placeholder if this is a reply
+        // Sort messages by index (which corresponds to chronological order)
+        decryptedMessages.sort((a, b) => a.index - b.index);
+        setThreadMessages(decryptedMessages);
       } catch (err) {
-        console.error('Decryption error:', err);
-        setError(`Failed to decrypt: ${err.message}`);
+        console.error('Thread loading error:', err);
+        setError(`Failed to load thread: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAndDecrypt();
+    fetchAndDecryptAll();
   }, [id, key64]);
 
+  // Add a new message to the thread
+  const handleAddMessage = async (formData) => {
+    setIsAddingMessage(true);
+    setAddMessageError(null);
+    
+    try {
+      // Import the key from the URL fragment
+      const key = await importKeyFromBase64(key64);
+      
+      // Prepare data object
+      const dataToEncrypt = {
+        title: formData.title.trim(),
+        message: formData.message.trim(),
+        timestamp: new Date().toISOString()
+      };
+      
+      // Convert to JSON
+      const jsonData = JSON.stringify(dataToEncrypt);
+      
+      // Encrypt the data
+      const { ciphertext, iv } = await encryptData(jsonData, key);
+      
+      // Combine IV and ciphertext
+      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+      combinedData.set(iv, 0);
+      combinedData.set(new Uint8Array(ciphertext), iv.length);
+      
+      // Upload to the server with the thread ID
+      const response = await fetch(`/api/upload?threadId=${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: combinedData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add message to thread');
+      }
+      
+      // Add the new message to the UI immediately
+      setThreadMessages(prev => [...prev, {
+        ...dataToEncrypt,
+        index: prev.length
+      }]);
+      
+      // Hide the form
+      setShowAddForm(false);
+      
+      // Refresh the page to show all messages (including the new one)
+      window.location.reload();
+    } catch (err) {
+      console.error('Error adding message:', err);
+      setAddMessageError(`Failed to add message: ${err.message}`);
+    } finally {
+      setIsAddingMessage(false);
+    }
+  };
+
+  const toggleAddForm = () => {
+    setShowAddForm(!showAddForm);
+  };
+
   if (isLoading) {
-    return <LoadingContainer>Decrypting content...</LoadingContainer>;
+    return <LoadingContainer>Loading encrypted thread...</LoadingContainer>;
   }
 
   if (error) {
     return <ErrorContainer>{error}</ErrorContainer>;
   }
 
-  if (!decryptedContent) {
-    return <ErrorContainer>No content could be decrypted.</ErrorContainer>;
+  if (!threadMessages || threadMessages.length === 0) {
+    return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
   }
 
   return (
     <>
-      <DecryptDisplay content={decryptedContent} />
-      
-      {relatedMessages.length > 0 && (
-        <RelatedMessagesContainer>
-          <RelatedMessageTitle>Related Messages</RelatedMessageTitle>
-          
-          {relatedMessages.map(message => (
-            <MessageCard key={message.id}>
-              <MessageLink 
-                href={`/view/${message.id}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                {message.title || 'View related message'}
-              </MessageLink>
-              <p>
-                {message.type === 'parent' 
-                  ? 'This is the original message that was replied to.' 
-                  : 'This is a reply to this message.'}
-              </p>
-              <MessageTime>
-                {message.timestamp ? formatDate(message.timestamp) : 'Timestamp unavailable'}
-              </MessageTime>
-            </MessageCard>
+      <MessagesContainer>
+        <ThreadTitle>Encrypted Thread ({threadMessages.length} messages)</ThreadTitle>
+        
+        <MessagesList>
+          {threadMessages.map((message, index) => (
+            <MessageItem key={index}>
+              <MessageHeader>
+                <MessageTitle>{message.title}</MessageTitle>
+                {message.timestamp && (
+                  <MessageDate>{formatDate(message.timestamp)}</MessageDate>
+                )}
+              </MessageHeader>
+              <MessageContent>{message.message}</MessageContent>
+            </MessageItem>
           ))}
-        </RelatedMessagesContainer>
-      )}
+        </MessagesList>
+      </MessagesContainer>
+      
+      <AddMessageForm>
+        <ThreadTitle>Add to this conversation</ThreadTitle>
+        
+        <ToggleButton onClick={toggleAddForm}>
+          {showAddForm ? 'Hide Form' : 'Add New Message'}
+        </ToggleButton>
+        
+        {showAddForm && (
+          <EncryptForm 
+            onSubmit={handleAddMessage}
+            isLoading={isAddingMessage}
+            error={addMessageError}
+            isReply={true}
+          />
+        )}
+      </AddMessageForm>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { storeEncryptedData } from '../../lib/storage';
+import { addMessageToThread } from '../../lib/thread';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -23,15 +23,20 @@ export default async function handler(req, res) {
             return resolve();
           }
           
-          // Store the encrypted data and get a unique ID
-          const id = await storeEncryptedData(buffer);
+          // Extract query parameters
+          const { threadId } = req.query;
+          
+          // Add the message to a thread (creates a new thread if threadId is null)
+          const threadInfo = await addMessageToThread(threadId, buffer);
           
           // Return the download URL
-          const downloadUrl = `/view/${id}`;
+          const downloadUrl = `/view/${threadInfo.threadId}`;
           
           res.status(200).json({ 
             success: true, 
-            id, 
+            threadId: threadInfo.threadId,
+            messageIndex: threadInfo.messageIndex,
+            totalMessages: threadInfo.totalMessages,
             url: downloadUrl 
           });
           resolve();

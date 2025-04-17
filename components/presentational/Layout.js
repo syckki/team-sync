@@ -1,0 +1,33 @@
+import styled from 'styled-components';
+import Header from './Header';
+
+const Main = styled.main`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 120px); /* Adjust based on header and footer height */
+`;
+
+const Footer = styled.footer`
+  background-color: ${({ theme }) => theme.colors.card};
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.textLight};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const Layout = ({ children }) => {
+  return (
+    <>
+      <Header />
+      <Main>{children}</Main>
+      <Footer>
+        <p>&copy; {new Date().getFullYear()} SecureShare - End-to-End Encrypted Messaging</p>
+        <p>All encryption happens in your browser. Your data remains private.</p>
+      </Footer>
+    </>
+  );
+};
+
+export default Layout;

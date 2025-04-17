@@ -1,0 +1,157 @@
+import { useState } from 'react';
+import styled from 'styled-components';
+
+const Form = styled.form`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: ${({ theme }) => theme.colors.card};
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const Title = styled.h2`
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 1.5rem;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 200px;
+  padding: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.3s;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+const Button = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primaryDark};
+  }
+  
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.disabled};
+    cursor: not-allowed;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: ${({ theme }) => theme.colors.error};
+  background-color: ${({ theme }) => theme.colors.errorBg};
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+`;
+
+const EncryptForm = ({ onSubmit, isLoading, error }) => {
+  const [formValues, setFormValues] = useState({
+    title: '',
+    message: '',
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Create a JSON object to encrypt
+    const contentToEncrypt = {
+      title: formValues.title.trim(),
+      message: formValues.message.trim(),
+      timestamp: new Date().toISOString(),
+    };
+    
+    onSubmit(JSON.stringify(contentToEncrypt));
+  };
+
+  const isFormValid = formValues.title.trim() && formValues.message.trim();
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Title>Create Encrypted Message</Title>
+      
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      
+      <FormGroup>
+        <Label htmlFor="title">Title</Label>
+        <Input
+          type="text"
+          id="title"
+          name="title"
+          value={formValues.title}
+          onChange={handleChange}
+          placeholder="Enter a title for your message"
+          required
+        />
+      </FormGroup>
+      
+      <FormGroup>
+        <Label htmlFor="message">Message</Label>
+        <TextArea
+          id="message"
+          name="message"
+          value={formValues.message}
+          onChange={handleChange}
+          placeholder="Enter your confidential message here"
+          required
+        />
+      </FormGroup>
+      
+      <Button type="submit" disabled={isLoading || !isFormValid}>
+        {isLoading ? 'Encrypting...' : 'Encrypt & Create Secure Link'}
+      </Button>
+    </Form>
+  );
+};
+
+export default EncryptForm;

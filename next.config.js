@@ -3,7 +3,6 @@ const withPWA = require('next-pwa')({
   disable: false, // Enable in development mode for testing
   register: true,
   skipWaiting: true,
-  sw: 'worker/index.js',
 });
 
 module.exports = withPWA({

@@ -46,8 +46,11 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Get the encrypted data as ArrayBuffer
         const encryptedData = await response.arrayBuffer();
         
+        // Log for debugging
+        console.log('Received encrypted data size:', encryptedData.byteLength);
+        
         // Extract the IV (first 12 bytes) and ciphertext (rest)
-        const iv = encryptedData.slice(0, 12);
+        const iv = new Uint8Array(encryptedData.slice(0, 12));
         const ciphertext = encryptedData.slice(12);
         
         // Decrypt the data

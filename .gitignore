@@ -36,9 +36,17 @@ next-env.d.ts
 # encrypted files and data
 /data
 /encrypted
+/.data
 
 # logs
 /*.log
 
 # cache
 /.cache
+
+# replit specific
+/.config
+/attached_assets
+/.upm
+/.replit
+/replit.nix

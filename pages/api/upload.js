@@ -26,8 +26,14 @@ export default async function handler(req, res) {
           // Extract query parameters
           const { threadId } = req.query;
           
+          // Get author ID from headers if available
+          const authorId = req.headers['x-author-id'] || null;
+          
+          // Create metadata object with author ID
+          const metadata = { authorId };
+          
           // Add the message to a thread (creates a new thread if threadId is null)
-          const threadInfo = await addMessageToThread(threadId, buffer);
+          const threadInfo = await addMessageToThread(threadId, buffer, metadata);
           
           // Return the download URL
           const downloadUrl = `/view/${threadInfo.threadId}`;

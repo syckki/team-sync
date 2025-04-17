@@ -135,6 +135,9 @@ const DecryptionContainer = ({ id, key64 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [isAddingMessage, setIsAddingMessage] = useState(false);
   const [addMessageError, setAddMessageError] = useState(null);
+  const [authorId, setAuthorId] = useState(null);
+  const [isThreadCreator, setIsThreadCreator] = useState(false);
+  const [viewMode, setViewMode] = useState('all'); // 'all', 'mine', or 'creator'
 
   // Fetch all messages from the thread
   useEffect(() => {
@@ -146,6 +149,14 @@ const DecryptionContainer = ({ id, key64 }) => {
 
       try {
         setIsLoading(true);
+        
+        // Get or create user's authorId from localStorage
+        const userAuthorId = localStorage.getItem('encrypted-app-author-id') || 
+          `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+        
+        // Set or update the author ID in localStorage
+        localStorage.setItem('encrypted-app-author-id', userAuthorId);
+        setAuthorId(userAuthorId);
         
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
@@ -159,6 +170,17 @@ const DecryptionContainer = ({ id, key64 }) => {
         
         const threadData = await response.json();
         const decryptedMessages = [];
+        let threadCreatorId = null;
+        
+        // Determine if the first message has creator metadata
+        if (threadData.messages.length > 0 && 
+            threadData.messages[0].metadata && 
+            threadData.messages[0].metadata.isThreadCreator) {
+          threadCreatorId = threadData.messages[0].metadata.authorId;
+        }
+        
+        // Set isThreadCreator flag
+        setIsThreadCreator(userAuthorId === threadCreatorId);
         
         // Decrypt each message in the thread
         for (const message of threadData.messages) {
@@ -176,8 +198,14 @@ const DecryptionContainer = ({ id, key64 }) => {
             // Parse the decrypted JSON
             const content = JSON.parse(new TextDecoder().decode(decrypted));
             
+            // Add this message's author
+            const messageAuthorId = message.metadata?.authorId || content.authorId || null;
+            
             decryptedMessages.push({
               index: message.index,
+              authorId: messageAuthorId,
+              isCreator: messageAuthorId === threadCreatorId,
+              isCurrentUser: messageAuthorId === userAuthorId,
               ...content,
               timestamp: content.timestamp || message.metadata?.timestamp
             });
@@ -213,7 +241,8 @@ const DecryptionContainer = ({ id, key64 }) => {
       const dataToEncrypt = {
         title: formData.title.trim(),
         message: formData.message.trim(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        authorId: authorId // Include the author ID in the encrypted content
       };
       
       // Convert to JSON
@@ -227,11 +256,12 @@ const DecryptionContainer = ({ id, key64 }) => {
       combinedData.set(iv, 0);
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
-      // Upload to the server with the thread ID
+      // Upload to the server with the thread ID and author ID in headers
       const response = await fetch(`/api/upload?threadId=${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
+          'X-Author-ID': authorId
         },
         body: combinedData,
       });

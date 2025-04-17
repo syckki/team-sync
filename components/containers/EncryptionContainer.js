@@ -91,6 +91,16 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         dataObj.replyToId = replyToId;
       }
       
+      // Generate or retrieve author ID from localStorage
+      let authorId = localStorage.getItem('encrypted-app-author-id');
+      if (!authorId) {
+        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+        localStorage.setItem('encrypted-app-author-id', authorId);
+      }
+      
+      // Add author ID to data object
+      dataObj.authorId = authorId;
+      
       // Convert to JSON string
       const jsonData = JSON.stringify(dataObj);
       
@@ -102,7 +112,7 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       combinedData.set(iv, 0);
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
-      // Upload the encrypted data to the server
+      // Upload the encrypted data to the server with author ID metadata
       // Include threadId in the query if available for reply scenarios
       const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
       
@@ -110,6 +120,7 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
+          'X-Author-ID': authorId
         },
         body: combinedData,
       });

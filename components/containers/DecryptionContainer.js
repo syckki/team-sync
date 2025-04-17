@@ -249,8 +249,11 @@ const DecryptionContainer = ({ id, key64 }) => {
       // Hide the form
       setShowAddForm(false);
       
-      // Refresh the page to show all messages (including the new one)
-      window.location.reload();
+      // Show success message and reload after a delay
+      alert("Message added successfully! The page will refresh to show the updated thread.");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       console.error('Error adding message:', err);
       setAddMessageError(`Failed to add message: ${err.message}`);

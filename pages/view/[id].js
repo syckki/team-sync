@@ -27,12 +27,59 @@ const Container = styled.div`
   padding: 1rem;
 `;
 
+const KeyInputForm = styled.form`
+  margin: 2rem auto;
+  max-width: 600px;
+  padding: 2rem;
+  background-color: ${({ theme }) => theme.colors.card};
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const KeyInputTitle = styled.h2`
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 1rem;
+`;
+
+const KeyInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 1rem;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primaryDark};
+  }
+`;
+
 const ViewPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const [key, setKey] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [needsKeyInput, setNeedsKeyInput] = useState(false);
+  const [manualKey, setManualKey] = useState('');
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -40,8 +87,12 @@ const ViewPage = () => {
     try {
       // Extract key from URL fragment (#)
       const fragment = window.location.hash.slice(1);
+      
+      // Handle the case where no key is provided in the URL
       if (!fragment) {
-        throw new Error('No encryption key found in URL');
+        setNeedsKeyInput(true);
+        setIsLoading(false);
+        return;
       }
       
       setKey(fragment);
@@ -53,8 +104,46 @@ const ViewPage = () => {
     }
   }, [router.isReady]);
 
+  const handleKeySubmit = (e) => {
+    e.preventDefault();
+    
+    if (!manualKey.trim()) {
+      setError('Please enter a valid encryption key');
+      return;
+    }
+    
+    setKey(manualKey.trim());
+    setNeedsKeyInput(false);
+    
+    // Update the URL with the hash to make it shareable
+    window.location.hash = manualKey.trim();
+  };
+
   if (isLoading) {
     return <LoadingMessage>Loading encrypted content...</LoadingMessage>;
+  }
+
+  if (needsKeyInput) {
+    return (
+      <Container>
+        <KeyInputForm onSubmit={handleKeySubmit}>
+          <KeyInputTitle>Enter Encryption Key</KeyInputTitle>
+          <p>This encrypted thread requires a key for decryption. Please enter the encryption key:</p>
+          
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          
+          <KeyInput
+            type="text"
+            value={manualKey}
+            onChange={(e) => setManualKey(e.target.value)}
+            placeholder="Paste the encryption key here"
+            required
+          />
+          
+          <SubmitButton type="submit">Decrypt Thread</SubmitButton>
+        </KeyInputForm>
+      </Container>
+    );
   }
 
   if (error) {

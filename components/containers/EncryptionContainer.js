@@ -103,7 +103,10 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
       // Upload the encrypted data to the server
-      const response = await fetch('/api/upload', {
+      // Include threadId in the query if available for reply scenarios
+      const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
+      
+      const response = await fetch(uploadEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -115,13 +118,15 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         throw new Error('Failed to upload encrypted data');
       }
       
-      const { id, url } = await response.json();
+      const responseData = await response.json();
+      const threadId = responseData.threadId;
+      const responseUrl = responseData.url;
       
       // Export the key to Base64 format (for URL fragment)
       const keyBase64 = await exportKeyToBase64(key);
       
       // Create a complete URL with the key as a fragment
-      const secureUrl = `${window.location.origin}${url}#${keyBase64}`;
+      const secureUrl = `${window.location.origin}${responseUrl}#${keyBase64}`;
       
       setEncryptedResult({ url: secureUrl });
       
@@ -151,7 +156,7 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   return (
     <>
       {isReply && replyToId && (
-        <ReplyBadge>Replying to message ID: {replyToId}</ReplyBadge>
+        <ReplyBadge>Replying to thread: {replyToId}</ReplyBadge>
       )}
       
       <EncryptForm 

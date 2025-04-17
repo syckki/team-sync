@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { isOnline, onOnline, onOffline, removeOnlineCallback, removeOfflineCallback } from '../lib/networkService';
+import { isOnline, onOnline, onOffline, removeOnlineCallback, removeOfflineCallback, initNetworkMonitoring } from '../lib/networkService';
 
 /**
  * Custom React hook for monitoring network status
@@ -7,10 +7,13 @@ import { isOnline, onOnline, onOffline, removeOnlineCallback, removeOfflineCallb
  * @returns {Object} Network status state and functions
  * @property {boolean} online Current online status
  */
-export default function useNetworkStatus() {
+const useNetworkStatus = () => {
   const [online, setOnline] = useState(true);
   
   useEffect(() => {
+    // Initialize network monitoring if needed
+    initNetworkMonitoring();
+    
     // Set initial state from network service
     setOnline(isOnline());
     
@@ -38,4 +41,6 @@ export default function useNetworkStatus() {
   return {
     online
   };
-}
+};
+
+export default useNetworkStatus;

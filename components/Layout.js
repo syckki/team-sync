@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import NetworkStatusIndicator from './NetworkStatusIndicator';
-import { isOnline, onOnline, onOffline } from '../lib/networkService';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 
 const Main = styled.main`
   min-height: 100vh;
@@ -29,30 +29,8 @@ const OfflineBanner = styled.div`
  * Includes network status indicator and other common UI elements
  */
 const Layout = ({ children }) => {
-  const [online, setOnline] = useState(true);
-
-  useEffect(() => {
-    // Initialize with current status
-    setOnline(isOnline());
-    
-    // Set up listeners for online/offline events
-    const handleOnline = () => {
-      setOnline(true);
-    };
-    
-    const handleOffline = () => {
-      setOnline(false);
-    };
-    
-    onOnline(handleOnline);
-    onOffline(handleOffline);
-    
-    // Clean up listeners on unmount
-    return () => {
-      // We don't need to remove the listeners here
-      // since they're managed by the networkService
-    };
-  }, []);
+  // Use the network status hook
+  const { online } = useNetworkStatus();
 
   return (
     <Main>

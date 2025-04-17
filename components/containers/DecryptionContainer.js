@@ -136,21 +136,21 @@ const ViewControls = styled.div`
 
 const ViewButton = styled.button`
   padding: 0.5rem 1rem;
-  background-color: ${props => props.active ? '#3498db' : '#e0e0e0'};
-  color: ${props => props.active ? '#fff' : '#333'};
+  background-color: ${props => props.$active ? '#3498db' : '#e0e0e0'};
+  color: ${props => props.$active ? '#fff' : '#333'};
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  font-weight: ${props => props.$active ? 'bold' : 'normal'};
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.active ? '#2980b9' : '#d0d0d0'};
+    background-color: ${props => props.$active ? '#2980b9' : '#d0d0d0'};
   }
 `;
 
 const MessageBadge = styled.span`
-  background-color: ${props => props.isCreator ? '#e74c3c' : props.isCurrentUser ? '#3498db' : '#7f8c8d'};
+  background-color: ${props => props.$isCreator ? '#e74c3c' : props.$isCurrentUser ? '#3498db' : '#7f8c8d'};
   color: white;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -377,19 +377,19 @@ const DecryptionContainer = ({ id, key64 }) => {
         {isThreadCreator && (
           <ViewControls>
             <ViewButton 
-              active={viewMode === 'all'} 
+              $active={viewMode === 'all'} 
               onClick={() => setViewMode('all')}
             >
               All Messages
             </ViewButton>
             <ViewButton 
-              active={viewMode === 'mine'} 
+              $active={viewMode === 'mine'} 
               onClick={() => setViewMode('mine')}
             >
               My Messages
             </ViewButton>
             <ViewButton 
-              active={viewMode === 'creator'} 
+              $active={viewMode === 'creator'} 
               onClick={() => setViewMode('creator')}
             >
               Creator Messages
@@ -411,10 +411,10 @@ const DecryptionContainer = ({ id, key64 }) => {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <MessageTitle>{message.title}</MessageTitle>
                   {message.isCurrentUser && (
-                    <MessageBadge isCurrentUser>You</MessageBadge>
+                    <MessageBadge $isCurrentUser={true}>You</MessageBadge>
                   )}
                   {message.isCreator && !message.isCurrentUser && (
-                    <MessageBadge isCreator>Creator</MessageBadge>
+                    <MessageBadge $isCreator={true}>Creator</MessageBadge>
                   )}
                   {!message.isCreator && !message.isCurrentUser && (
                     <MessageBadge>Other</MessageBadge>

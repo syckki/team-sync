@@ -68,13 +68,16 @@ const EncryptionContainer = () => {
       const { ciphertext, iv } = await encryptData(content, key);
       
       // Convert the combined ciphertext and IV to ArrayBuffer for upload
-      const combinedData = new Uint8Array(iv.length + ciphertext.length);
-      combinedData.set(new Uint8Array(iv), 0);
+      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+      combinedData.set(iv, 0);
       combinedData.set(new Uint8Array(ciphertext), iv.length);
       
       // Upload the encrypted data to the server
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
         body: combinedData,
       });
       

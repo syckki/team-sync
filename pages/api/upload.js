@@ -1,4 +1,6 @@
 import { storeEncryptedData } from '../../lib/storage';
+import { Readable } from 'stream';
+import { Buffer } from 'buffer';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,13 +8,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if the request contains binary data
-    if (!req.body || Object.keys(req.body).length === 0) {
+    // Read the raw request body as a Buffer
+    const chunks = [];
+    const reader = Readable.fromWeb(req.body);
+    
+    for await (const chunk of reader) {
+      chunks.push(Buffer.from(chunk));
+    }
+    
+    // Combine all chunks
+    const data = Buffer.concat(chunks);
+    
+    if (!data || data.length === 0) {
       return res.status(400).json({ error: 'No data provided' });
     }
-
-    // Parse the request body as an ArrayBuffer
-    const data = req.body;
     
     // Store the encrypted data and get a unique ID
     const id = await storeEncryptedData(data);
@@ -35,8 +44,6 @@ export default async function handler(req, res) {
 // Configure the API route to handle binary data
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '4mb',
-    },
+    bodyParser: false,
   },
 };

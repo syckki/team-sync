@@ -1,13 +1,46 @@
+// Determine if we're in development mode
+const isDev = process.env.NODE_ENV === 'development';
+
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: false, // Enable in development to test PWA features
+  disable: isDev, // Disable in development to avoid continuous rebuilds
   register: true,
   skipWaiting: true,
-  // Don't specify swSrc to let workbox handle the generation
-  buildExcludes: [/middleware-manifest.json$/],
+  buildExcludes: [/middleware-manifest.json$/, /\.map$/],
+  // Only include specific runtime caching in production
+  runtimeCaching: isDev ? [] : [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200
+        }
+      }
+    },
+    {
+      urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|webp)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'image-cache',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+        }
+      }
+    },
+    {
+      urlPattern: /\/manifest\.json$/,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'manifest-cache'
+      }
+    }
+  ],
   fallbacks: {
-    image: '/icons/offline-image.svg', // Fallback for images
-    document: '/_offline' // Fallback for pages
+    image: '/icons/offline-image.svg',
+    document: '/_offline'
   }
 });
 

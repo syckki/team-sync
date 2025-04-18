@@ -35,6 +35,9 @@ export default class MyDocument extends Document {
           {/* Self-hosted Fonts */}
           <link rel="stylesheet" href="/fonts/inter.css" />
           
+          {/* Offline Mode Styles */}
+          <link rel="stylesheet" href="/offline.css" />
+          
           {/* PWA Meta Tags */}
           <meta name="application-name" content="Encrypted Messaging App" />
           <meta name="apple-mobile-web-app-capable" content="yes" />

@@ -1,0 +1,136 @@
+/* Offline mode styles */
+.offline-mode {
+  /* Add a subtle indicator that we're in offline mode */
+  background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.02) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.02) 50%, rgba(0, 0, 0, 0.02) 75%, transparent 75%, transparent);
+  background-size: 4px 4px;
+}
+
+/* Offline notification styling */
+#offline-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  max-width: 300px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid #dc3545;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 15px;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: slide-in 0.3s ease-out forwards;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#offline-notification .offline-icon {
+  font-size: 20px;
+}
+
+#offline-notification .offline-message {
+  flex: 1;
+}
+
+#offline-notification .offline-message strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+#offline-notification .close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: auto;
+}
+
+/* Offline page specific styles */
+.offline-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.offline-page .status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background-color: #f8d7da;
+  color: #721c24;
+  margin-bottom: 1.5rem;
+}
+
+.offline-page .status-indicator::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  margin-right: 8px;
+}
+
+.offline-page .heading {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.offline-page .message {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.offline-page .tip-container {
+  background-color: #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 450px;
+  margin-bottom: 2rem;
+}
+
+/* Disabled inputs/buttons styling for offline mode when needed */
+.offline-mode .offline-disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Add a badge to show we're in offline mode */
+.offline-badge {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  z-index: 1000;
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  #offline-notification {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+}

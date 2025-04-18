@@ -1,13 +1,14 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
+// Use .mjs extension for ESM
+import withSerwist from '@serwist/next';
+
+const serwistConfig = withSerwist({
+  swSrc: 'src/sw.js',
+  swDest: 'public/sw.js',
   disable: false, // Enable in development and production
-  fallbacks: {
-    image: '/icons/offline-image.svg' // Fallback for images
-  }
-  // All other settings use the defaults
+  // Offline fallbacks are now handled directly in the service worker
 });
 
-module.exports = withPWA({
+export default serwistConfig({
   reactStrictMode: true,
   compiler: {
     styledComponents: true,

@@ -1,135 +1,70 @@
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { isOnline } from '../lib/networkService';
 
-const Container = styled.div`
+const OfflineContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 1rem;
+  min-height: 100vh;
+  padding: 2rem;
   text-align: center;
+  background-color: ${({ theme }) => theme.colors.background};
 `;
 
 const Title = styled.h1`
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: ${props => props.theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const Message = styled.p`
   font-size: 1.2rem;
   margin-bottom: 2rem;
+  color: ${({ theme }) => theme.colors.text};
   max-width: 600px;
 `;
 
-const StatusIndicator = styled.div`
+const OfflineIcon = styled.div`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 2rem;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const StatusDot = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: ${props => props.online ? '#4caf50' : '#f44336'};
-  margin-right: 0.5rem;
-`;
-
-const StatusText = styled.span`
-  font-size: 0.9rem;
-  color: ${props => props.online ? '#4caf50' : '#f44336'};
-`;
-
-const QueueIndicator = styled.div`
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: ${props => props.theme.colors.lightBackground};
-  max-width: 400px;
-  margin-bottom: 2rem;
+  justify-content: center;
+  
+  svg {
+    width: 60px;
+    height: 60px;
+    fill: white;
+  }
 `;
 
 export default function Offline() {
-  const [online, setOnline] = useState(false);
-  const [queuedMessages, setQueuedMessages] = useState(0);
-
-  useEffect(() => {
-    // Check network status
-    const checkStatus = () => {
-      setOnline(isOnline());
-    };
-
-    // Check for queued messages
-    const checkQueue = async () => {
-      try {
-        const { default: dbService } = await import('../lib/dbService');
-        const messages = await dbService.getQueuedMessages();
-        setQueuedMessages(messages.length);
-      } catch (error) {
-        console.error('Error checking queued messages:', error);
-      }
-    };
-
-    // Initial check
-    checkStatus();
-    checkQueue();
-
-    // Set up listeners for online/offline events
-    window.addEventListener('online', () => {
-      checkStatus();
-      checkQueue();
-    });
-    
-    window.addEventListener('offline', () => {
-      checkStatus();
-      checkQueue();
-    });
-
-    // Periodic check
-    const interval = setInterval(() => {
-      checkStatus();
-      checkQueue();
-    }, 10000);
-
-    return () => {
-      window.removeEventListener('online', checkStatus);
-      window.removeEventListener('offline', checkStatus);
-      clearInterval(interval);
-    };
-  }, []);
-
   return (
-    <Container>
+    <>
       <Head>
-        <title>Offline Mode | SecureShare</title>
+        <title>You're Offline | Secure E2E Encryption</title>
       </Head>
-      <Title>You're currently offline</Title>
-      
-      <StatusIndicator>
-        <StatusDot online={online} />
-        <StatusText online={online}>{online ? 'Online' : 'Offline'}</StatusText>
-      </StatusIndicator>
-      
-      <Message>
-        Don't worry! SecureShare works offline. Any messages you compose will be
-        securely stored on your device and sent when you're back online.
-      </Message>
-      
-      {queuedMessages > 0 && (
-        <QueueIndicator>
-          You have {queuedMessages} message{queuedMessages > 1 ? 's' : ''} queued for delivery
-          when your connection is restored.
-        </QueueIndicator>
-      )}
-      
-      <Message>
-        <strong>Tip:</strong> You can continue composing and encrypting messages.
-        They'll be securely stored locally and synchronized automatically when your 
-        connection is restored.
-      </Message>
-    </Container>
+      <OfflineContainer>
+        <OfflineIcon>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12,4C7.59,4,4,7.59,4,12s3.59,8,8,8,8-3.59,8-8S16.41,4,12,4Zm0,14c-3.31,0-6-2.69-6-6s2.69-6,6-6,6,2.69,6,6-2.69,6-6,6Z" />
+            <path d="M12,8c-2.21,0-4,1.79-4,4s1.79,4,4,4,4-1.79,4-4-1.79-4-4-4Zm0,6c-1.1,0-2-.9-2-2s.9-2,2-2,2,.9,2,2-.9,2-2,2Z" />
+            <path d="M19.03,8.48l-2.5-2.5c-.39-.39-1.03-.39-1.42,0s-.39,1.03,0,1.42l2.5,2.5c.39,.39,1.03,.39,1.42,0s.39-1.03,0-1.42Z" />
+            <path d="M7.52,16.03l-2.5-2.5c-.39-.39-1.03-.39-1.42,0s-.39,1.03,0,1.42l2.5,2.5c.39,.39,1.03,.39,1.42,0s.39-1.03,0-1.42Z" />
+          </svg>
+        </OfflineIcon>
+        <Title>You're Offline</Title>
+        <Message>
+          It looks like you're currently offline. The encrypted messaging app requires an internet connection for some features, but you can still view cached messages and prepare new ones that will be sent when you're back online.
+        </Message>
+        <Message>
+          Don't worry - all your drafted messages are safely stored locally and will be synchronized automatically when your connection is restored.
+        </Message>
+      </OfflineContainer>
+    </>
   );
 }

@@ -3,8 +3,22 @@ import { GlobalStyles } from '../styles/globalStyles';
 import { theme } from '../styles/theme';
 import Layout from '../components/presentational/Layout';
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(
+        (registration) => {
+          console.log('Service Worker registration successful with scope: ', registration.scope);
+        },
+        (err) => {
+          console.log('Service Worker registration failed: ', err);
+        }
+      );
+    }
+  }, []);
+
   return (
     <>
       <Head>

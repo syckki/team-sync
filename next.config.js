@@ -3,12 +3,12 @@ const isDev = process.env.NODE_ENV === 'development';
 
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: isDev, // Disable in development to avoid continuous rebuilds
+  disable: false, // We want PWA enabled in both environments for testing
   register: true,
   skipWaiting: true,
   buildExcludes: [/middleware-manifest.json$/, /\.map$/],
-  // Only include specific runtime caching in production
-  runtimeCaching: isDev ? [] : [
+  // Include runtime caching in both environments
+  runtimeCaching: [
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',

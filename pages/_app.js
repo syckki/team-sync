@@ -45,7 +45,7 @@ function MyApp({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="End-to-End Encrypted File Sharing" />
         <meta name="theme-color" content={theme.colors.primary} />
-        <title>Secure E2E Encryption{!networkStatus ? ' (Offline)' : ''}</title>
+        <title>{`Secure E2E Encryption${!networkStatus ? ' (Offline)' : ''}`}</title>
         <link rel="icon" href="/favicon.ico" />
         <link rel="shortcut icon" href="/favicon.ico" />
       </Head>

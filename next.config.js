@@ -39,6 +39,11 @@ const nextConfig = withPWA({
   disable: false, // Enable in development and production
   register: true,
   skipWaiting: true,
+  reloadOnOnline: true,
+  swcMinify: true,
+  workboxOptions: {
+    disableDevLogs: true,
+  },
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
@@ -50,7 +55,7 @@ const nextConfig = withPWA({
         },
       },
     },
-  ],
+  ]
 })(config);
 
 module.exports = nextConfig;

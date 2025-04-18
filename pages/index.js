@@ -20,7 +20,7 @@ const Subtitle = styled.p`
   margin: 0 auto;
 `;
 
-const HomePage = () => {
+const HomePage = ({ staticProps }) => {
   return (
     <>
       <Head>
@@ -39,11 +39,13 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
-
 // This gets called at build time
 export async function getStaticProps() {
   return {
-    props: {}, // will be passed to the page component as props
+    props: {
+      staticProps: {}
+    },
   };
 }
+
+export default HomePage;

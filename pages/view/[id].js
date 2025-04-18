@@ -72,7 +72,7 @@ const SubmitButton = styled.button`
   }
 `;
 
-const ViewPage = () => {
+const ViewPage = ({ pageProps }) => {
   const router = useRouter();
   const { id } = router.query;
   const [key, setKey] = useState(null);
@@ -165,8 +165,7 @@ const ViewPage = () => {
   );
 };
 
-export default ViewPage;
-
+// These get called at build time
 export async function getStaticPaths() {
   return {
     paths: [],
@@ -176,6 +175,10 @@ export async function getStaticPaths() {
 
 export async function getStaticProps() {
   return {
-    props: {},
+    props: {
+      pageProps: {}
+    },
   };
 }
+
+export default ViewPage;

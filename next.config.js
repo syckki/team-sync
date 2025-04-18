@@ -1,9 +1,10 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development' ? false : false, // Enable in both dev and prod
+  disable: false, // Enable in all environments
   register: true,
   skipWaiting: true,
   dynamicStartUrl: true, // Allow navigation to dynamic routes when offline
+  mode: 'production', // Force production mode for service worker
   buildExcludes: [/middleware-manifest\.json$/], // Exclude middleware manifest
   fallbacks: {
     // Fallback for different document types
@@ -90,7 +91,7 @@ module.exports = withPWA({
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
           },
           {
             key: 'X-Content-Type-Options',

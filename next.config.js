@@ -2,46 +2,9 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   disable: false, // Enable in development and production
   fallbacks: {
-    image: '/icons/offline-image.svg', // Fallback for images
-    document: '/_offline', // Fallback for documents
-    'font': false,
-    'manifest': '/offline-manifest.json'
-  },
-  buildExcludes: [/middleware-manifest\.json$/],
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200
-        }
-      }
-    },
-    {
-      urlPattern: /\.(js|css|woff2|woff|ttf|otf|eot|svg|png|jpg|jpeg|gif|ico)$/,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'staticAssets',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 24 * 60 * 60 * 30 // 30 days
-        }
-      }
-    },
-    {
-      urlPattern: /manifest\.json$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'manifest',
-        expiration: {
-          maxEntries: 1,
-          maxAgeSeconds: 24 * 60 * 60 * 30 // 30 days
-        }
-      }
-    }
-  ]
+    image: '/icons/offline-image.svg' // Fallback for images
+  }
+  // All other settings use the defaults
 });
 
 module.exports = withPWA({

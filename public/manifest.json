@@ -30,8 +30,5 @@
     }
   ],
   "orientation": "portrait",
-  "categories": ["security", "productivity", "utilities"],
-  "scope": "/",
-  "prefer_related_applications": false,
-  "offline_enabled": true
+  "scope": "/"
 }

@@ -35,9 +35,6 @@ export default class MyDocument extends Document {
           {/* Self-hosted Fonts */}
           <link rel="stylesheet" href="/fonts/inter.css" />
           
-          {/* Offline Mode Styles */}
-          <link rel="stylesheet" href="/offline.css" />
-          
           {/* PWA Meta Tags */}
           <meta name="application-name" content="Encrypted Messaging App" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -48,9 +45,8 @@ export default class MyDocument extends Document {
           <meta name="mobile-web-app-capable" content="yes" />
           <meta name="theme-color" content="#3498db" />
           
-          {/* PWA Icons and Manifest */}
+          {/* PWA Icons */}
           <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-          <link rel="manifest" href="/manifest.json" />
         </Head>
         <body>
           <Main />

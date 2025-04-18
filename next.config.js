@@ -1,47 +1,10 @@
-// Determine if we're in development mode
-const isDev = process.env.NODE_ENV === 'development';
-
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: false, // We want PWA enabled in both environments for testing
-  register: true,
-  skipWaiting: true,
-  buildExcludes: [/middleware-manifest.json$/, /\.map$/],
-  // Include runtime caching in both environments
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200
-        }
-      }
-    },
-    {
-      urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|webp)$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'image-cache',
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-        }
-      }
-    },
-    {
-      urlPattern: /\/manifest\.json$/,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'manifest-cache'
-      }
-    }
-  ],
+  disable: false, // Enable in development and production
   fallbacks: {
-    image: '/icons/offline-image.svg',
-    document: '/_offline'
+    image: '/icons/offline-image.svg' // Fallback for images
   }
+  // All other settings use the defaults
 });
 
 module.exports = withPWA({
@@ -56,7 +19,7 @@ module.exports = withPWA({
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self' blob:",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'",
           },
           {
             key: 'X-Content-Type-Options',

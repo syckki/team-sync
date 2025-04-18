@@ -6,18 +6,8 @@ import Head from 'next/head';
 import { useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(
-        (registration) => {
-          console.log('Service Worker registration successful with scope: ', registration.scope);
-        },
-        (err) => {
-          console.log('Service Worker registration failed: ', err);
-        }
-      );
-    }
-  }, []);
+  // Service worker is handled automatically by @serwist/next
+  // We don't need to manually register it
 
   return (
     <>

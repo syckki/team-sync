@@ -1,14 +1,17 @@
 // Use .mjs extension for ESM
-import withSerwist from '@serwist/next';
+import withSerwistInit from '@serwist/next';
 
-const serwistConfig = withSerwist({
-  swSrc: 'src/sw.js',
+// Initialize Serwist with the correct configuration from official docs
+const withSerwist = withSerwistInit({
+  // Where the service worker file will be
+  swSrc: 'app/serwist-sw.js',
+  // Where the service worker file will be output
   swDest: 'public/sw.js',
-  disable: false, // Enable in development and production
-  // Offline fallbacks are now handled directly in the service worker
+  // Don't register service worker in development
+  disable: process.env.NODE_ENV === 'development',
 });
 
-export default serwistConfig({
+export default withSerwist({
   reactStrictMode: true,
   compiler: {
     styledComponents: true,
@@ -38,5 +41,5 @@ export default serwistConfig({
         ],
       },
     ];
-  },
+  }
 });

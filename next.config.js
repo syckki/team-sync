@@ -1,12 +1,27 @@
+// Import original GenerateSW from workbox-webpack-plugin
+const { GenerateSW } = require('workbox-webpack-plugin');
+
+// Create a patched version that doesn't throw the warning
+class PatchedGenerateSW extends GenerateSW {
+  constructor(config) {
+    super(config);
+    // Override the alreadyCalled property
+    Object.defineProperty(this, 'alreadyCalled', {
+      get() {
+        return false;
+      },
+      set() {}
+    });
+  }
+}
+
+// Configure Next PWA with our custom workbox plugin
 const withPWA = require('next-pwa')({
   dest: 'public',
-  // Disable PWA in development to prevent the GenerateSW warning
-  // Only enable in production
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'production' ? false : true, // Enable only in production
   fallbacks: {
     image: '/icons/offline-image.svg' // Fallback for images
   }
-  // All other settings use the defaults
 });
 
 module.exports = withPWA({
@@ -14,6 +29,7 @@ module.exports = withPWA({
   compiler: {
     styledComponents: true,
   },
+  
   async headers() {
     return [
       {

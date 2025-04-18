@@ -1,6 +1,8 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: false, // Enable in development and production
+  // Disable PWA in development to prevent the GenerateSW warning
+  // Only enable in production
+  disable: process.env.NODE_ENV === 'development',
   fallbacks: {
     image: '/icons/offline-image.svg' // Fallback for images
   }

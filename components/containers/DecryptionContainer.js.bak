@@ -483,10 +483,13 @@ const DecryptionContainer = ({ id, key64 }) => {
         const queueId = await queueMessage(
           id, // threadId
           combinedData, // encrypted data
-          metadata // message metadata
+          metadata     // metadata about the message
         );
         
-        // Add the queued message to the UI
+        // Let the user know the message was queued
+        setIsMessageQueued(true);
+        
+        // Create a new message object to add to the UI and local cache
         const newMessage = {
           ...dataToEncrypt,
           index: threadMessages.length,
@@ -495,14 +498,53 @@ const DecryptionContainer = ({ id, key64 }) => {
           queueId: queueId
         };
         
+        // Add the new message to the UI immediately with a "queued" flag
         setThreadMessages(prev => [...prev, newMessage]);
-        setIsMessageQueued(true);
+        
+        // Also update the cached thread data with this new message
+        try {
+          // First get the current cached thread data
+          const cachedThread = await getCachedThreadData(id);
+          
+          if (cachedThread) {
+            // Add the new message to the cached messages
+            const updatedMessages = [...cachedThread.messages, {
+              index: cachedThread.messages.length,
+              data: Array.from(combinedData), // Store as regular array for IndexedDB
+              metadata,
+              content: dataToEncrypt, // Store pre-decrypted content for offline access
+              isQueued: true,
+              queueId: queueId
+            }];
+            
+            // Update the thread cache
+            await cacheThreadData(id, updatedMessages, cachedThread.metadata || {});
+            console.log('Updated cached thread data with queued message');
+          } else {
+            // If there's no cached thread yet, create a new cache entry
+            const messagesToCache = [{
+              index: 0,
+              data: Array.from(combinedData),
+              metadata,
+              content: dataToEncrypt,
+              isQueued: true,
+              queueId: queueId
+            }];
+            
+            // Cache the thread with this first message
+            await cacheThreadData(id, messagesToCache, { title: `Thread ${id.substring(id.length - 8)}` });
+            console.log('Created new thread cache with queued message');
+          }
+        } catch (cacheError) {
+          console.error('Error updating thread cache with queued message:', cacheError);
+          // Non-critical error, we can continue
+        }
         
         // Hide the form
         setShowAddForm(false);
         
-        // Show success message
-        alert("You are offline. Your message has been queued and will be sent automatically when you're back online.");
+        // No reload - queued messages will be sent when back online
+        alert("You are currently offline. Your message has been saved and will be sent when you're back online.");
       }
     } catch (err) {
       console.error('Error adding message:', err);
@@ -511,18 +553,16 @@ const DecryptionContainer = ({ id, key64 }) => {
       setIsAddingMessage(false);
     }
   };
-  
-  // Toggle the add message form
+
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
-    setAddMessageError(null);
   };
   
-  // Filter messages based on viewMode
+  // Filter messages based on view mode
   const getFilteredMessages = () => {
-    // Only allow users to see their own messages and creator's messages
-    if (!isThreadCreator && !threadMessages.some(m => m.isCurrentUser)) {
-      return threadMessages.filter(message => message.isCreator);
+    if (!isThreadCreator && viewMode === 'all') {
+      // Non-creators shouldn't have an "all" view - default to their messages
+      return threadMessages.filter(message => message.isCurrentUser);
     }
     
     switch (viewMode) {

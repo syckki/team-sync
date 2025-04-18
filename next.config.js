@@ -1,17 +1,23 @@
-// Use .mjs extension for ESM
-import withSerwistInit from '@serwist/next';
-
-// Initialize Serwist with the correct configuration from official docs
-const withSerwist = withSerwistInit({
-  // Where the service worker file will be
-  swSrc: 'app/serwist-sw.js',
-  // Where the service worker file will be output
-  swDest: 'public/sw.js',
-  // Enable service worker in all environments for testing
-  disable: false,
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: false, // Enable in development and production
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
 });
 
-export default withSerwist({
+module.exports = withPWA({
   reactStrictMode: true,
   compiler: {
     styledComponents: true,
@@ -23,7 +29,7 @@ export default withSerwist({
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
           },
           {
             key: 'X-Content-Type-Options',
@@ -41,5 +47,5 @@ export default withSerwist({
         ],
       },
     ];
-  }
+  },
 });

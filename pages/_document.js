@@ -32,25 +32,24 @@ export default class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          {/* Self-hosted Fonts */}
-          <link rel="stylesheet" href="/fonts/inter.css" />
+          {/* Fonts */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
           
           {/* PWA Meta Tags */}
-          <meta name="application-name" content="Secure Messenger" />
+          <meta name="application-name" content="Encrypted Messaging App" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-          <meta name="apple-mobile-web-app-title" content="SecureMSG" />
+          <meta name="apple-mobile-web-app-title" content="E2E Encrypt" />
           <meta name="description" content="End-to-end encrypted messaging with offline support" />
           <meta name="format-detection" content="telephone=no" />
           <meta name="mobile-web-app-capable" content="yes" />
-          <meta name="theme-color" content="#4361EE" />
+          <meta name="theme-color" content="#3498db" />
           
-          {/* PWA Icons */}
-          <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
-          
-          {/* PWA Manifests - both formats for maximum compatibility */}
+          {/* PWA Icons and Manifest */}
           <link rel="manifest" href="/manifest.json" />
-          <link rel="manifest" href="/manifest.webmanifest" />
+          <link rel="shortcut icon" href="/favicon.ico" />
         </Head>
         <body>
           <Main />

@@ -1,19 +1,10 @@
 import { useState, useEffect } from 'react';
 import { importKeyFromBase64, decryptData, encryptData } from '../../lib/cryptoUtils';
-import { queueMessage, cacheThreadData, getCachedThreadData } from '../../lib/dbService';
+import { queueMessage } from '../../lib/dbService';
 import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
-import { triggerThreadCaching } from '../../lib/serviceWorkerUtils';
 import DecryptDisplay from '../presentational/DecryptDisplay';
 import styled from 'styled-components';
 import EncryptForm from '../presentational/EncryptForm';
-import OfflineIndicator from '../presentational/OfflineIndicator';
-
-// Helper function to format dates
-const formatDate = (dateString) => {
-  if (!dateString) return 'Unknown date';
-  const date = new Date(dateString);
-  return date.toLocaleString();
-};
 
 const ErrorContainer = styled.div`
   padding: 1rem;
@@ -68,6 +59,11 @@ const MessageTime = styled.div`
   color: ${({ theme }) => theme.colors.textLight};
   margin-top: 0.5rem;
 `;
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString();
+};
 
 const AddMessageForm = styled.div`
   margin-top: 2rem;
@@ -157,7 +153,6 @@ const ViewButton = styled.button`
 
 const MessageBadge = styled.span`
   background-color: ${props => 
-    props.$isCached ? '#9333ea' :
     props.$isQueued ? '#f39c12' :
     props.$isCreator ? '#e74c3c' : 
     props.$isCurrentUser ? '#3498db' : 
@@ -284,53 +279,14 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
         
-        let threadData;
-        let usesCachedData = false;
+        // Fetch all encrypted messages from the thread
+        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
         
-        try {
-          // Try to fetch data from network first
-          if (isOnline()) {
-            // Fetch all encrypted messages from the thread
-            const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
-            
-            if (!response.ok) {
-              throw new Error('Failed to fetch thread messages');
-            }
-            
-            threadData = await response.json();
-            
-            // Cache the thread data for offline access
-            console.log('Caching thread data for offline access', id);
-            await triggerThreadCaching(id, threadData.messages, {
-              creatorId: threadData.creatorId,
-              title: threadData.title || `Thread ${id.substring(id.length - 8)}`
-            });
-          } else {
-            // If offline, try to get cached data
-            throw new Error('Offline - using cached data');
-          }
-        } catch (fetchError) {
-          // If fetching failed or we're offline, try to use cached data
-          console.log('Trying to use cached thread data for', id);
-          const cachedThread = await getCachedThreadData(id);
-          
-          if (cachedThread && cachedThread.messages.length > 0) {
-            console.log('Using cached thread data', cachedThread);
-            threadData = { 
-              messages: cachedThread.messages,
-              metadata: cachedThread.metadata || {}
-            };
-            usesCachedData = true;
-          } else {
-            // No cached data available
-            throw new Error('You are offline and this thread is not available offline');
-          }
+        if (!response.ok) {
+          throw new Error('Failed to fetch thread messages');
         }
         
-        if (!threadData || !threadData.messages || threadData.messages.length === 0) {
-          throw new Error('No messages found in this thread');
-        }
-        
+        const threadData = await response.json();
         const decryptedMessages = [];
         let threadCreatorId = null;
         
@@ -347,35 +303,18 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Decrypt each message in the thread
         for (const message of threadData.messages) {
           try {
-            let decrypted;
-            let content;
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
             
-            // If this is from cache and already decrypted
-            if (usesCachedData && message.content) {
-              content = message.content;
-            } else {
-              // Convert base64 data back to ArrayBuffer if it's a string
-              let encryptedBytes;
-              if (typeof message.data === 'string') {
-                encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
-              } else if (message.data instanceof Uint8Array) {
-                encryptedBytes = message.data;
-              } else if (Array.isArray(message.data)) {
-                encryptedBytes = new Uint8Array(message.data);
-              } else {
-                throw new Error('Unsupported encrypted data format');
-              }
-              
-              // Extract IV and ciphertext
-              const iv = encryptedBytes.slice(0, 12);
-              const ciphertext = encryptedBytes.slice(12);
-              
-              // Decrypt the data
-              decrypted = await decryptData(ciphertext, key, iv);
-              
-              // Parse the decrypted JSON
-              content = JSON.parse(new TextDecoder().decode(decrypted));
-            }
+            // Extract IV and ciphertext
+            const iv = encryptedBytes.slice(0, 12);
+            const ciphertext = encryptedBytes.slice(12);
+            
+            // Decrypt the data
+            const decrypted = await decryptData(ciphertext, key, iv);
+            
+            // Parse the decrypted JSON
+            const content = JSON.parse(new TextDecoder().decode(decrypted));
             
             // Add this message's author
             const messageAuthorId = message.metadata?.authorId || content.authorId || null;
@@ -386,8 +325,7 @@ const DecryptionContainer = ({ id, key64 }) => {
               isCreator: messageAuthorId === threadCreatorId,
               isCurrentUser: messageAuthorId === userAuthorId,
               ...content,
-              timestamp: content.timestamp || message.metadata?.timestamp,
-              isOfflineCached: usesCachedData
+              timestamp: content.timestamp || message.metadata?.timestamp
             });
           } catch (decryptError) {
             console.error(`Error decrypting message ${message.index}:`, decryptError);
@@ -480,29 +418,28 @@ const DecryptionContainer = ({ id, key64 }) => {
         };
         
         // Queue the message in IndexedDB
-        const queueId = await queueMessage(
+        await queueMessage(
           id, // threadId
           combinedData, // encrypted data
-          metadata // message metadata
+          metadata     // metadata about the message
         );
         
-        // Add the queued message to the UI
-        const newMessage = {
-          ...dataToEncrypt,
-          index: threadMessages.length,
-          isCurrentUser: true,
-          isQueued: true,
-          queueId: queueId
-        };
-        
-        setThreadMessages(prev => [...prev, newMessage]);
+        // Let the user know the message was queued
         setIsMessageQueued(true);
+        
+        // Add the new message to the UI immediately with a "queued" flag
+        setThreadMessages(prev => [...prev, {
+          ...dataToEncrypt,
+          index: prev.length,
+          isCurrentUser: true,
+          isQueued: true
+        }]);
         
         // Hide the form
         setShowAddForm(false);
         
-        // Show success message
-        alert("You are offline. Your message has been queued and will be sent automatically when you're back online.");
+        // No reload - queued messages will be sent when back online
+        alert("You are currently offline. Your message has been saved and will be sent when you're back online.");
       }
     } catch (err) {
       console.error('Error adding message:', err);
@@ -511,18 +448,16 @@ const DecryptionContainer = ({ id, key64 }) => {
       setIsAddingMessage(false);
     }
   };
-  
-  // Toggle the add message form
+
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
-    setAddMessageError(null);
   };
   
-  // Filter messages based on viewMode
+  // Filter messages based on view mode
   const getFilteredMessages = () => {
-    // Only allow users to see their own messages and creator's messages
-    if (!isThreadCreator && !threadMessages.some(m => m.isCurrentUser)) {
-      return threadMessages.filter(message => message.isCreator);
+    if (!isThreadCreator && viewMode === 'all') {
+      // Non-creators shouldn't have an "all" view - default to their messages
+      return threadMessages.filter(message => message.isCurrentUser);
     }
     
     switch (viewMode) {
@@ -554,17 +489,8 @@ const DecryptionContainer = ({ id, key64 }) => {
   const filteredCount = filteredMessages.length;
   const totalCount = threadMessages.length;
 
-  // Check if any messages are from cache
-  const hasCachedContent = threadMessages.some(msg => msg.isOfflineCached);
-  
   return (
     <>
-      {/* Offline status indicator */}
-      <OfflineIndicator 
-        isOffline={!networkStatus} 
-        hasCachedContent={hasCachedContent} 
-      />
-      
       {/* Show offline notification when needed */}
       {!networkStatus && (
         <OfflineNotification>
@@ -628,9 +554,6 @@ const DecryptionContainer = ({ id, key64 }) => {
                   <MessageTitle>{message.title}</MessageTitle>
                   {message.isQueued && (
                     <MessageBadge $isQueued={true}>Queued</MessageBadge>
-                  )}
-                  {message.isOfflineCached && !message.isQueued && (
-                    <MessageBadge $isCached={true}>Cached</MessageBadge>
                   )}
                   {!message.isQueued && message.isCurrentUser && (
                     <MessageBadge $isCurrentUser={true}>You</MessageBadge>

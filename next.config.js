@@ -1,8 +1,20 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
-  fallbacks: {
-    image: '/fallback.png', // fallback image
-  },
+  disable: false, // Enable in development and production
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
 });
 
 module.exports = withPWA({

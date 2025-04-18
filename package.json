@@ -13,8 +13,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
+    "canvas": "^3.1.0",
     "next": "^15.3.1",
-    "next-pwa": "^5.6.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "styled-components": "^6.1.17"

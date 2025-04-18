@@ -1,6 +1,6 @@
-const withPWA = require('next-pwa')({
+const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
-  disable: false, // Enable in development and production
+  disable: process.env.NODE_ENV === 'development' ? false : false, // Enable in both development and production
   register: true,
   skipWaiting: true,
   runtimeCaching: [
@@ -11,10 +11,14 @@ const withPWA = require('next-pwa')({
         cacheName: 'offlineCache',
         expiration: {
           maxEntries: 200,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
       },
     },
   ],
+  workboxOptions: {
+    disableDevLogs: true, // This helps with the "Workbox" duplicate logs issue
+  },
 });
 
 module.exports = withPWA({

@@ -6,6 +6,7 @@ const config = {
   compiler: {
     styledComponents: true,
   },
+  allowedDevOrigins: ["9a5bfd6b-cdf0-4a02-b3f1-8c1732d06db4-00-35vewrmn53e0l.spock.replit.dev"],
   async headers() {
     return [
       {
@@ -37,25 +38,13 @@ const config = {
 const nextConfig = withPWA({
   dest: 'public',
   disable: false, // Enable in development and production
-  register: true,
-  skipWaiting: true,
+  cacheOnFrontendNav: true,
+  aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   swcMinify: true,
   workboxOptions: {
     disableDevLogs: true,
-  },
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-        },
-      },
-    },
-  ]
+  }
 })(config);
 
 module.exports = nextConfig;

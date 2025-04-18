@@ -50,11 +50,11 @@ export default class MyDocument extends Document {
           {/* PWA Icons and Manifest */}
           <link rel="manifest" href="/manifest.json" />
           <link rel="icon" href="/icons/icon-192x192.svg" type="image/svg+xml" />
-          <link rel="alternate icon" href="/icons/icon-192.png" type="image/png" />
-          <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+          <link rel="alternate icon" href="/icons/icon-192x192.png" type="image/png" />
+          <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
           
           {/* Apple-specific PWA Icons */}
-          <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
+          <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-touch-fullscreen" content="yes" />
         </Head>

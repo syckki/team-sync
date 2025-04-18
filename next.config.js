@@ -1,23 +1,7 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: false, // Enable in development and production
-  register: true,
-  skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-        },
-      },
-    },
-  ],
-});
+/** @type {import('next').NextConfig} */
+const withPWA = require("@ducanh2912/next-pwa").default;
 
-module.exports = withPWA({
+const config = {
   reactStrictMode: true,
   compiler: {
     styledComponents: true,
@@ -48,4 +32,25 @@ module.exports = withPWA({
       },
     ];
   },
-});
+};
+
+const nextConfig = withPWA({
+  dest: 'public',
+  disable: false, // Enable in development and production
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+        },
+      },
+    },
+  ],
+})(config);
+
+module.exports = nextConfig;

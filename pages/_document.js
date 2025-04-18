@@ -50,6 +50,14 @@ export default class MyDocument extends Document {
           {/* PWA Icons and Manifest */}
           <link rel="manifest" href="/manifest.json" />
           <link rel="shortcut icon" href="/favicon.ico" />
+          
+          {/* Apple PWA Icons */}
+          <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+          <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
+          
+          {/* Microsoft PWA support */}
+          <meta name="msapplication-TileColor" content="#3498db" />
+          <meta name="msapplication-tap-highlight" content="no" />
         </Head>
         <body>
           <Main />

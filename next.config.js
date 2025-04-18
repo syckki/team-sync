@@ -3,7 +3,48 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   disable: process.env.NODE_ENV === 'development' ? false : false, // Enable in both development and production
   register: true,
   skipWaiting: true,
+  fallbacks: {
+    document: '/offline.html',  // fallback for document (/) routes
+  },
   runtimeCaching: [
+    // Cache the /_next/static files with a stale-while-revalidate strategy
+    {
+      urlPattern: /\/_next\/static\/.*/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'next-static',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    // Cache API routes with network-first strategy
+    {
+      urlPattern: /\/api\/.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        },
+        networkTimeoutSeconds: 10, // Fall back to cache if network request exceeds 10 seconds
+      }
+    },
+    // Cache all pages with network-first strategy
+    {
+      urlPattern: /\/view\/.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages-cache',
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+        }
+      }
+    },
+    // Default cache strategy for everything else
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',

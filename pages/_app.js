@@ -13,9 +13,9 @@ function MyApp({ Component, pageProps }) {
         <meta name="theme-color" content={theme.colors.primary} />
         <title>Secure E2E Encryption</title>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="icon" href="/icons/icon-192x192.png" />
-        <link rel="shortcut icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="icon" href="/icon-192x192.png" />
+        <link rel="shortcut icon" href="/icon-192x192.png" />
       </Head>
       <ThemeProvider theme={theme}>
         <GlobalStyles />

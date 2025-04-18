@@ -3,6 +3,11 @@ const withPWA = require('next-pwa')({
   disable: false, // Enable in development and production
   register: true,
   skipWaiting: true,
+  fallbacks: {
+    // Add offline fallback pages
+    document: '/_offline', // Use _offline.js as fallback when document not cached
+    image: '/icons/offline-image.svg' // Fallback for images
+  },
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
@@ -11,7 +16,42 @@ const withPWA = require('next-pwa')({
         cacheName: 'offlineCache',
         expiration: {
           maxEntries: 200,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
+      },
+    },
+    {
+      urlPattern: /\/_next\/image/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'image-cache',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\/_next\/static/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-resources',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\/api\//,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60, // 1 hour
+        },
+        networkTimeoutSeconds: 10,
       },
     },
   ],

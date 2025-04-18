@@ -1,14 +1,10 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
   disable: false, // Enable in development and production
-  register: true,
-  skipWaiting: true,
   fallbacks: {
-    // Add offline fallback pages
-    document: '/_offline', // Use _offline.js as fallback when document not cached
     image: '/icons/offline-image.svg' // Fallback for images
   }
-  // Using default runtimeCaching configuration
+  // All other settings use the defaults
 });
 
 module.exports = withPWA({

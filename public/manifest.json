@@ -1,11 +1,12 @@
 {
-  "name": "Secure E2E Encryption",
-  "short_name": "E2E Encrypt",
-  "description": "End-to-End Encrypted File Sharing with Offline Support",
+  "name": "Secure Messenger",
+  "short_name": "SecureMSG",
+  "description": "End-to-end encrypted messaging with offline support",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0070f3",
+  "theme_color": "#4361EE",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icons/icon-192x192.svg",
@@ -19,6 +20,5 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ],
-  "orientation": "portrait"
+  ]
 }

@@ -3,6 +3,7 @@ const withPWA = require('next-pwa')({
   disable: false, // Enable in development and production
   register: true,
   skipWaiting: true,
+  sw: '/custom-sw.js', // Use our custom service worker
   fallbacks: {
     // Fallback pages when offline
     document: '/_offline', // This is the main page fallback

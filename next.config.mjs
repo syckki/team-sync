@@ -7,8 +7,8 @@ const withSerwist = withSerwistInit({
   swSrc: 'app/serwist-sw.js',
   // Where the service worker file will be output
   swDest: 'public/sw.js',
-  // Don't register service worker in development
-  disable: process.env.NODE_ENV === 'development',
+  // Enable service worker in all environments for testing
+  disable: false,
 });
 
 export default withSerwist({

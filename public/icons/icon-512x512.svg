@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <title>E2E Encryption Icon</title>
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <rect fill="#0070F3" x="0" y="0" width="512" height="512"></rect>
-        <g transform="translate(102, 102)" stroke="#FFFFFF" stroke-width="15">
-            <rect x="7.5" y="123.2" width="293" height="169.79999999999998" rx="15.4"></rect>
-            <path d="M77,123.2 L77,77 C77,33.88 110.88,0 154,0 C197.12,0 231,33.88 231,77 L231,123.2"></path>
-            <circle cx="154" cy="200.20000000000002" r="30.8"></circle>
-            <line x1="154" y1="231" x2="154" y2="261.8"></line>
-        </g>
-    </g>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#4361EE"/>
+  <path d="M256 128L366.275 192V320L256 384L145.725 320V192L256 128Z" fill="white"/>
+  <path d="M256 192L311.138 224V288L256 320L200.862 288V224L256 192Z" fill="#4361EE"/>
+  <circle cx="256" cy="256" r="32" fill="white"/>
 </svg>

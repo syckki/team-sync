@@ -1,11 +1,19 @@
-import { defaultCache } from '@serwist/next/app';
+/**
+ * This is the service worker for the application
+ * It handles caching and offline support
+ * Following Serwist's official documentation
+ */
 
-// Basic service worker configuration for the app
-// This will be automatically picked up by Serwist
-self.addEventListener('install', (event) => {
+// The array will be automatically filled with
+// resources to be precached by the Serwist plugin
+self.__SW_MANIFEST;
+
+// Skip waiting phase
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
+// Take control of all clients as soon as the service worker activates
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });

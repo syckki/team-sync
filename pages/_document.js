@@ -47,6 +47,10 @@ export default class MyDocument extends Document {
           
           {/* PWA Icons */}
           <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+          
+          {/* PWA Manifests - both formats for maximum compatibility */}
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="manifest" href="/manifest.webmanifest" />
         </Head>
         <body>
           <Main />

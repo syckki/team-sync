@@ -6,8 +6,21 @@ import Head from 'next/head';
 import { useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
-  // Service worker is handled automatically by @serwist/next
-  // We don't need to manually register it
+  // Handle service worker registration
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        // Serwist handles registration, but we want to log success/failure
+        navigator.serviceWorker.ready
+          .then((registration) => {
+            console.log('Service Worker ready with scope:', registration.scope);
+          })
+          .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+  }, []);
 
   return (
     <>

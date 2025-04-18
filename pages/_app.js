@@ -15,6 +15,7 @@ function MyApp({ Component, pageProps }) {
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="icon" href="/icons/icon-192x192.png" />
+        <link rel="shortcut icon" href="/icons/icon-192x192.png" />
       </Head>
       <ThemeProvider theme={theme}>
         <GlobalStyles />

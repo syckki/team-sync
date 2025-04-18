@@ -1,1 +1,5 @@
-null
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+  <rect width="200" height="150" fill="#f0f0f0" rx="4" ry="4"/>
+  <path d="M80 75 L120 75 M100 55 L100 95" stroke="#aaa" stroke-width="4" stroke-linecap="round"/>
+  <text x="100" y="120" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#888">Image unavailable offline</text>
+</svg>

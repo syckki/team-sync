@@ -1,13 +1,16 @@
 import Head from "next/head";
 
-export default function Offline() {
+const OfflinePage = () => {
   return (
     <>
       <Head>
-        <title>next-pwa example</title>
+        <title>Secure E2E Encryption - Offline</title>
       </Head>
-      <h1>This is offline fallback page</h1>
-      <h2>When offline, any page route will fallback to this page</h2>
+      <h1>You are currently offline</h1>
+      <h2>This secure application requires an internet connection for some features</h2>
+      <p>Please check your connection and try again. Any messages you compose while offline will be queued and sent when you're back online.</p>
     </>
   );
-}
+};
+
+export default OfflinePage;

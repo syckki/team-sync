@@ -36,14 +36,8 @@ async function handler(req, res) {
           // Get author ID from headers if available
           const authorId = req.headers['x-author-id'] || null;
           
-          // Get report type if available (for productivity reports)
-          const reportType = req.headers['x-report-type'] || null;
-          
-          // Create metadata object with author ID and report type if present
-          const metadata = { 
-            authorId,
-            ...(reportType && { reportType })
-          };
+          // Create metadata object with author ID
+          const metadata = { authorId };
           
           // Add the message to a thread (creates a new thread if threadId is null)
           const threadInfo = await addMessageToThread(threadId, buffer, metadata);

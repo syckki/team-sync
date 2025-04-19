@@ -130,33 +130,6 @@ const ToggleButton = styled.button`
   }
 `;
 
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`;
-
-const ActionButton = styled.a`
-  padding: 0.75rem 1.2rem;
-  background-color: ${props => props.$primary ? props.theme.colors.primary : props.theme.colors.secondary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  
-  &:hover {
-    background-color: ${props => props.$primary ? props.theme.colors.primaryDark : props.theme.colors.secondaryDark};
-    text-decoration: none;
-    color: white;
-  }
-`;
-
 const ViewControls = styled.div`
   display: flex;
   margin-bottom: 1rem;
@@ -541,25 +514,6 @@ const DecryptionContainer = ({ id, key64 }) => {
             ` (Showing ${filteredCount} of ${totalCount} messages)` : 
             ` (${totalCount} messages)`}
         </ThreadTitle>
-        
-        {/* Productivity Report Actions */}
-        <ActionButtonsContainer>
-          <ActionButton 
-            href={`/report/submit/${id}#${key64}`}
-            $primary={true}
-          >
-            Submit AI Productivity Report
-          </ActionButton>
-          
-          {/* Only show Reports view to thread creator */}
-          {isThreadCreator && (
-            <ActionButton 
-              href={`/report/view/${id}#${key64}`}
-            >
-              View AI Productivity Reports
-            </ActionButton>
-          )}
-        </ActionButtonsContainer>
         
         {/* View controls - only show to thread creator */}
         {isThreadCreator && (

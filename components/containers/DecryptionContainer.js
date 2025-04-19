@@ -542,6 +542,25 @@ const DecryptionContainer = ({ id, key64 }) => {
             ` (${totalCount} messages)`}
         </ThreadTitle>
         
+        {/* Productivity Report Actions */}
+        <ActionButtonsContainer>
+          <ActionButton 
+            href={`/report/submit?threadId=${id}&key=${key64}`}
+            $primary={true}
+          >
+            Submit AI Productivity Report
+          </ActionButton>
+          
+          {/* Only show Reports view to thread creator */}
+          {isThreadCreator && (
+            <ActionButton 
+              href={`/report/view?threadId=${id}&key=${key64}`}
+            >
+              View AI Productivity Reports
+            </ActionButton>
+          )}
+        </ActionButtonsContainer>
+        
         {/* View controls - only show to thread creator */}
         {isThreadCreator && (
           <ViewControls>

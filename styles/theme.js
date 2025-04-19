@@ -4,6 +4,7 @@ export const theme = {
     primaryDark: '#2563EB',
     primaryLight: '#93C5FD',
     secondary: '#10B981', // Green
+    secondaryDark: '#059669', // Darker green
     background: '#F9FAFB',
     card: '#FFFFFF',
     text: '#1F2937',
@@ -16,6 +17,7 @@ export const theme = {
     successBg: '#D1FAE5',
     info: '#3B82F6',
     infoLight: '#EFF6FF',
+    backgroundAlt: '#F0F4F8',
     warning: '#F59E0B',
     warningBg: '#FEF3C7',
     backgroundHover: '#F3F4F6',

@@ -82,6 +82,9 @@ const Header = () => {
           <StyledLink href="/">
             Encrypt New
           </StyledLink>
+          <StyledLink href="/productivity-report">
+            Productivity Report
+          </StyledLink>
           <ExternalLink href="https://github.com" target="_blank" rel="noopener noreferrer">
             About
           </ExternalLink>

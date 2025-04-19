@@ -6,19 +6,30 @@ const config = {
   compiler: {
     styledComponents: true,
   },
-  allowedDevOrigins: ["9a5bfd6b-cdf0-4a02-b3f1-8c1732d06db4-00-35vewrmn53e0l.spock.replit.dev"],
+  allowedDevOrigins: [
+    "9a5bfd6b-cdf0-4a02-b3f1-8c1732d06db4-00-35vewrmn53e0l.spock.replit.dev",
+  ],
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'",
+            key: "Content-Security-Policy",
+            value: `
+              default-src 'self';
+              connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+              font-src 'self' https://fonts.gstatic.com;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              img-src 'self' data:;
+              script-src 'self' 'unsafe-eval' 'unsafe-inline';
+            `
+              .replace(/\s{2,}/g, " ")
+              .trim(),
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           // Commented out to allow app to run in Replit's iframe environment
           // {
@@ -26,8 +37,8 @@ const config = {
           //   value: 'DENY',
           // },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
         ],
       },
@@ -36,7 +47,7 @@ const config = {
 };
 
 const nextConfig = withPWA({
-  dest: 'public',
+  dest: "public",
   disable: false, // Enable in development and production
   cacheOnFrontendNav: true,
   aggressiveFrontEndNavCaching: true,
@@ -44,7 +55,8 @@ const nextConfig = withPWA({
   swcMinify: true,
   workboxOptions: {
     disableDevLogs: true,
-  }
+    exclude: [/dynamic-css-manifest\.json$/],
+  },
 })(config);
 
 module.exports = nextConfig;

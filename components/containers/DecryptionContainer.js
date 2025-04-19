@@ -545,7 +545,7 @@ const DecryptionContainer = ({ id, key64 }) => {
         {/* Productivity Report Actions */}
         <ActionButtonsContainer>
           <ActionButton 
-            href={`/report/submit?threadId=${id}&key=${key64}`}
+            href={`/report/submit/${id}#${key64}`}
             $primary={true}
           >
             Submit AI Productivity Report
@@ -554,7 +554,7 @@ const DecryptionContainer = ({ id, key64 }) => {
           {/* Only show Reports view to thread creator */}
           {isThreadCreator && (
             <ActionButton 
-              href={`/report/view?threadId=${id}&key=${key64}`}
+              href={`/report/view/${id}#${key64}`}
             >
               View AI Productivity Reports
             </ActionButton>

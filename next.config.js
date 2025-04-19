@@ -20,6 +20,11 @@ const config = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+          // Commented out to allow app to run in Replit's iframe environment
+          // {
+          //   key: 'X-Frame-Options',
+          //   value: 'DENY',
+          // },
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
@@ -30,13 +35,16 @@ const config = {
   },
 };
 
-// Using a minimal PWA config that works in dev mode
 const nextConfig = withPWA({
   dest: 'public',
-  // Temporarily disable for development
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true
+  disable: false, // Enable in development and production
+  cacheOnFrontendNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  swcMinify: true,
+  workboxOptions: {
+    disableDevLogs: true,
+  }
 })(config);
 
 module.exports = nextConfig;

@@ -14,6 +14,10 @@ async function handler(req, res) {
 
     // Get the thread creator ID for permission checking
     const creatorId = await getThreadCreatorId(threadId);
+
+    if (!creatorId) {
+      return res.status(404).json({ error: 'No messages found in this thread' });
+    }
     
     // Check if the requesting user is the thread creator
     const isCreator = creatorId && authorId === creatorId;
@@ -56,10 +60,6 @@ async function handler(req, res) {
     } else {
       // Non-creator users only see their own messages
       messages = await getMessagesByAuthor(threadId, authorId);
-    }
-    
-    if (!messages || messages.length === 0) {
-      return res.status(404).json({ error: 'No messages found in this thread' });
     }
     
     return res.status(200).json({

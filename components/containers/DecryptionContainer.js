@@ -280,10 +280,10 @@ const DecryptionContainer = ({ id, key64 }) => {
         const key = await importKeyFromBase64(key64);
         
         // Determine if we should fetch all messages or just the user's
-        const all = viewMode === 'all' ? 'true' : 'false';
+        const all = viewMode === 'all' ? '' : '&all=false';
         
         // Fetch messages from the thread based on authorId and all parameter
-        const response = await fetch(`/api/download?threadId=${id}&authorId=${userAuthorId}&all=${all}`);
+        const response = await fetch(`/api/download?threadId=${id}&authorId=${userAuthorId}${all}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch thread messages');
@@ -455,11 +455,11 @@ const DecryptionContainer = ({ id, key64 }) => {
   if (error) {
     return <ErrorContainer>{error}</ErrorContainer>;
   }
-
+/*
   if (!threadMessages || threadMessages.length === 0) {
     return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
   }
-
+*/
   // Since filtering is now done on the backend, we can just use the messages directly
   const filteredMessages = threadMessages;
   const filteredCount = threadMessages.length;

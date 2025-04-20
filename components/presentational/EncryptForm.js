@@ -92,6 +92,7 @@ const ErrorMessage = styled.div`
 
 const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   const [formValues, setFormValues] = useState({
+    threadTitle: '',
     title: '',
     message: '',
   });
@@ -106,7 +107,8 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
     onSubmit(formValues);
   };
 
-  const isFormValid = formValues.title.trim() && formValues.message.trim();
+  const isFormValid = formValues.title.trim() && formValues.message.trim() && 
+    (isReply || formValues.threadTitle.trim());
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -114,8 +116,23 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
       
       {error && <ErrorMessage>{error}</ErrorMessage>}
       
+      {!isReply && (
+        <FormGroup>
+          <Label htmlFor="threadTitle">Thread Title</Label>
+          <Input
+            type="text"
+            id="threadTitle"
+            name="threadTitle"
+            value={formValues.threadTitle}
+            onChange={handleChange}
+            placeholder="Enter a title for this thread"
+            required={!isReply}
+          />
+        </FormGroup>
+      )}
+      
       <FormGroup>
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="title">Message Title</Label>
         <Input
           type="text"
           id="title"

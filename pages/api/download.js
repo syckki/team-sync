@@ -1,4 +1,4 @@
-import { getThreadMessages, getLatestThreadMessage, getMessagesByAuthor, getThreadCreatorId } from '../../lib/thread';
+import { getThreadMessages, getLatestThreadMessage, getMessagesByAuthor, getThreadCreatorId, getThreadMetadata } from '../../lib/thread';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -14,6 +14,9 @@ async function handler(req, res) {
 
     // Get the thread creator ID for permission checking
     const creatorId = await getThreadCreatorId(threadId);
+    
+    // Get thread metadata including title
+    const threadMetadata = await getThreadMetadata(threadId);
 
     if (!creatorId) {
       return res.status(404).json({ error: 'No messages found in this thread' });
@@ -64,6 +67,7 @@ async function handler(req, res) {
     
     return res.status(200).json({
       threadId,
+      threadTitle: threadMetadata.threadTitle || threadId,
       messageCount: messages.length,
       isCreator: isCreator,
       messages: messages.map(msg => ({

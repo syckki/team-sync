@@ -257,93 +257,128 @@ const DecryptionContainer = ({ id, key64 }) => {
     };
   }, [isMessageQueued]);
 
-  // Fetch all messages from the thread
-  useEffect(() => {
-    const fetchAndDecryptAll = async () => {
-      if (!id || !key64) {
-        setIsLoading(false);
-        return;
-      }
+  // Fetch and decrypt messages based on current view mode
+  const fetchAndDecryptMessages = async (fetchViewMode = 'all') => {
+    if (!id || !key64) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        
-        // Get or create user's authorId from localStorage
-        const userAuthorId = localStorage.getItem('encrypted-app-author-id') || 
-          `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-        
-        // Set or update the author ID in localStorage
-        localStorage.setItem('encrypted-app-author-id', userAuthorId);
-        setAuthorId(userAuthorId);
-        
-        // Import the key from the URL fragment
-        const key = await importKeyFromBase64(key64);
-        
-        // Fetch all encrypted messages from the thread
-        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch thread messages');
-        }
-        
-        const threadData = await response.json();
-        const decryptedMessages = [];
-        let threadCreatorId = null;
-        
-        // Determine if the first message has creator metadata
-        if (threadData.messages.length > 0 && 
-            threadData.messages[0].metadata && 
-            threadData.messages[0].metadata.isThreadCreator) {
-          threadCreatorId = threadData.messages[0].metadata.authorId;
-        }
-        
-        // Set isThreadCreator flag
-        setIsThreadCreator(userAuthorId === threadCreatorId);
-        
-        // Decrypt each message in the thread
-        for (const message of threadData.messages) {
-          try {
-            // Convert base64 data back to ArrayBuffer
-            const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
-            
-            // Extract IV and ciphertext
-            const iv = encryptedBytes.slice(0, 12);
-            const ciphertext = encryptedBytes.slice(12);
-            
-            // Decrypt the data
-            const decrypted = await decryptData(ciphertext, key, iv);
-            
-            // Parse the decrypted JSON
-            const content = JSON.parse(new TextDecoder().decode(decrypted));
-            
-            // Add this message's author
-            const messageAuthorId = message.metadata?.authorId || content.authorId || null;
-            
-            decryptedMessages.push({
-              index: message.index,
-              authorId: messageAuthorId,
-              isCreator: messageAuthorId === threadCreatorId,
-              isCurrentUser: messageAuthorId === userAuthorId,
-              ...content,
-              timestamp: content.timestamp || message.metadata?.timestamp
-            });
-          } catch (decryptError) {
-            console.error(`Error decrypting message ${message.index}:`, decryptError);
+    try {
+      setIsLoading(true);
+      
+      // Get or create user's authorId from localStorage
+      const userAuthorId = localStorage.getItem('encrypted-app-author-id') || 
+        `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+      
+      // Set or update the author ID in localStorage
+      localStorage.setItem('encrypted-app-author-id', userAuthorId);
+      setAuthorId(userAuthorId);
+      
+      // Import the key from the URL fragment
+      const key = await importKeyFromBase64(key64);
+
+      // Build the API URL based on view mode
+      let apiUrl = `/api/download?threadId=${id}`;
+      
+      // First fetch the thread creator info (we need this regardless of view mode)
+      const creatorResponse = await fetch(`${apiUrl}&getAll=true`);
+      
+      if (!creatorResponse.ok) {
+        throw new Error('Failed to fetch thread information');
+      }
+      
+      const creatorData = await creatorResponse.json();
+      let threadCreatorId = null;
+      
+      // Determine thread creator from the first message metadata
+      if (creatorData.messages.length > 0 && 
+          creatorData.messages[0].metadata && 
+          creatorData.messages[0].metadata.isThreadCreator) {
+        threadCreatorId = creatorData.messages[0].metadata.authorId;
+      }
+      
+      // Set isThreadCreator flag
+      setIsThreadCreator(userAuthorId === threadCreatorId);
+
+      // Decide which messages to fetch based on view mode
+      let response;
+      let threadData;
+      
+      switch (fetchViewMode) {
+        case 'mine':
+          // Fetch only the current user's messages from server
+          response = await fetch(`${apiUrl}&authorId=${userAuthorId}`);
+          break;
+        case 'creator':
+          // Fetch only the creator's messages from server (if we have creator ID)
+          if (threadCreatorId) {
+            response = await fetch(`${apiUrl}&authorId=${threadCreatorId}`);
+          } else {
+            // Fall back to all messages if creator ID isn't known
+            response = await fetch(`${apiUrl}&getAll=true`);
           }
-        }
-        
-        // Sort messages by index (which corresponds to chronological order)
-        decryptedMessages.sort((a, b) => a.index - b.index);
-        setThreadMessages(decryptedMessages);
-      } catch (err) {
-        console.error('Thread loading error:', err);
-        setError(`Failed to load thread: ${err.message}`);
-      } finally {
-        setIsLoading(false);
+          break;
+        case 'all':
+        default:
+          // Fetch all messages
+          response = await fetch(`${apiUrl}&getAll=true`);
+          break;
       }
-    };
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch thread messages');
+      }
+      
+      threadData = await response.json();
+      const decryptedMessages = [];
+      
+      // Decrypt each message in the response
+      for (const message of threadData.messages) {
+        try {
+          // Convert base64 data back to ArrayBuffer
+          const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
+          
+          // Extract IV and ciphertext
+          const iv = encryptedBytes.slice(0, 12);
+          const ciphertext = encryptedBytes.slice(12);
+          
+          // Decrypt the data
+          const decrypted = await decryptData(ciphertext, key, iv);
+          
+          // Parse the decrypted JSON
+          const content = JSON.parse(new TextDecoder().decode(decrypted));
+          
+          // Add this message's author
+          const messageAuthorId = message.metadata?.authorId || content.authorId || null;
+          
+          decryptedMessages.push({
+            index: message.index,
+            authorId: messageAuthorId,
+            isCreator: messageAuthorId === threadCreatorId,
+            isCurrentUser: messageAuthorId === userAuthorId,
+            ...content,
+            timestamp: content.timestamp || message.metadata?.timestamp
+          });
+        } catch (decryptError) {
+          console.error(`Error decrypting message ${message.index}:`, decryptError);
+        }
+      }
+      
+      // Sort messages by index (which corresponds to chronological order)
+      decryptedMessages.sort((a, b) => a.index - b.index);
+      setThreadMessages(decryptedMessages);
+    } catch (err) {
+      console.error('Thread loading error:', err);
+      setError(`Failed to load thread: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchAndDecryptAll();
+  // Fetch messages when the component mounts or when threadId/key changes
+  useEffect(() => {
+    fetchAndDecryptMessages(viewMode);
   }, [id, key64]);
 
   // Add a new message to the thread
@@ -520,19 +555,28 @@ const DecryptionContainer = ({ id, key64 }) => {
           <ViewControls>
             <ViewButton 
               $active={viewMode === 'all'} 
-              onClick={() => setViewMode('all')}
+              onClick={() => {
+                setViewMode('all');
+                fetchAndDecryptMessages('all');
+              }}
             >
               All Messages
             </ViewButton>
             <ViewButton 
               $active={viewMode === 'mine'} 
-              onClick={() => setViewMode('mine')}
+              onClick={() => {
+                setViewMode('mine');
+                fetchAndDecryptMessages('mine');
+              }}
             >
               My Messages
             </ViewButton>
             <ViewButton 
               $active={viewMode === 'creator'} 
-              onClick={() => setViewMode('creator')}
+              onClick={() => {
+                setViewMode('creator');
+                fetchAndDecryptMessages('creator');
+              }}
             >
               Creator Messages
             </ViewButton>

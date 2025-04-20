@@ -1,4 +1,4 @@
-import { getThreadMessages, getLatestThreadMessage } from '../../lib/thread';
+import { getThreadMessages, getLatestThreadMessage, getMessagesByAuthor } from '../../lib/thread';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,12 +6,33 @@ async function handler(req, res) {
   }
 
   try {
-    const { threadId, messageIndex, getAll } = req.query;
+    const { threadId, messageIndex, getAll, authorId } = req.query;
 
     if (!threadId) {
       return res.status(400).json({ error: 'No thread ID provided' });
     }
 
+    // If authorId is provided, filter messages by author
+    if (authorId) {
+      const messages = await getMessagesByAuthor(threadId, authorId);
+      
+      if (!messages || messages.length === 0) {
+        return res.status(404).json({ error: 'No messages found for this author' });
+      }
+      
+      return res.status(200).json({
+        threadId,
+        messageCount: messages.length,
+        filterType: 'author',
+        authorId,
+        messages: messages.map(msg => ({
+          index: msg.index,
+          data: msg.data.toString('base64'),
+          metadata: msg.metadata
+        }))
+      });
+    }
+    
     // If getAll is set to true, return all messages in the thread
     if (getAll === 'true') {
       const messages = await getThreadMessages(threadId);

@@ -200,21 +200,11 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       // Check if we're online before trying to send to the server
       if (isOnline()) {
         // Online - upload the encrypted data to the server
-        // Use different endpoints for new threads vs replies
-        let uploadEndpoint, method;
-        
-        if (replyToId) {
-          // Add message to existing thread
-          uploadEndpoint = `/api/threads/${replyToId}/messages`;
-          method = 'POST';
-        } else {
-          // Create new thread
-          uploadEndpoint = '/api/threads';
-          method = 'POST';
-        }
+        // Include threadId in the query if available for reply scenarios
+        const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
         
         const response = await fetch(uploadEndpoint, {
-          method,
+          method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',
             'X-Author-ID': authorId
@@ -228,7 +218,7 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         
         const responseData = await response.json();
         const threadId = responseData.threadId;
-        const responseUrl = responseData.url || `/view/${threadId}`;
+        const responseUrl = responseData.url;
         
         // Export the key to Base64 format (for URL fragment)
         const keyBase64 = await exportKeyToBase64(key);

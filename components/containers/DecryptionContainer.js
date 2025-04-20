@@ -279,8 +279,8 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
         
-        // Fetch all encrypted messages from the thread using the new API structure
-        const response = await fetch(`/api/threads/${id}/messages`);
+        // Fetch all encrypted messages from the thread
+        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch thread messages');
@@ -303,30 +303,8 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Decrypt each message in the thread
         for (const message of threadData.messages) {
           try {
-            // Check if message.data exists and is a string
-            if (!message.data || typeof message.data !== 'string') {
-              console.error('Invalid message data format:', message);
-              continue; // Skip this message
-            }
-            
-            // Convert base64 data back to ArrayBuffer using a more robust method
-            // First, make the base64 string URL-safe by replacing non-URL safe chars
-            const base64Fixed = message.data.replace(/[-_]/g, match => match === '-' ? '+' : '/');
-            
-            // Use a try-catch block with the safer base64 decoding
-            let binary = '';
-            try {
-              binary = atob(base64Fixed);
-            } catch (e) {
-              console.error('Base64 decoding error:', e);
-              continue; // Skip this message if decoding fails
-            }
-            
-            // Create the Uint8Array from the binary string
-            const encryptedBytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-              encryptedBytes[i] = binary.charCodeAt(i);
-            }
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
             
             // Extract IV and ciphertext
             const iv = encryptedBytes.slice(0, 12);
@@ -399,8 +377,8 @@ const DecryptionContainer = ({ id, key64 }) => {
       
       // Check if we're online before trying to send to the server
       if (isOnline()) {
-        // Online - upload the encrypted data to the server using new API structure
-        const response = await fetch(`/api/threads/${id}/messages`, {
+        // Online - upload the encrypted data to the server
+        const response = await fetch(`/api/upload?threadId=${id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',
@@ -503,20 +481,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   }
 
   if (!threadMessages || threadMessages.length === 0) {
-    return (
-      <>
-        <ErrorContainer>No messages found in this thread.</ErrorContainer>
-        <AddMessageForm>
-          <ThreadTitle>Start this conversation</ThreadTitle>
-          <EncryptForm 
-            onSubmit={handleAddMessage}
-            isLoading={isAddingMessage}
-            error={addMessageError}
-            isReply={true}
-          />
-        </AddMessageForm>
-      </>
-    );
+    return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
   }
 
   // Get visible messages based on filters

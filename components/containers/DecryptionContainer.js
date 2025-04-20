@@ -257,9 +257,9 @@ const DecryptionContainer = ({ id, key64 }) => {
     };
   }, [isMessageQueued]);
 
-  // Fetch all messages from the thread
+  // Fetch messages from the thread based on view mode
   useEffect(() => {
-    const fetchAndDecryptAll = async () => {
+    const fetchAndDecryptMessages = async () => {
       if (!id || !key64) {
         setIsLoading(false);
         return;
@@ -279,8 +279,11 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
         
-        // Fetch all encrypted messages from the thread
-        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
+        // Determine if we should fetch all messages or just the user's
+        const all = viewMode === 'all' ? 'true' : 'false';
+        
+        // Fetch messages from the thread based on authorId and all parameter
+        const response = await fetch(`/api/download?threadId=${id}&authorId=${userAuthorId}&all=${all}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch thread messages');
@@ -288,17 +291,9 @@ const DecryptionContainer = ({ id, key64 }) => {
         
         const threadData = await response.json();
         const decryptedMessages = [];
-        let threadCreatorId = null;
         
-        // Determine if the first message has creator metadata
-        if (threadData.messages.length > 0 && 
-            threadData.messages[0].metadata && 
-            threadData.messages[0].metadata.isThreadCreator) {
-          threadCreatorId = threadData.messages[0].metadata.authorId;
-        }
-        
-        // Set isThreadCreator flag
-        setIsThreadCreator(userAuthorId === threadCreatorId);
+        // Set isThreadCreator flag directly from the API response
+        setIsThreadCreator(threadData.isCreator);
         
         // Decrypt each message in the thread
         for (const message of threadData.messages) {
@@ -322,7 +317,7 @@ const DecryptionContainer = ({ id, key64 }) => {
             decryptedMessages.push({
               index: message.index,
               authorId: messageAuthorId,
-              isCreator: messageAuthorId === threadCreatorId,
+              isCreator: message.metadata?.isThreadCreator || false,
               isCurrentUser: messageAuthorId === userAuthorId,
               ...content,
               timestamp: content.timestamp || message.metadata?.timestamp
@@ -343,8 +338,8 @@ const DecryptionContainer = ({ id, key64 }) => {
       }
     };
 
-    fetchAndDecryptAll();
-  }, [id, key64]);
+    fetchAndDecryptMessages();
+  }, [id, key64, viewMode]); // Added viewMode as dependency so it refetches when view changes
 
   // Add a new message to the thread
   const handleAddMessage = async (formData) => {
@@ -453,23 +448,6 @@ const DecryptionContainer = ({ id, key64 }) => {
     setShowAddForm(!showAddForm);
   };
   
-  // Filter messages based on view mode
-  const getFilteredMessages = () => {
-    if (!isThreadCreator && viewMode === 'all') {
-      // Non-creators shouldn't have an "all" view - default to their messages
-      return threadMessages.filter(message => message.isCurrentUser);
-    }
-    
-    switch (viewMode) {
-      case 'mine':
-        return threadMessages.filter(message => message.isCurrentUser);
-      case 'all':
-        return threadMessages;
-      default:
-        return threadMessages;
-    }
-  };
-
   if (isLoading) {
     return <LoadingContainer>Loading encrypted thread...</LoadingContainer>;
   }
@@ -482,10 +460,10 @@ const DecryptionContainer = ({ id, key64 }) => {
     return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
   }
 
-  // Get visible messages based on filters
-  const filteredMessages = getFilteredMessages();
-  const filteredCount = filteredMessages.length;
-  const totalCount = threadMessages.length;
+  // Since filtering is now done on the backend, we can just use the messages directly
+  const filteredMessages = threadMessages;
+  const filteredCount = threadMessages.length;
+  const totalCount = threadMessages.length; // May need to update if we store total count from API
 
   return (
     <>

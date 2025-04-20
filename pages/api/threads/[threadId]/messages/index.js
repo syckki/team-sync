@@ -1,100 +1,88 @@
-import { addMessageToThread, getThreadMessages, getMessagesByAuthor } from '../../../../../lib/thread';
+import { addMessageToThread, getThreadMessages } from '../../../../../lib/thread';
 
-// Configure the API route to handle binary data
+// Set appropriate config for handling binary data
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Need raw body for encrypted binary data
   },
 };
 
-async function handler(req, res) {
+/**
+ * Handler for /api/threads/[threadId]/messages endpoint
+ * GET - Get all messages in a thread
+ * POST - Add a new message to an existing thread
+ */
+export default async function handler(req, res) {
+  // Get the thread ID from the URL
   const { threadId } = req.query;
-  const authorId = req.query.authorId || req.headers['x-author-id'];
 
   if (!threadId) {
     return res.status(400).json({ error: 'Thread ID is required' });
   }
 
-  // GET request - fetch messages for a thread
+  // Handle GET request - retrieve all messages in the thread
   if (req.method === 'GET') {
     try {
-      let messages;
+      // Get all messages from the thread
+      const messages = await getThreadMessages(threadId);
 
-      // If authorId is provided, filter messages by author
-      if (authorId) {
-        messages = await getMessagesByAuthor(threadId, authorId);
-      } else {
-        // Otherwise get all messages in the thread
-        messages = await getThreadMessages(threadId);
-      }
-      
+      // If there are no messages, the thread doesn't exist
       if (!messages || messages.length === 0) {
-        return res.status(404).json({ error: 'Thread not found or empty' });
+        return res.status(404).json({ error: 'Thread not found' });
       }
-      
+
+      // Return the thread data with all messages
       return res.status(200).json({
+        success: true,
         threadId,
-        messageCount: messages.length,
-        messages: messages.map(msg => ({
-          index: msg.index,
-          data: msg.data.toString('base64'),
-          metadata: msg.metadata
-        }))
+        messages,
       });
     } catch (error) {
-      console.error('Error retrieving thread messages:', error);
-      return res.status(500).json({ error: 'Error retrieving thread messages' });
+      console.error(`Error retrieving thread ${threadId}:`, error);
+      return res.status(500).json({ error: 'Failed to retrieve thread messages' });
     }
   }
-  
-  // POST request - add message to an existing thread
+
+  // Handle POST request - add a new message to the thread
   if (req.method === 'POST') {
     try {
-      // Read the raw request body as a Buffer
-      return new Promise((resolve) => {
-        let data = [];
-        req.on('data', (chunk) => {
-          data.push(chunk);
-        });
-        
-        req.on('end', async () => {
-          try {
-            // Combine all chunks
-            const buffer = Buffer.concat(data);
-            
-            if (!buffer || buffer.length === 0) {
-              res.status(400).json({ error: 'No data provided' });
-              return resolve();
-            }
-            
-            // Create metadata object with author ID
-            const metadata = { authorId };
-            
-            // Add the message to the thread
-            const threadInfo = await addMessageToThread(threadId, buffer, metadata);
-            
-            res.status(201).json({ 
-              success: true, 
-              threadId: threadInfo.threadId,
-              messageIndex: threadInfo.messageIndex,
-              totalMessages: threadInfo.totalMessages 
-            });
-            resolve();
-          } catch (error) {
-            console.error('Message addition error:', error);
-            res.status(500).json({ error: 'Error adding message to thread' });
-            resolve();
-          }
-        });
+      // Get the author ID from headers or generate one
+      const authorId = req.headers['x-author-id'] || 
+        `author-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 8)}`;
+
+      // Read the binary data from the request body
+      const chunks = [];
+      for await (const chunk of req) {
+        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+
+      // Create metadata for this message
+      const metadata = {
+        authorId,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Add the message to the existing thread
+      const { threadId: resultThreadId, messageIndex } = await addMessageToThread(
+        threadId,
+        buffer,
+        metadata
+      );
+
+      // Return the thread ID and message index
+      return res.status(201).json({
+        success: true,
+        threadId: resultThreadId,
+        messageIndex,
+        url: `/view/${resultThreadId}`
       });
     } catch (error) {
-      console.error('Message upload error:', error);
-      return res.status(500).json({ error: 'Error uploading message to thread' });
+      console.error(`Error adding message to thread ${threadId}:`, error);
+      return res.status(500).json({ error: 'Failed to add message to thread' });
     }
   }
 
-  // If it's not a GET or POST request
+  // If we get here, the method is not supported
   return res.status(405).json({ error: 'Method not allowed' });
 }
-
-export default handler;

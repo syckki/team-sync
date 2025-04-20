@@ -1,66 +1,57 @@
-import { addMessageToThread } from '../../../lib/thread';
+import { addMessageToThread, getLatestThreadMessage } from '../../../lib/thread';
 
-// Configure the API route to handle binary data
+// Set appropriate CORS headers to allow cross-origin requests
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Need raw body for encrypted binary data
   },
 };
 
-async function handler(req, res) {
+/**
+ * Handler for /api/threads endpoint (thread creation)
+ * POST - Create a new thread with the first encrypted message
+ */
+export default async function handler(req, res) {
+  // Method must be POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Read the raw request body as a Buffer
-    return new Promise((resolve) => {
-      let data = [];
-      req.on('data', (chunk) => {
-        data.push(chunk);
-      });
-      
-      req.on('end', async () => {
-        try {
-          // Combine all chunks
-          const buffer = Buffer.concat(data);
-          
-          if (!buffer || buffer.length === 0) {
-            res.status(400).json({ error: 'No data provided' });
-            return resolve();
-          }
-          
-          // Get author ID from headers if available
-          const authorId = req.headers['x-author-id'] || null;
-          
-          // Create metadata object with author ID
-          const metadata = { authorId };
-          
-          // Add the message to a new thread (threadId is null for new threads)
-          const threadInfo = await addMessageToThread(null, buffer, metadata);
-          
-          // Return the thread info
-          const downloadUrl = `/view/${threadInfo.threadId}`;
-          
-          res.status(201).json({ 
-            success: true, 
-            threadId: threadInfo.threadId,
-            messageIndex: threadInfo.messageIndex,
-            totalMessages: threadInfo.totalMessages,
-            url: downloadUrl 
-          });
-          resolve();
-        } catch (error) {
-          console.error('Thread creation error:', error);
-          res.status(500).json({ error: 'Error processing thread creation' });
-          resolve();
-        }
-      });
+    // Get the author ID from headers or generate one
+    const authorId = req.headers['x-author-id'] || 
+      `author-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 8)}`;
+
+    // Read the binary data from the request body
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    // Create metadata for the first message
+    const metadata = {
+      authorId,
+      isThreadCreator: true, // First message always designates the thread creator
+      timestamp: new Date().toISOString(),
+    };
+
+    // Create a new thread with this encrypted message
+    const { threadId, messageIndex } = await addMessageToThread(
+      null, // null threadId creates a new thread
+      buffer,
+      metadata
+    );
+
+    // Return the thread ID and URL to view the thread
+    res.status(201).json({
+      success: true,
+      threadId,
+      messageIndex,
+      url: `/view/${threadId}`
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return res.status(500).json({ error: 'Error creating thread' });
+    console.error('Error creating thread:', error);
+    res.status(500).json({ error: 'Failed to create thread' });
   }
 }
-
-export default handler;

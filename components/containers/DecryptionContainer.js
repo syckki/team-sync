@@ -279,8 +279,8 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Import the key from the URL fragment
         const key = await importKeyFromBase64(key64);
         
-        // Fetch all encrypted messages from the thread
-        const response = await fetch(`/api/download?threadId=${id}&getAll=true`);
+        // Fetch all encrypted messages from the thread using the new API structure
+        const response = await fetch(`/api/threads/${id}/messages`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch thread messages');
@@ -377,8 +377,8 @@ const DecryptionContainer = ({ id, key64 }) => {
       
       // Check if we're online before trying to send to the server
       if (isOnline()) {
-        // Online - upload the encrypted data to the server
-        const response = await fetch(`/api/upload?threadId=${id}`, {
+        // Online - upload the encrypted data to the server using new API structure
+        const response = await fetch(`/api/threads/${id}/messages`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',

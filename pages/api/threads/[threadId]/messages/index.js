@@ -26,16 +26,15 @@ export default async function handler(req, res) {
       // Get all messages from the thread
       const messages = await getThreadMessages(threadId);
 
-      // If there are no messages, the thread doesn't exist
-      if (!messages || messages.length === 0) {
-        return res.status(404).json({ error: 'Thread not found' });
-      }
+      // Even if there are no messages, we should return an empty array instead of 404
+      // The thread might exist but have no messages yet
+      const messagesArray = messages || [];
 
-      // Return the thread data with all messages
+      // Return the thread data with all messages (or empty array)
       return res.status(200).json({
         success: true,
         threadId,
-        messages,
+        messages: messagesArray,
       });
     } catch (error) {
       console.error(`Error retrieving thread ${threadId}:`, error);

@@ -503,7 +503,20 @@ const DecryptionContainer = ({ id, key64 }) => {
   }
 
   if (!threadMessages || threadMessages.length === 0) {
-    return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
+    return (
+      <>
+        <ErrorContainer>No messages found in this thread.</ErrorContainer>
+        <AddMessageForm>
+          <ThreadTitle>Start this conversation</ThreadTitle>
+          <EncryptForm 
+            onSubmit={handleAddMessage}
+            isLoading={isAddingMessage}
+            error={addMessageError}
+            isReply={true}
+          />
+        </AddMessageForm>
+      </>
+    );
   }
 
   // Get visible messages based on filters

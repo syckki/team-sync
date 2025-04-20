@@ -200,7 +200,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   const [addMessageError, setAddMessageError] = useState(null);
   const [authorId, setAuthorId] = useState(null);
   const [isThreadCreator, setIsThreadCreator] = useState(false);
-  const [viewMode, setViewMode] = useState('all'); // 'all', 'mine', or 'creator'
+  const [viewMode, setViewMode] = useState('all'); // 'all' or 'mine'
   const [networkStatus, setNetworkStatus] = useState(true); // Default to online
   const [isMessageQueued, setIsMessageQueued] = useState(false);
 
@@ -463,8 +463,6 @@ const DecryptionContainer = ({ id, key64 }) => {
     switch (viewMode) {
       case 'mine':
         return threadMessages.filter(message => message.isCurrentUser);
-      case 'creator':
-        return threadMessages.filter(message => message.isCreator);
       case 'all':
         return threadMessages;
       default:
@@ -529,12 +527,6 @@ const DecryptionContainer = ({ id, key64 }) => {
               onClick={() => setViewMode('mine')}
             >
               My Messages
-            </ViewButton>
-            <ViewButton 
-              $active={viewMode === 'creator'} 
-              onClick={() => setViewMode('creator')}
-            >
-              Creator Messages
             </ViewButton>
           </ViewControls>
         )}

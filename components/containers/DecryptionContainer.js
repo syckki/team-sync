@@ -203,6 +203,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   const [viewMode, setViewMode] = useState('all'); // 'all' or 'mine'
   const [networkStatus, setNetworkStatus] = useState(true); // Default to online
   const [isMessageQueued, setIsMessageQueued] = useState(false);
+  const [threadTitle, setThreadTitle] = useState('');
 
   // Initialize network monitoring
   useEffect(() => {
@@ -292,8 +293,15 @@ const DecryptionContainer = ({ id, key64 }) => {
         const threadData = await response.json();
         const decryptedMessages = [];
         
-        // Set isThreadCreator flag directly from the API response
+        // Set thread metadata from the API response
         setIsThreadCreator(threadData.isCreator);
+        const title = threadData.threadTitle || id;
+        setThreadTitle(title);
+        
+        // Update document title in the browser if available
+        if (typeof document !== 'undefined') {
+          document.title = `${title} - Secure Encrypted Thread`;
+        }
         
         // Decrypt each message in the thread
         for (const message of threadData.messages) {
@@ -485,7 +493,7 @@ const DecryptionContainer = ({ id, key64 }) => {
       
       <MessagesContainer>
         <ThreadTitle>
-          Encrypted Thread 
+          {threadTitle} 
           {filteredCount !== totalCount ? 
             ` (Showing ${filteredCount} of ${totalCount} messages)` : 
             ` (${totalCount} messages)`}

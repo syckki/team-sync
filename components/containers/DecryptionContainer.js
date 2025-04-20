@@ -279,49 +279,24 @@ const DecryptionContainer = ({ id, key64 }) => {
       const key = await importKeyFromBase64(key64);
 
       // Build the API URL based on view mode
-      let apiUrl = `/api/download?threadId=${id}`;
+      let apiUrl = `/api/download?threadId=${id}&authorId=${userAuthorId}`;
       
-      // First fetch the thread creator info (we need this regardless of view mode)
-      const creatorResponse = await fetch(`${apiUrl}&getAll=true`);
-      
-      if (!creatorResponse.ok) {
-        throw new Error('Failed to fetch thread information');
-      }
-      
-      const creatorData = await creatorResponse.json();
-      let threadCreatorId = null;
-      
-      // Determine thread creator from the first message metadata
-      if (creatorData.messages.length > 0 && 
-          creatorData.messages[0].metadata && 
-          creatorData.messages[0].metadata.isThreadCreator) {
-        threadCreatorId = creatorData.messages[0].metadata.authorId;
-      }
-      
-      // Set isThreadCreator flag
-      setIsThreadCreator(userAuthorId === threadCreatorId);
-
       // Decide which messages to fetch based on view mode
       let response;
-      let threadData;
       
       switch (fetchViewMode) {
         case 'mine':
           // Fetch only the current user's messages from server
-          response = await fetch(`${apiUrl}&authorId=${userAuthorId}`);
+          response = await fetch(apiUrl);
           break;
         case 'creator':
-          // Fetch only the creator's messages from server (if we have creator ID)
-          if (threadCreatorId) {
-            response = await fetch(`${apiUrl}&authorId=${threadCreatorId}`);
-          } else {
-            // Fall back to all messages if creator ID isn't known
-            response = await fetch(`${apiUrl}&getAll=true`);
-          }
+          // We don't need to explicitly include creator ID as the API will determine this
+          // Just make sure we're not requesting all messages
+          response = await fetch(apiUrl);
           break;
         case 'all':
         default:
-          // Fetch all messages
+          // Fetch all messages - only permitted for thread creator
           response = await fetch(`${apiUrl}&getAll=true`);
           break;
       }
@@ -330,8 +305,20 @@ const DecryptionContainer = ({ id, key64 }) => {
         throw new Error('Failed to fetch thread messages');
       }
       
-      threadData = await response.json();
+      const threadData = await response.json();
       const decryptedMessages = [];
+      
+      // Get the thread creator ID from the response
+      const threadCreatorId = threadData.threadCreatorId;
+      
+      // Set thread creator status from the API response
+      setIsThreadCreator(threadData.isThreadCreator || userAuthorId === threadCreatorId);
+      
+      // If non-creator tries to view all messages, default back to viewing their own
+      if (!threadData.isThreadCreator && fetchViewMode === 'all') {
+        // Automatically update the view mode
+        setViewMode('mine');
+      }
       
       // Decrypt each message in the response
       for (const message of threadData.messages) {

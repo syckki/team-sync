@@ -31,7 +31,7 @@ async function handler(req, res) {
           }
           
           // Extract query parameters
-          const { threadId } = req.query;
+          const { threadId, threadTitle } = req.query;
           
           // Get author ID from headers if available
           const authorId = req.headers['x-author-id'] || null;
@@ -40,7 +40,7 @@ async function handler(req, res) {
           const metadata = { authorId };
           
           // Add the message to a thread (creates a new thread if threadId is null)
-          const threadInfo = await addMessageToThread(threadId, buffer, metadata);
+          const threadInfo = await addMessageToThread(threadId, buffer, metadata, threadTitle);
           
           // Return the download URL
           const downloadUrl = `/view/${threadInfo.threadId}`;
@@ -55,7 +55,16 @@ async function handler(req, res) {
           resolve();
         } catch (error) {
           console.error('Upload processing error:', error);
-          res.status(500).json({ error: 'Error processing upload data' });
+          
+          // Check if this is a duplicate thread title error
+          if (error.message && error.message.includes('Thread with title')) {
+            res.status(409).json({ 
+              error: error.message,
+              code: 'DUPLICATE_THREAD_TITLE'
+            });
+          } else {
+            res.status(500).json({ error: 'Error processing upload data' });
+          }
           resolve();
         }
       });

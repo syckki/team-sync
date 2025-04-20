@@ -201,7 +201,12 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       if (isOnline()) {
         // Online - upload the encrypted data to the server
         // Include threadId in the query if available for reply scenarios
-        const uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
+        let uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
+        
+        // Add thread title to the URL if this is a new thread (not a reply)
+        if (!replyToId && content.title) {
+          uploadEndpoint += `?threadTitle=${encodeURIComponent(content.title)}`;
+        }
         
         const response = await fetch(uploadEndpoint, {
           method: 'POST',
@@ -212,11 +217,22 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
           body: combinedData,
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to upload encrypted data');
-        }
+        let responseData;
         
-        const responseData = await response.json();
+        if (!response.ok) {
+          // Try to get more detailed error message from response
+          const errorData = await response.json();
+          
+          if (response.status === 409 && errorData.code === 'DUPLICATE_THREAD_TITLE') {
+            // Specific error for duplicate thread title
+            throw new Error(errorData.error || 'A thread with this title already exists.');
+          } else {
+            throw new Error(errorData.error || 'Failed to upload encrypted data');
+          }
+        } else {
+          // Parse the response body as JSON
+          responseData = await response.json();
+        }
         const threadId = responseData.threadId;
         const responseUrl = responseData.url;
         

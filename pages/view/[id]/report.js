@@ -200,7 +200,99 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Styled components for the table
+// Styled components for the responsive table
+const ResponsiveTable = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+`;
+
+const TableDesktop = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  
+  th, td {
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    padding: 0.75rem;
+    text-align: left;
+  }
+  
+  th {
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    font-weight: 600;
+  }
+  
+  tr:nth-child(even) {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const TableMobile = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const MobileCard = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: ${({ theme }) => theme.colors.card};
+  overflow: hidden;
+`;
+
+const MobileCardHeader = styled.div`
+  background-color: ${({ theme }) => theme.colors.backgroundAlt};
+  padding: 0.75rem;
+  font-weight: 600;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const MobileCardBody = styled.div`
+  padding: 0;
+`;
+
+const MobileCardField = styled.div`
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:nth-child(even) {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+`;
+
+const MobileFieldLabel = styled.span`
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.9rem;
+`;
+
+const MobileFieldValue = styled.span`
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const MobileActions = styled.div`
+  padding: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  display: flex;
+  justify-content: flex-end;
+`;
+
+// Keep the original table styled for backward compatibility
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -222,14 +314,7 @@ const Table = styled.table`
   }
   
   @media (max-width: 768px) {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    
-    th, td {
-      padding: 0.5rem;
-      font-size: 0.9rem;
-    }
+    display: none;
   }
 `;
 
@@ -852,32 +937,82 @@ const ReportPage = () => {
                     </TeamInfo>
                     
                     <ReportContent>
-                      <Table>
-                        <thead>
-                          <tr>
-                            <th>SDLC Step</th>
-                            <th>SDLC Task</th>
-                            <th>Hours</th>
-                            <th>Task Details</th>
-                            <th>AI Tool</th>
-                            <th>AI Productivity</th>
-                            <th>Hours Saved</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {report.entries.map((entry, i) => (
-                            <tr key={i}>
-                              <td>{entry.sdlcStep}</td>
-                              <td>{entry.sdlcTask}</td>
-                              <td>{entry.hours}</td>
-                              <td>{entry.taskDetails}</td>
-                              <td>{entry.aiTool}</td>
-                              <td>{entry.aiProductivity}</td>
-                              <td>{entry.hoursSaved}</td>
+                      <ResponsiveTable>
+                        {/* Desktop Table View */}
+                        <TableDesktop>
+                          <thead>
+                            <tr>
+                              <th>SDLC Step</th>
+                              <th>SDLC Task</th>
+                              <th>Hours</th>
+                              <th>Task Details</th>
+                              <th>AI Tool</th>
+                              <th>AI Productivity</th>
+                              <th>Hours Saved</th>
                             </tr>
+                          </thead>
+                          <tbody>
+                            {report.entries.map((entry, i) => (
+                              <tr key={i}>
+                                <td>{entry.sdlcStep}</td>
+                                <td>{entry.sdlcTask}</td>
+                                <td>{entry.hours}</td>
+                                <td>{entry.taskDetails}</td>
+                                <td>{entry.aiTool}</td>
+                                <td>{entry.aiProductivity}</td>
+                                <td>{entry.hoursSaved}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </TableDesktop>
+                        
+                        {/* Mobile Card View */}
+                        <TableMobile>
+                          {report.entries.map((entry, i) => (
+                            <MobileCard key={i}>
+                              <MobileCardHeader>
+                                Record #{i + 1}
+                              </MobileCardHeader>
+                              <MobileCardBody>
+                                <MobileCardField>
+                                  <MobileFieldLabel>SDLC Step</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.sdlcStep}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>SDLC Task</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.sdlcTask}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>Hours</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.hours}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>Task Details</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.taskDetails}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.aiTool}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>AI Productivity</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.aiProductivity}</MobileFieldValue>
+                                </MobileCardField>
+                                
+                                <MobileCardField>
+                                  <MobileFieldLabel>Hours Saved</MobileFieldLabel>
+                                  <MobileFieldValue>{entry.hoursSaved}</MobileFieldValue>
+                                </MobileCardField>
+                              </MobileCardBody>
+                            </MobileCard>
                           ))}
-                        </tbody>
-                      </Table>
+                        </TableMobile>
+                      </ResponsiveTable>
                     </ReportContent>
                   </ReportCard>
                 ))}
@@ -926,104 +1061,226 @@ const ReportPage = () => {
                 </TeamFormSection>
                 
                 <h3>AI Productivity Details</h3>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>SDLC Step</th>
-                      <th>SDLC Task</th>
-                      <th>Hours</th>
-                      <th>Task Details</th>
-                      <th>AI Tool Used</th>
-                      <th>AI Productivity</th>
-                      <th>Hours Saved</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.id}>
-                        <td>
-                          <Select 
-                            value={row.sdlcStep}
-                            onChange={(e) => handleSDLCStepChange(row.id, e.target.value)}
-                            required
-                          >
-                            <option value="">Select Step</option>
-                            {sdlcSteps.map(step => (
-                              <option key={step} value={step}>{step}</option>
-                            ))}
-                          </Select>
-                        </td>
-                        <td>
-                          <Select
-                            value={row.sdlcTask}
-                            onChange={(e) => handleRowChange(row.id, 'sdlcTask', e.target.value)}
-                            required
-                            disabled={!row.sdlcStep}
-                          >
-                            <option value="">Select Task</option>
-                            {row.sdlcStep && sdlcTasksMap[row.sdlcStep].map(task => (
-                              <option key={task} value={task}>{task}</option>
-                            ))}
-                          </Select>
-                        </td>
-                        <td>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={row.hours}
-                            onChange={(e) => handleRowChange(row.id, 'hours', e.target.value)}
-                            required
-                          />
-                        </td>
-                        <td>
-                          <Input
-                            type="text"
-                            value={row.taskDetails}
-                            onChange={(e) => handleRowChange(row.id, 'taskDetails', e.target.value)}
-                            required
-                          />
-                        </td>
-                        <td>
-                          <Input
-                            type="text"
-                            value={row.aiTool}
-                            onChange={(e) => handleRowChange(row.id, 'aiTool', e.target.value)}
-                            required
-                            placeholder="e.g., ChatGPT, GitHub Copilot"
-                          />
-                        </td>
-                        <td>
-                          <Input
-                            type="text"
-                            value={row.aiProductivity}
-                            onChange={(e) => handleRowChange(row.id, 'aiProductivity', e.target.value)}
-                            required
-                            placeholder="Describe productivity gain"
-                          />
-                        </td>
-                        <td>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={row.hoursSaved}
-                            onChange={(e) => handleRowChange(row.id, 'hoursSaved', e.target.value)}
-                            required
-                          />
-                        </td>
-                        <td>
-                          {rows.length > 1 && (
-                            <DeleteButton onClick={() => removeRow(row.id)}>
-                              X
-                            </DeleteButton>
-                          )}
-                        </td>
+                <ResponsiveTable>
+                  {/* Desktop Table View */}
+                  <TableDesktop>
+                    <thead>
+                      <tr>
+                        <th>SDLC Step</th>
+                        <th>SDLC Task</th>
+                        <th>Hours</th>
+                        <th>Task Details</th>
+                        <th>AI Tool Used</th>
+                        <th>AI Productivity</th>
+                        <th>Hours Saved</th>
+                        <th>Action</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row) => (
+                        <tr key={row.id}>
+                          <td>
+                            <Select 
+                              value={row.sdlcStep}
+                              onChange={(e) => handleSDLCStepChange(row.id, e.target.value)}
+                              required
+                            >
+                              <option value="">Select Step</option>
+                              {sdlcSteps.map(step => (
+                                <option key={step} value={step}>{step}</option>
+                              ))}
+                            </Select>
+                          </td>
+                          <td>
+                            <Select
+                              value={row.sdlcTask}
+                              onChange={(e) => handleRowChange(row.id, 'sdlcTask', e.target.value)}
+                              required
+                              disabled={!row.sdlcStep}
+                            >
+                              <option value="">Select Task</option>
+                              {row.sdlcStep && sdlcTasksMap[row.sdlcStep].map(task => (
+                                <option key={task} value={task}>{task}</option>
+                              ))}
+                            </Select>
+                          </td>
+                          <td>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={row.hours}
+                              onChange={(e) => handleRowChange(row.id, 'hours', e.target.value)}
+                              required
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="text"
+                              value={row.taskDetails}
+                              onChange={(e) => handleRowChange(row.id, 'taskDetails', e.target.value)}
+                              required
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="text"
+                              value={row.aiTool}
+                              onChange={(e) => handleRowChange(row.id, 'aiTool', e.target.value)}
+                              required
+                              placeholder="e.g., ChatGPT, GitHub Copilot"
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="text"
+                              value={row.aiProductivity}
+                              onChange={(e) => handleRowChange(row.id, 'aiProductivity', e.target.value)}
+                              required
+                              placeholder="Describe productivity gain"
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={row.hoursSaved}
+                              onChange={(e) => handleRowChange(row.id, 'hoursSaved', e.target.value)}
+                              required
+                            />
+                          </td>
+                          <td>
+                            {rows.length > 1 && (
+                              <DeleteButton onClick={() => removeRow(row.id)}>
+                                X
+                              </DeleteButton>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </TableDesktop>
+
+                  {/* Mobile Card View */}
+                  <TableMobile>
+                    {rows.map((row) => (
+                      <MobileCard key={row.id}>
+                        <MobileCardHeader>
+                          Record #{rows.indexOf(row) + 1}
+                        </MobileCardHeader>
+                        <MobileCardBody>
+                          <MobileCardField>
+                            <MobileFieldLabel>SDLC Step</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Select 
+                                value={row.sdlcStep}
+                                onChange={(e) => handleSDLCStepChange(row.id, e.target.value)}
+                                required
+                              >
+                                <option value="">Select Step</option>
+                                {sdlcSteps.map(step => (
+                                  <option key={step} value={step}>{step}</option>
+                                ))}
+                              </Select>
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>SDLC Task</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Select
+                                value={row.sdlcTask}
+                                onChange={(e) => handleRowChange(row.id, 'sdlcTask', e.target.value)}
+                                required
+                                disabled={!row.sdlcStep}
+                              >
+                                <option value="">Select Task</option>
+                                {row.sdlcStep && sdlcTasksMap[row.sdlcStep].map(task => (
+                                  <option key={task} value={task}>{task}</option>
+                                ))}
+                              </Select>
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>Hours</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={row.hours}
+                                onChange={(e) => handleRowChange(row.id, 'hours', e.target.value)}
+                                required
+                              />
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>Task Details</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Input
+                                type="text"
+                                value={row.taskDetails}
+                                onChange={(e) => handleRowChange(row.id, 'taskDetails', e.target.value)}
+                                required
+                              />
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Input
+                                type="text"
+                                value={row.aiTool}
+                                onChange={(e) => handleRowChange(row.id, 'aiTool', e.target.value)}
+                                required
+                                placeholder="e.g., ChatGPT, GitHub Copilot"
+                              />
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>AI Productivity</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Input
+                                type="text"
+                                value={row.aiProductivity}
+                                onChange={(e) => handleRowChange(row.id, 'aiProductivity', e.target.value)}
+                                required
+                                placeholder="Describe productivity gain"
+                              />
+                            </MobileFieldValue>
+                          </MobileCardField>
+                          
+                          <MobileCardField>
+                            <MobileFieldLabel>Hours Saved</MobileFieldLabel>
+                            <MobileFieldValue>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={row.hoursSaved}
+                                onChange={(e) => handleRowChange(row.id, 'hoursSaved', e.target.value)}
+                                required
+                              />
+                            </MobileFieldValue>
+                          </MobileCardField>
+                        </MobileCardBody>
+                        
+                        {rows.length > 1 && (
+                          <MobileActions>
+                            <DeleteButton onClick={() => removeRow(row.id)}>
+                              Remove
+                            </DeleteButton>
+                          </MobileActions>
+                        )}
+                      </MobileCard>
                     ))}
-                  </tbody>
-                </Table>
+                  </TableMobile>
+                </ResponsiveTable>
                 
                 <ButtonRow>
                   <ActionButton type="button" onClick={addRow}>

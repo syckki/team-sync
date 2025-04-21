@@ -163,12 +163,11 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       // Generate a new AES-GCM 128-bit key
       const key = await generateKey();
       
-      // Create data object with thread title and reply information if needed
+      // Create data object with reply information if needed
       const dataObj = {
         title: content.title,
         message: content.message,
-        timestamp: new Date().toISOString(),
-        threadTitle: content.threadTitle || null
+        timestamp: new Date().toISOString()
       };
       
       // Add reply metadata if this is a reply
@@ -205,8 +204,8 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         let uploadEndpoint = replyToId ? `/api/upload?threadId=${replyToId}` : '/api/upload';
         
         // Add thread title to the URL if this is a new thread (not a reply)
-        if (!replyToId && content.threadTitle) {
-          uploadEndpoint += `?threadTitle=${encodeURIComponent(content.threadTitle)}`;
+        if (!replyToId && content.title) {
+          uploadEndpoint += `?threadTitle=${encodeURIComponent(content.title)}`;
         }
         
         const response = await fetch(uploadEndpoint, {
@@ -257,7 +256,6 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         const metadata = {
           authorId,
           title: content.title,
-          threadTitle: content.threadTitle || null,
           timestamp: new Date().toISOString()
         };
         

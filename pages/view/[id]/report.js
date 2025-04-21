@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import Link from 'next/link';
@@ -45,6 +45,73 @@ const Input = styled.input`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
+  }
+  
+  &:read-only {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+`;
+
+const ComboBoxContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const ComboBoxInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  font-size: 1rem;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const ComboBoxDropdown = styled.ul`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background-color: white;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const ComboBoxOption = styled.li`
+  padding: 0.75rem;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+  
+  ${props => props.$isSelected && `
+    background-color: ${props.theme.colors.backgroundAlt};
+    font-weight: 600;
+  `}
+`;
+
+const ComboBoxCreateOption = styled.li`
+  padding: 0.75rem;
+  cursor: pointer;
+  border-top: 1px dashed ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 600;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
 `;
 
@@ -284,6 +351,123 @@ const sdlcTasksMap = {
   ]
 };
 
+// Creatable ComboBox Component
+const CreatableComboBox = ({ value, onChange, options = [], placeholder }) => {
+  const [inputValue, setInputValue] = useState(value || '');
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const inputRef = useRef(null);
+  
+  // Update filtered options when input changes
+  useEffect(() => {
+    if (inputValue.trim() === '') {
+      setFilteredOptions(options);
+    } else {
+      const filtered = options.filter(option => 
+        option.toLowerCase().includes(inputValue.toLowerCase())
+      );
+      setFilteredOptions(filtered);
+    }
+  }, [inputValue, options]);
+  
+  // Handle input change
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  };
+  
+  // Handle option select
+  const handleOptionSelect = (option) => {
+    setInputValue(option);
+    onChange(option);
+    setIsOpen(false);
+  };
+  
+  // Handle create option
+  const handleCreateOption = () => {
+    onChange(inputValue);
+    setIsOpen(false);
+    
+    // Add to local storage if it's a new option
+    if (!options.includes(inputValue) && inputValue.trim() !== '') {
+      const updatedOptions = [...options, inputValue];
+      localStorage.setItem('teamMemberOptions', JSON.stringify(updatedOptions));
+    }
+  };
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (inputRef.current && !inputRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  // Handle key navigation
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isOpen) {
+        handleCreateOption();
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (!isOpen) {
+        setIsOpen(true);
+      }
+    }
+  };
+  
+  return (
+    <ComboBoxContainer ref={inputRef}>
+      <ComboBoxInput
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      
+      {isOpen && (
+        <ComboBoxDropdown>
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option, index) => (
+              <ComboBoxOption
+                key={index}
+                onClick={() => handleOptionSelect(option)}
+                $isSelected={option === inputValue}
+              >
+                {option}
+              </ComboBoxOption>
+            ))
+          ) : (
+            <ComboBoxCreateOption onClick={handleCreateOption}>
+              Create "{inputValue}"
+            </ComboBoxCreateOption>
+          )}
+          
+          {filteredOptions.length > 0 && !filteredOptions.includes(inputValue) && inputValue.trim() !== '' && (
+            <ComboBoxCreateOption onClick={handleCreateOption}>
+              Create "{inputValue}"
+            </ComboBoxCreateOption>
+          )}
+        </ComboBoxDropdown>
+      )}
+    </ComboBoxContainer>
+  );
+};
+
 const ReportPage = () => {
   const router = useRouter();
   const { id, view } = router.query;
@@ -293,6 +477,7 @@ const ReportPage = () => {
   const [threadTitle, setThreadTitle] = useState('');
   const [teamName, setTeamName] = useState('');
   const [teamMember, setTeamMember] = useState('');
+  const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [teamRole, setTeamRole] = useState('');
   const [rows, setRows] = useState([{
     id: Date.now(),
@@ -325,6 +510,17 @@ const ReportPage = () => {
       }
       
       setKey(fragment);
+      
+      // Load team member options from localStorage if available
+      try {
+        const savedOptions = localStorage.getItem('teamMemberOptions');
+        if (savedOptions) {
+          setTeamMemberOptions(JSON.parse(savedOptions));
+        }
+      } catch (localStorageErr) {
+        console.error('Error loading team member options:', localStorageErr);
+        // Non-critical error, continue without saved options
+      }
       
       // If in view mode, fetch the reports
       if (isViewMode) {
@@ -654,20 +850,18 @@ const ReportPage = () => {
                     type="text"
                     id="teamName"
                     value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
+                    readOnly
                     required
                   />
                 </FormGroup>
                 
                 <FormGroup>
                   <Label htmlFor="teamMember">Team Member Name</Label>
-                  <Input
-                    type="text"
-                    id="teamMember"
+                  <CreatableComboBox 
                     value={teamMember}
-                    onChange={(e) => setTeamMember(e.target.value)}
-                    required
-                    placeholder="Your name"
+                    onChange={setTeamMember}
+                    options={teamMemberOptions}
+                    placeholder="Enter your name or select from previous entries"
                   />
                 </FormGroup>
                 

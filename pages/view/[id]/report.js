@@ -6,9 +6,15 @@ import Link from 'next/link';
 import { importKeyFromBase64, encryptData, decryptData } from '../../../lib/cryptoUtils';
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `;
 
 const PageTitle = styled.h1`
@@ -22,10 +28,29 @@ const ReportForm = styled.form`
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
 `;
 
 const FormGroup = styled.div`
   margin-bottom: 1.5rem;
+`;
+
+const TeamFormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    
+    & > div {
+      flex: 1;
+    }
+  }
 `;
 
 const Label = styled.label`
@@ -195,6 +220,17 @@ const Table = styled.table`
   tr:nth-child(even) {
     background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
+  
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    th, td {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
 `;
 
 const Select = styled.select`
@@ -214,6 +250,11 @@ const ButtonRow = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 const ActionButton = styled.button`
@@ -266,6 +307,11 @@ const ReportHeader = styled.div`
   margin-bottom: 1rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   padding-bottom: 0.5rem;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 const ReportTitle = styled.h3`
@@ -844,38 +890,40 @@ const ReportPage = () => {
             {!success && (
               <ReportForm onSubmit={handleSubmit}>
                 <h3>Team Information</h3>
-                <FormGroup>
-                  <Label htmlFor="teamName">Team Name</Label>
-                  <Input
-                    type="text"
-                    id="teamName"
-                    value={teamName}
-                    readOnly
-                    required
-                  />
-                </FormGroup>
-                
-                <FormGroup>
-                  <Label htmlFor="teamMember">Team Member Name</Label>
-                  <CreatableComboBox 
-                    value={teamMember}
-                    onChange={setTeamMember}
-                    options={teamMemberOptions}
-                    placeholder="Enter your name or select from previous entries"
-                  />
-                </FormGroup>
-                
-                <FormGroup>
-                  <Label htmlFor="teamRole">Role on the Team</Label>
-                  <Input
-                    type="text"
-                    id="teamRole"
-                    value={teamRole}
-                    onChange={(e) => setTeamRole(e.target.value)}
-                    required
-                    placeholder="Your role (e.g., Developer, Designer, Project Manager)"
-                  />
-                </FormGroup>
+                <TeamFormSection>
+                  <FormGroup>
+                    <Label htmlFor="teamName">Team Name</Label>
+                    <Input
+                      type="text"
+                      id="teamName"
+                      value={teamName}
+                      readOnly
+                      required
+                    />
+                  </FormGroup>
+                  
+                  <FormGroup>
+                    <Label htmlFor="teamMember">Team Member Name</Label>
+                    <CreatableComboBox 
+                      value={teamMember}
+                      onChange={setTeamMember}
+                      options={teamMemberOptions}
+                      placeholder="Enter your name or select from previous entries"
+                    />
+                  </FormGroup>
+                  
+                  <FormGroup>
+                    <Label htmlFor="teamRole">Role on the Team</Label>
+                    <Input
+                      type="text"
+                      id="teamRole"
+                      value={teamRole}
+                      onChange={(e) => setTeamRole(e.target.value)}
+                      required
+                      placeholder="Your role (e.g., Developer, Designer, Project Manager)"
+                    />
+                  </FormGroup>
+                </TeamFormSection>
                 
                 <h3>AI Productivity Details</h3>
                 <Table>

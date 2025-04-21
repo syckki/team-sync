@@ -1,8 +1,9 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import Link from 'next/link';
+import { importKeyFromBase64, encryptData, decryptData } from '../../../lib/cryptoUtils';
 
 const Container = styled.div`
   max-width: 800px;
@@ -107,26 +108,359 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
+// Styled components for the table
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  
+  th, td {
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    padding: 0.75rem;
+    text-align: left;
+  }
+  
+  th {
+    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    font-weight: 600;
+  }
+  
+  tr:nth-child(even) {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  font-size: 1rem;
+  
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: ${props => props.primary ? '#4caf50' : '#2196f3'};
+  color: white;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+  
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const ReportList = styled.div`
+  margin-top: 2rem;
+`;
+
+const ReportCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.card};
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const ReportHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  padding-bottom: 0.5rem;
+`;
+
+const ReportTitle = styled.h3`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const ReportDate = styled.span`
+  color: ${({ theme }) => theme.colors.textLight};
+  font-size: 0.9rem;
+`;
+
+const ReportContent = styled.div`
+  margin-top: 1rem;
+`;
+
+const TeamInfo = styled.div`
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  
+  p {
+    margin: 0.5rem 0;
+  }
+`;
+
+const TeamInfoLabel = styled.span`
+  font-weight: 600;
+  margin-right: 0.5rem;
+`;
+
+const sdlcSteps = [
+  "Requirements",
+  "Design",
+  "Implementation",
+  "Testing",
+  "Deployment",
+  "Maintenance"
+];
+
+const sdlcTasksMap = {
+  "Requirements": [
+    "Requirement Gathering",
+    "User Story Creation",
+    "Feasibility Analysis",
+    "Requirement Documentation",
+    "Stakeholder Interviews"
+  ],
+  "Design": [
+    "Architecture Design",
+    "Database Design",
+    "UI/UX Design",
+    "API Design",
+    "System Modeling"
+  ],
+  "Implementation": [
+    "Frontend Development",
+    "Backend Development",
+    "Database Implementation",
+    "API Development",
+    "Integration"
+  ],
+  "Testing": [
+    "Unit Testing",
+    "Integration Testing",
+    "System Testing",
+    "Performance Testing",
+    "User Acceptance Testing"
+  ],
+  "Deployment": [
+    "Deployment Planning",
+    "Environment Setup",
+    "Data Migration",
+    "Release Management",
+    "Deployment Execution"
+  ],
+  "Maintenance": [
+    "Bug Fixing",
+    "Feature Enhancement",
+    "Performance Optimization",
+    "Security Updates",
+    "Documentation Updates"
+  ]
+};
+
 const ReportPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, view } = router.query;
+  const isViewMode = view === 'true';
   
-  const [formData, setFormData] = useState({
-    reason: '',
-    description: '',
-    email: ''
-  });
+  const [key, setKey] = useState(null);
+  const [threadTitle, setThreadTitle] = useState('');
+  const [teamName, setTeamName] = useState('');
+  const [teamMember, setTeamMember] = useState('');
+  const [teamRole, setTeamRole] = useState('');
+  const [rows, setRows] = useState([{
+    id: Date.now(),
+    sdlcStep: '',
+    sdlcTask: '',
+    hours: '',
+    taskDetails: '',
+    aiTool: '',
+    aiProductivity: '',
+    hoursSaved: ''
+  }]);
   
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Extract the key from URL fragment on mount
+  useEffect(() => {
+    if (!router.isReady) return;
+    
+    try {
+      // Extract key from URL fragment (#)
+      const fragment = window.location.hash.slice(1);
+      
+      if (!fragment) {
+        setError('No encryption key found. Please return to the thread and use the link provided there.');
+        return;
+      }
+      
+      setKey(fragment);
+      
+      // If in view mode, fetch the reports
+      if (isViewMode) {
+        fetchReports(fragment);
+      }
+    } catch (err) {
+      console.error('Error parsing key:', err);
+      setError('Could not retrieve encryption key from URL.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router.isReady, isViewMode, id]);
+  
+  // Fetch thread title when key is available
+  useEffect(() => {
+    if (key && id) {
+      const authorId = localStorage.getItem('encrypted-app-author-id');
+      if (authorId) {
+        fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
+          .then(response => response.json())
+          .then(data => {
+            setThreadTitle(data.threadTitle || id);
+            setTeamName(data.threadTitle || id);
+          })
+          .catch(err => {
+            console.error('Error fetching thread data:', err);
+          });
+      }
+    }
+  }, [key, id]);
+  
+  const fetchReports = async (keyValue) => {
+    try {
+      setIsLoading(true);
+      
+      // Get author ID from localStorage
+      const authorId = localStorage.getItem('encrypted-app-author-id');
+      if (!authorId) {
+        throw new Error('Author ID not found. Please go back to the thread view.');
+      }
+      
+      // Fetch all messages from the thread
+      const response = await fetch(`/api/download?threadId=${id}&authorId=${authorId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch thread data');
+      }
+      
+      const threadData = await response.json();
+      
+      // Import the key from fragment
+      const cryptoKey = await importKeyFromBase64(keyValue);
+      
+      // Filter and decrypt reports
+      const decryptedReports = [];
+      
+      for (const message of threadData.messages) {
+        // Check if this message is marked as a report in metadata
+        if (message.metadata && message.metadata.isReport) {
+          try {
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), c => c.charCodeAt(0));
+            
+            // Extract IV and ciphertext
+            const iv = encryptedBytes.slice(0, 12);
+            const ciphertext = encryptedBytes.slice(12);
+            
+            // Decrypt the data
+            const decrypted = await decryptData(ciphertext, cryptoKey, iv);
+            
+            // Parse the decrypted JSON
+            const content = JSON.parse(new TextDecoder().decode(decrypted));
+            
+            decryptedReports.push({
+              id: message.index,
+              timestamp: message.metadata.timestamp || new Date().toISOString(),
+              authorId: message.metadata.authorId,
+              isCurrentUser: message.metadata.authorId === authorId,
+              ...content
+            });
+          } catch (err) {
+            console.error('Error decrypting report:', err);
+          }
+        }
+      }
+      
+      // Sort reports by timestamp, newest first
+      decryptedReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      setReports(decryptedReports);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      setError(`Failed to load reports: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleSDLCStepChange = (id, value) => {
+    setRows(prevRows => 
+      prevRows.map(row => 
+        row.id === id 
+          ? { ...row, sdlcStep: value, sdlcTask: '' } // Reset task when step changes
+          : row
+      )
+    );
+  };
+  
+  const handleRowChange = (id, field, value) => {
+    setRows(prevRows => 
+      prevRows.map(row => 
+        row.id === id 
+          ? { ...row, [field]: value }
+          : row
+      )
+    );
+  };
+  
+  const addRow = () => {
+    setRows(prevRows => [
+      ...prevRows, 
+      {
+        id: Date.now(),
+        sdlcStep: '',
+        sdlcTask: '',
+        hours: '',
+        taskDetails: '',
+        aiTool: '',
+        aiProductivity: '',
+        hoursSaved: ''
+      }
+    ]);
+  };
+  
+  const removeRow = (id) => {
+    setRows(prevRows => prevRows.filter(row => row.id !== id));
   };
   
   const handleSubmit = async (e) => {
@@ -135,95 +469,336 @@ const ReportPage = () => {
     setError(null);
     
     try {
-      // In a production environment, this would submit to an API endpoint
-      // Mock success response for demonstration
-      console.log(`Reporting thread ${id} with reason: ${formData.reason}`);
+      if (!key) {
+        throw new Error('Encryption key not found');
+      }
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!teamName.trim() || !teamMember.trim() || !teamRole.trim()) {
+        throw new Error('Please fill in all team information fields');
+      }
+      
+      // Validate rows
+      for (const row of rows) {
+        if (!row.sdlcStep || !row.sdlcTask || !row.hours || !row.taskDetails || 
+            !row.aiTool || !row.aiProductivity || !row.hoursSaved) {
+          throw new Error('Please fill in all fields for each productivity entry');
+        }
+      }
+      
+      // Get author ID from localStorage
+      const authorId = localStorage.getItem('encrypted-app-author-id') || 
+        `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+      
+      // Ensure author ID is saved
+      localStorage.setItem('encrypted-app-author-id', authorId);
+      
+      // Create report data object
+      const reportData = {
+        type: 'aiProductivityReport',
+        teamName,
+        teamMember,
+        teamRole,
+        entries: rows,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Convert to JSON
+      const jsonData = JSON.stringify(reportData);
+      
+      // Import the key
+      const cryptoKey = await importKeyFromBase64(key);
+      
+      // Encrypt the report data
+      const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
+      
+      // Combine IV and ciphertext
+      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+      combinedData.set(iv, 0);
+      combinedData.set(new Uint8Array(ciphertext), iv.length);
+      
+      // Submit the encrypted report
+      const response = await fetch(`/api/reports?threadId=${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'X-Author-ID': authorId
+        },
+        body: combinedData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit AI productivity report');
+      }
       
       setSuccess(true);
       
-      // Clear form
-      setFormData({
-        reason: '',
-        description: '',
-        email: ''
-      });
+      // Reset form after successful submission
+      setRows([{
+        id: Date.now(),
+        sdlcStep: '',
+        sdlcTask: '',
+        hours: '',
+        taskDetails: '',
+        aiTool: '',
+        aiProductivity: '',
+        hoursSaved: ''
+      }]);
       
     } catch (err) {
       console.error('Error submitting report:', err);
-      setError('Failed to submit report. Please try again.');
+      setError(`Failed to submit report: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
   
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+  
+  if (isLoading) {
+    return (
+      <Container>
+        <p>Loading...</p>
+      </Container>
+    );
+  }
+  
   return (
     <>
       <Head>
-        <title>Report Encrypted Content</title>
-        <meta name="description" content="Report problematic encrypted content" />
+        <title>{isViewMode ? 'View AI Productivity Reports' : 'Submit AI Productivity Report'}</title>
+        <meta name="description" content="AI Productivity Reporting for Secure Teams" />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       
       <Container>
-        <PageTitle>Report Content</PageTitle>
+        <PageTitle>
+          {isViewMode 
+            ? 'AI Productivity Reports' 
+            : 'Submit AI Productivity Report'}
+        </PageTitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && (
           <SuccessMessage>
-            Your report has been submitted successfully. Thank you for helping keep our platform safe.
+            Your AI productivity report has been submitted successfully!
           </SuccessMessage>
         )}
         
-        {!success ? (
-          <ReportForm onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label htmlFor="reason">Reason for report</Label>
-              <Input
-                type="text"
-                id="reason"
-                name="reason"
-                value={formData.reason}
-                onChange={handleChange}
-                required
-                placeholder="E.g., Inappropriate content, spam, etc."
-              />
-            </FormGroup>
+        {isViewMode ? (
+          // Reports viewing mode
+          <>
+            <h3>Team Reports for: {threadTitle}</h3>
             
-            <FormGroup>
-              <Label htmlFor="description">Detailed description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                placeholder="Please provide details about the issue with this content"
-              />
-            </FormGroup>
-            
-            <FormGroup>
-              <Label htmlFor="email">Your email (optional)</Label>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="For follow-up communication if needed"
-              />
-            </FormGroup>
-            
-            <SubmitButton type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
-            </SubmitButton>
-          </ReportForm>
-        ) : null}
+            {reports.length === 0 ? (
+              <p>No productivity reports have been submitted yet.</p>
+            ) : (
+              <ReportList>
+                {reports.map((report, index) => (
+                  <ReportCard key={index}>
+                    <ReportHeader>
+                      <ReportTitle>Report from {report.teamMember} ({report.teamRole})</ReportTitle>
+                      <ReportDate>{formatDate(report.timestamp)}</ReportDate>
+                    </ReportHeader>
+                    
+                    <TeamInfo>
+                      <p><TeamInfoLabel>Team:</TeamInfoLabel> {report.teamName}</p>
+                      <p><TeamInfoLabel>Member:</TeamInfoLabel> {report.teamMember}</p>
+                      <p><TeamInfoLabel>Role:</TeamInfoLabel> {report.teamRole}</p>
+                    </TeamInfo>
+                    
+                    <ReportContent>
+                      <Table>
+                        <thead>
+                          <tr>
+                            <th>SDLC Step</th>
+                            <th>SDLC Task</th>
+                            <th>Hours</th>
+                            <th>Task Details</th>
+                            <th>AI Tool</th>
+                            <th>AI Productivity</th>
+                            <th>Hours Saved</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.entries.map((entry, i) => (
+                            <tr key={i}>
+                              <td>{entry.sdlcStep}</td>
+                              <td>{entry.sdlcTask}</td>
+                              <td>{entry.hours}</td>
+                              <td>{entry.taskDetails}</td>
+                              <td>{entry.aiTool}</td>
+                              <td>{entry.aiProductivity}</td>
+                              <td>{entry.hoursSaved}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </ReportContent>
+                  </ReportCard>
+                ))}
+              </ReportList>
+            )}
+          </>
+        ) : (
+          // Report submission form
+          <>
+            {!success && (
+              <ReportForm onSubmit={handleSubmit}>
+                <h3>Team Information</h3>
+                <FormGroup>
+                  <Label htmlFor="teamName">Team Name</Label>
+                  <Input
+                    type="text"
+                    id="teamName"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    required
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label htmlFor="teamMember">Team Member Name</Label>
+                  <Input
+                    type="text"
+                    id="teamMember"
+                    value={teamMember}
+                    onChange={(e) => setTeamMember(e.target.value)}
+                    required
+                    placeholder="Your name"
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label htmlFor="teamRole">Role on the Team</Label>
+                  <Input
+                    type="text"
+                    id="teamRole"
+                    value={teamRole}
+                    onChange={(e) => setTeamRole(e.target.value)}
+                    required
+                    placeholder="Your role (e.g., Developer, Designer, Project Manager)"
+                  />
+                </FormGroup>
+                
+                <h3>AI Productivity Details</h3>
+                <Table>
+                  <thead>
+                    <tr>
+                      <th>SDLC Step</th>
+                      <th>SDLC Task</th>
+                      <th>Hours</th>
+                      <th>Task Details</th>
+                      <th>AI Tool Used</th>
+                      <th>AI Productivity</th>
+                      <th>Hours Saved</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <tr key={row.id}>
+                        <td>
+                          <Select 
+                            value={row.sdlcStep}
+                            onChange={(e) => handleSDLCStepChange(row.id, e.target.value)}
+                            required
+                          >
+                            <option value="">Select Step</option>
+                            {sdlcSteps.map(step => (
+                              <option key={step} value={step}>{step}</option>
+                            ))}
+                          </Select>
+                        </td>
+                        <td>
+                          <Select
+                            value={row.sdlcTask}
+                            onChange={(e) => handleRowChange(row.id, 'sdlcTask', e.target.value)}
+                            required
+                            disabled={!row.sdlcStep}
+                          >
+                            <option value="">Select Task</option>
+                            {row.sdlcStep && sdlcTasksMap[row.sdlcStep].map(task => (
+                              <option key={task} value={task}>{task}</option>
+                            ))}
+                          </Select>
+                        </td>
+                        <td>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={row.hours}
+                            onChange={(e) => handleRowChange(row.id, 'hours', e.target.value)}
+                            required
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={row.taskDetails}
+                            onChange={(e) => handleRowChange(row.id, 'taskDetails', e.target.value)}
+                            required
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={row.aiTool}
+                            onChange={(e) => handleRowChange(row.id, 'aiTool', e.target.value)}
+                            required
+                            placeholder="e.g., ChatGPT, GitHub Copilot"
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={row.aiProductivity}
+                            onChange={(e) => handleRowChange(row.id, 'aiProductivity', e.target.value)}
+                            required
+                            placeholder="Describe productivity gain"
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={row.hoursSaved}
+                            onChange={(e) => handleRowChange(row.id, 'hoursSaved', e.target.value)}
+                            required
+                          />
+                        </td>
+                        <td>
+                          {rows.length > 1 && (
+                            <DeleteButton onClick={() => removeRow(row.id)}>
+                              X
+                            </DeleteButton>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                
+                <ButtonRow>
+                  <ActionButton type="button" onClick={addRow}>
+                    + Add Row
+                  </ActionButton>
+                  
+                  <SubmitButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit AI Productivity Report'}
+                  </SubmitButton>
+                </ButtonRow>
+              </ReportForm>
+            )}
+          </>
+        )}
         
         <Link href={`/view/${id}`} passHref>
-          <BackLink>← Back to encrypted content</BackLink>
+          <BackLink>← Back to encrypted thread</BackLink>
         </Link>
       </Container>
     </>

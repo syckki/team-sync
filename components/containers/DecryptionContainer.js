@@ -514,6 +514,12 @@ const DecryptionContainer = ({ id, key64 }) => {
             >
               My Messages
             </ViewButton>
+            <ViewButton
+              onClick={() => window.location.href = `/view/${id}/report?view=true#${key64}`}
+              style={{ backgroundColor: '#4caf50', color: 'white' }}
+            >
+              View Reports
+            </ViewButton>
           </ViewControls>
         )}
         
@@ -556,9 +562,18 @@ const DecryptionContainer = ({ id, key64 }) => {
       <AddMessageForm>
         <ThreadTitle>Add to this conversation</ThreadTitle>
         
-        <ToggleButton onClick={toggleAddForm}>
-          {showAddForm ? 'Hide Form' : 'Add New Message'}
-        </ToggleButton>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <ToggleButton onClick={toggleAddForm}>
+            {showAddForm ? 'Hide Form' : 'Add New Message'}
+          </ToggleButton>
+          
+          <ToggleButton 
+            onClick={() => window.location.href = `/view/${id}/report#${key64}`}
+            style={{ backgroundColor: '#4caf50' }}
+          >
+            Submit AI Productivity Report
+          </ToggleButton>
+        </div>
         
         {showAddForm && (
           <EncryptForm 

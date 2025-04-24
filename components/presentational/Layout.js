@@ -23,8 +23,7 @@ const Layout = ({ children }) => {
       <Header />
       <Main>{children}</Main>
       <Footer>
-        <p>&copy; {new Date().getFullYear()} SecureShare - End-to-End Encrypted Messaging</p>
-        <p>All encryption happens in your browser. Your data remains private.</p>
+        <p>&copy; {new Date().getFullYear()} AI Productivity Tracker. All encryption happens in your browser. Your data remains private.</p>
       </Footer>
     </>
   );

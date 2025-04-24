@@ -50,18 +50,6 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const ExternalLink = styled.a`
-  margin-left: 1.5rem;
-  color: ${({ theme }) => theme.colors.text};
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-  
-  &:hover {
-    color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
 const Header = () => {
   return (
     <HeaderContainer>
@@ -74,13 +62,13 @@ const Header = () => {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </LockIcon>
-            SecureShare
+            AI Productivity Tracker
           </LogoLink>
         </Logo>
         
         <Nav>
           <StyledLink href="/">
-            Encrypt New
+            Thread New
           </StyledLink>
           <StyledLink href="/about">
             About

@@ -44,7 +44,7 @@ const TeamFormSection = styled.div`
   gap: 1.5rem;
   margin-bottom: 2rem;
   
-  @media (min-width: 768px) {
+  @media (min-width: 992px) {
     flex-direction: row;
     
     & > div {
@@ -226,7 +226,7 @@ const TableDesktop = styled.table`
     background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     display: none;
   }
 `;
@@ -234,7 +234,7 @@ const TableDesktop = styled.table`
 const TableMobile = styled.div`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     display: block;
   }
 `;
@@ -313,7 +313,7 @@ const Table = styled.table`
     background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     display: none;
   }
 `;

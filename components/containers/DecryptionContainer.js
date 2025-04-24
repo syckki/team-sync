@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { importKeyFromBase64, decryptData, encryptData } from '../../lib/cryptoUtils';
 import { queueMessage } from '../../lib/dbService';
 import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
-import DecryptDisplay from '../presentational/DecryptDisplay';
 import styled from 'styled-components';
 import EncryptForm from '../presentational/EncryptForm';
 
@@ -19,45 +18,6 @@ const LoadingContainer = styled.div`
   padding: 2rem;
   text-align: center;
   color: ${({ theme }) => theme.colors.text};
-`;
-
-const RelatedMessagesContainer = styled.div`
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: 8px;
-`;
-
-const RelatedMessageTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-`;
-
-const MessageCard = styled.div`
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: ${({ theme }) => theme.colors.card};
-  border-radius: 4px;
-  border-left: 3px solid ${({ theme }) => theme.colors.secondary};
-`;
-
-const MessageLink = styled.a`
-  color: ${({ theme }) => theme.colors.primary};
-  text-decoration: none;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.5rem;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const MessageTime = styled.div`
-  font-size: 0.8rem;
-  color: ${({ theme }) => theme.colors.textLight};
-  margin-top: 0.5rem;
 `;
 
 const formatDate = (dateString) => {

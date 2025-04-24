@@ -282,14 +282,36 @@ const DecryptionContainer = ({ id, key64 }) => {
             // Add this message's author
             const messageAuthorId = message.metadata?.authorId || content.authorId || null;
             
-            decryptedMessages.push({
-              index: message.index,
-              authorId: messageAuthorId,
-              isCreator: message.metadata?.isThreadCreator || false,
-              isCurrentUser: messageAuthorId === userAuthorId,
-              ...content,
-              timestamp: content.timestamp || message.metadata?.timestamp
-            });
+            // Check if this is a productivity report
+            const isReport = message.metadata?.isReport || content.type === 'aiProductivityReport';
+            
+            // Process productivity reports differently to display nicely in thread view
+            if (isReport && content.type === 'aiProductivityReport') {
+              // Get the tool name from the first entry or use a default
+              const firstTool = content.entries && content.entries.length > 0 ? 
+                content.entries[0].aiTool : 'AI Tool';
+                
+              decryptedMessages.push({
+                index: message.index,
+                authorId: messageAuthorId,
+                isCreator: message.metadata?.isThreadCreator || false,
+                isCurrentUser: messageAuthorId === userAuthorId,
+                isReport: true,
+                title: `Report from ${content.teamMember} (${content.teamRole})`,
+                message: firstTool, // Show the AI tool used
+                timestamp: content.timestamp || message.metadata?.timestamp
+              });
+            } else {
+              // Regular message processing
+              decryptedMessages.push({
+                index: message.index,
+                authorId: messageAuthorId,
+                isCreator: message.metadata?.isThreadCreator || false,
+                isCurrentUser: messageAuthorId === userAuthorId,
+                ...content,
+                timestamp: content.timestamp || message.metadata?.timestamp
+              });
+            }
           } catch (decryptError) {
             console.error(`Error decrypting message ${message.index}:`, decryptError);
           }

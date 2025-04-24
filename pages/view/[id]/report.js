@@ -930,12 +930,6 @@ const ReportPage = () => {
                       <ReportDate>{formatDate(report.timestamp)}</ReportDate>
                     </ReportHeader>
                     
-                    <TeamInfo>
-                      <p><TeamInfoLabel>Team:</TeamInfoLabel> {report.teamName}</p>
-                      <p><TeamInfoLabel>Member:</TeamInfoLabel> {report.teamMember}</p>
-                      <p><TeamInfoLabel>Role:</TeamInfoLabel> {report.teamRole}</p>
-                    </TeamInfo>
-                    
                     <ReportContent>
                       <ResponsiveTable>
                         {/* Desktop Table View */}

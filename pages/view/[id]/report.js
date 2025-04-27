@@ -126,7 +126,7 @@ const ComboBoxDropdown = styled.ul`
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-top: none;
   border-radius: 0 0 4px 4px;
   background-color: white;
@@ -141,11 +141,11 @@ const ComboBoxOption = styled.li`
   cursor: pointer;
   
   &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
+    background-color: #f1f5f9;
   }
   
   ${props => props.$isSelected && `
-    background-color: ${props.theme.colors.backgroundAlt};
+    background-color: #f8fafc;
     font-weight: 600;
   `}
 `;
@@ -153,26 +153,28 @@ const ComboBoxOption = styled.li`
 const ComboBoxCreateOption = styled.li`
   padding: 0.75rem;
   cursor: pointer;
-  border-top: 1px dashed ${({ theme }) => theme.colors.border};
-  color: ${({ theme }) => theme.colors.primary};
+  border-top: 1px dashed #e2e8f0;
+  color: #4e7fff;
   font-weight: 600;
   
   &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
+    background-color: #f1f5f9;
   }
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-size: 1rem;
   min-height: 150px;
+  background-color: #f8f9fa;
   
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #4e7fff;
+    background-color: #fff;
   }
 `;
 
@@ -197,11 +199,12 @@ const SubmitButton = styled.button`
   }
 `;
 
-const BackLink = styled.a`
+const BackLinkText = styled.span`
   display: inline-block;
   margin-top: 1rem;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #4e7fff;
   text-decoration: none;
+  cursor: pointer;
   
   &:hover {
     text-decoration: underline;
@@ -209,17 +212,19 @@ const BackLink = styled.a`
 `;
 
 const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors.error};
+  color: #e53e3e;
   padding: 0.75rem;
-  background-color: ${({ theme }) => theme.colors.errorBg};
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
   border-radius: 4px;
   margin-bottom: 1rem;
 `;
 
 const SuccessMessage = styled.div`
-  color: ${({ theme }) => theme.colors.success};
+  color: #38a169;
   padding: 0.75rem;
-  background-color: ${({ theme }) => theme.colors.successBg};
+  background-color: #f0fff4;
+  border: 1px solid #c6f6d5;
   border-radius: 4px;
   margin-bottom: 1rem;
 `;
@@ -267,18 +272,20 @@ const TableMobile = styled.div`
 `;
 
 const MobileCard = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-bottom: 1rem;
-  background-color: ${({ theme }) => theme.colors.card};
+  background-color: #fff;
   overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 `;
 
 const MobileCardHeader = styled.div`
-  background-color: ${({ theme }) => theme.colors.backgroundAlt};
+  background-color: #f8fafc;
   padding: 0.75rem;
   font-weight: 600;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  color: #333;
+  border-bottom: 1px solid #e2e8f0;
 `;
 
 const MobileCardBody = styled.div`
@@ -289,32 +296,32 @@ const MobileCardField = styled.div`
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid #e2e8f0;
   
   &:last-child {
     border-bottom: none;
   }
   
   &:nth-child(even) {
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
+    background-color: #f8f9fa;
   }
 `;
 
 const MobileFieldLabel = styled.span`
   font-weight: 600;
   margin-bottom: 0.25rem;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 0.9rem;
+  color: #444;
+  font-size: 0.85rem;
 `;
 
 const MobileFieldValue = styled.span`
-  color: ${({ theme }) => theme.colors.text};
+  color: #333;
 `;
 
 const MobileActions = styled.div`
   padding: 0.75rem;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8f9fa;
   display: flex;
   justify-content: flex-end;
 `;
@@ -412,18 +419,19 @@ const ReportList = styled.div`
 `;
 
 const ReportCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.card};
+  background-color: #fff;
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
 `;
 
 const ReportHeader = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 0.5rem;
   
   @media (max-width: 480px) {
@@ -434,31 +442,35 @@ const ReportHeader = styled.div`
 
 const ReportTitle = styled.h3`
   margin: 0;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #4e7fff;
+  font-size: 1.2rem;
 `;
 
 const ReportDate = styled.span`
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #718096;
   font-size: 0.9rem;
 `;
 
 const ReportContent = styled.div`
   margin-top: 1rem;
+  line-height: 1.5;
 `;
 
 const TeamInfo = styled.div`
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid #e2e8f0;
   
   p {
     margin: 0.5rem 0;
+    color: #2d3748;
   }
 `;
 
 const TeamInfoLabel = styled.span`
   font-weight: 600;
   margin-right: 0.5rem;
+  color: #4a5568;
 `;
 
 const sdlcSteps = [
@@ -1323,8 +1335,8 @@ const ReportPage = () => {
           </>
         )}
         
-        <Link href={`/view/${id}`} passHref>
-          <BackLink>← Back to encrypted thread</BackLink>
+        <Link href={`/view/${id}`} legacyBehavior passHref>
+          <BackLinkText>← Back to encrypted thread</BackLinkText>
         </Link>
         </ContentContainer>
       </Container>

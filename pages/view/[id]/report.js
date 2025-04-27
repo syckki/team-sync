@@ -934,13 +934,13 @@ const ReportPage = () => {
       </Head>
       
       <Container>
-        <PageTitle>
-          {isViewMode 
-            ? 'AI Productivity Reports' 
-            : 'Submit AI Productivity Report'}
-        </PageTitle>
+        <HeaderBanner>
+          <PageTitle>AI Productivity Report</PageTitle>
+          <PageSubtitle>Track and measure your productivity gains from using AI tools</PageSubtitle>
+        </HeaderBanner>
         
-        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <ContentContainer>
+          {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && (
           <SuccessMessage>
             Your AI productivity report has been submitted successfully!
@@ -1326,6 +1326,7 @@ const ReportPage = () => {
         <Link href={`/view/${id}`} passHref>
           <BackLink>← Back to encrypted thread</BackLink>
         </Link>
+        </ContentContainer>
       </Container>
     </>
   );

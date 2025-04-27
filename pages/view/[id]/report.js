@@ -8,30 +8,47 @@ import { importKeyFromBase64, encryptData, decryptData } from '../../../lib/cryp
 const Container = styled.div`
   max-width: 1240px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+`;
 
-  @media (max-width: 768px) {
-    padding: 0.75rem;
-  }
+const HeaderBanner = styled.div`
+  background-color: #4e7fff;
+  color: white;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
 `;
 
 const PageTitle = styled.h1`
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 1.5rem;
+  color: white;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+`;
+
+const PageSubtitle = styled.p`
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+  color: white;
+`;
+
+const ContentContainer = styled.div`
+  padding: 0 2rem 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 0 1rem 1.5rem;
+  }
 `;
 
 const ReportForm = styled.form`
-  background-color: ${({ theme }) => theme.colors.card};
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
-  
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-  }
 `;
 
 const FormGroup = styled.div`
@@ -57,23 +74,26 @@ const Label = styled.label`
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
+  color: #333;
+  font-size: 0.9rem;
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: #f8f9fa;
   
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #4e7fff;
+    background-color: #fff;
   }
   
   &:read-only {
-    background-color: #f8f9fa;
+    background-color: #f0f0f0;
     cursor: not-allowed;
   }
 `;
@@ -86,13 +106,15 @@ const ComboBoxContainer = styled.div`
 const ComboBoxInput = styled.input`
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: #f8f9fa;
   
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #4e7fff;
+    background-color: #fff;
   }
 `;
 
@@ -156,15 +178,17 @@ const Textarea = styled.textarea`
 
 const SubmitButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background-color: ${({ theme }) => theme.colors.primary};
+  background-color: #4e7fff;
   color: white;
   border: none;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
   
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
+    background-color: #3d6bf3;
   }
   
   &:disabled {
@@ -212,18 +236,21 @@ const TableDesktop = styled.table`
   margin-bottom: 1rem;
   
   th, td {
-    border: 1px solid ${({ theme }) => theme.colors.border};
+    border: 1px solid #e2e8f0;
     padding: 0.75rem;
     text-align: left;
   }
   
   th {
-    background-color: ${({ theme }) => theme.colors.backgroundAlt};
+    background-color: #f8fafc;
     font-weight: 600;
+    color: #333;
+    font-size: 0.85rem;
+    text-transform: uppercase;
   }
   
   tr:nth-child(even) {
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
+    background-color: #f8f9fa;
   }
   
   @media (max-width: 992px) {
@@ -321,20 +348,22 @@ const Table = styled.table`
 const Select = styled.select`
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: #f8f9fa;
   
   &:focus {
     outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #4e7fff;
+    background-color: #fff;
   }
 `;
 
 const ButtonRow = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+  justify-content: space-between;
+  margin-top: 1.5rem;
   
   @media (max-width: 480px) {
     flex-direction: column;
@@ -348,11 +377,12 @@ const ActionButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  background-color: ${props => props.primary ? '#4caf50' : '#2196f3'};
+  background-color: ${props => props.primary ? '#4e7fff' : '#2196f3'};
   color: white;
+  transition: background-color 0.2s;
   
   &:hover {
-    opacity: 0.9;
+    background-color: ${props => props.primary ? '#3d6bf3' : '#0b7dda'};
   }
   
   &:disabled {
@@ -366,11 +396,14 @@ const DeleteButton = styled.button`
   color: white;
   border: none;
   border-radius: 4px;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
-    opacity: 0.9;
+    background-color: #d32f2f;
   }
 `;
 

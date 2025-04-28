@@ -1773,7 +1773,7 @@ const ReportPage = () => {
                               <Input
                                 type="number"
                                 min="0"
-                                step="0.1"
+                                step="0.25"
                                 value={row.estimatedTimeWithoutAI}
                                 onChange={(e) =>
                                   handleRowChange(
@@ -1790,7 +1790,7 @@ const ReportPage = () => {
                               <Input
                                 type="number"
                                 min="0"
-                                step="0.1"
+                                step="0.25"
                                 value={row.actualTimeWithAI}
                                 onChange={(e) =>
                                   handleRowChange(
@@ -1805,10 +1805,14 @@ const ReportPage = () => {
                             </td>
                             <td>
                               <Input
-                                type="number"
-                                value={row.timeSaved}
+                                type="text"
+                                value={formatTimeDisplay(row.timeSaved)}
                                 readOnly
-                                style={{ backgroundColor: '#f1f5f9' }}
+                                style={{ 
+                                  backgroundColor: '#f1f5f9',
+                                  color: parseFloat(row.timeSaved) >= 0 ? '#16a34a' : '#dc2626',
+                                  fontWeight: '500'
+                                }}
                               />
                             </td>
 
@@ -2138,7 +2142,7 @@ const ReportPage = () => {
                                 <Input
                                   type="number"
                                   min="0"
-                                  step="0.1"
+                                  step="0.25"
                                   value={row.estimatedTimeWithoutAI}
                                   onChange={(e) =>
                                     handleRowChange(

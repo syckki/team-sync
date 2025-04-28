@@ -1650,7 +1650,7 @@ const ReportPage = () => {
                               />
                             </td>
                             <td>
-                              <TextArea
+                              <Textarea
                                 value={row.taskDetails}
                                 onChange={(e) =>
                                   handleRowChange(
@@ -1767,7 +1767,7 @@ const ReportPage = () => {
                               />
                             </td>
                             <td>
-                              <TextArea
+                              <Textarea
                                 value={row.notesHowAIHelped}
                                 onChange={(e) =>
                                   handleRowChange(
@@ -1944,7 +1944,7 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Task Details</MobileFieldLabel>
                               <MobileFieldValue>
-                                <TextArea
+                                <Textarea
                                   value={row.taskDetails}
                                   onChange={(e) =>
                                     handleRowChange(
@@ -2089,7 +2089,7 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Notes / How AI Helped</MobileFieldLabel>
                               <MobileFieldValue>
-                                <TextArea
+                                <Textarea
                                   value={row.notesHowAIHelped}
                                   onChange={(e) =>
                                     handleRowChange(

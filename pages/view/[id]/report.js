@@ -586,7 +586,8 @@ const sdlcTasksMap = {
 };
 
 // Creatable ComboBox Component
-const CreatableComboBox = ({ value, onChange, options = [], placeholder }) => {
+// CreatableComboBox component for single-select fields
+const CreatableComboBox = ({ value, onChange, options = [], placeholder, storageKey }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -627,7 +628,8 @@ const CreatableComboBox = ({ value, onChange, options = [], placeholder }) => {
     // Add to local storage if it's a new option
     if (!options.includes(inputValue) && inputValue.trim() !== "") {
       const updatedOptions = [...options, inputValue];
-      localStorage.setItem("teamMemberOptions", JSON.stringify(updatedOptions));
+      const key = storageKey || "teamMemberOptions";
+      localStorage.setItem(key, JSON.stringify(updatedOptions));
     }
   };
 
@@ -704,6 +706,223 @@ const CreatableComboBox = ({ value, onChange, options = [], placeholder }) => {
   );
 };
 
+// Styled components for the CreatableMultiSelect
+const MultiSelectContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const SelectedItemsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  min-height: 2.5rem;
+  border: 1px solid hsl(20 5.9% 90%);
+  border-radius: calc(0.5rem - 2px);
+  background-color: #f8f9fa;
+  align-items: center;
+  
+  &:focus-within {
+    outline: none;
+    border-color: #4e7fff;
+    background-color: #fff;
+  }
+`;
+
+const SelectedItem = styled.div`
+  display: flex;
+  align-items: center;
+  background-color: #e2e8f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+`;
+
+const RemoveItemButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    color: #ef4444;
+  }
+`;
+
+const MultiSelectInput = styled.input`
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  min-width: 120px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+`;
+
+// CreatableMultiSelect component for multi-select fields
+const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder, storageKey }) => {
+  const [inputValue, setInputValue] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Update filtered options when input changes
+  useEffect(() => {
+    if (inputValue.trim() === "") {
+      setFilteredOptions(options.filter(option => !value.includes(option)));
+    } else {
+      const filtered = options
+        .filter(option => !value.includes(option))
+        .filter(option => option.toLowerCase().includes(inputValue.toLowerCase()));
+      setFilteredOptions(filtered);
+    }
+  }, [inputValue, options, value]);
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  };
+
+  // Handle option select
+  const handleOptionSelect = (option) => {
+    const newValue = [...value, option];
+    onChange(newValue);
+    setInputValue("");
+    
+    // Add to local storage if it's a new option
+    if (!options.includes(option) && option.trim() !== "") {
+      const updatedOptions = [...options, option];
+      const key = storageKey || "aiToolOptions";
+      localStorage.setItem(key, JSON.stringify(updatedOptions));
+    }
+    
+    // Keep focus on input
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  // Handle create option
+  const handleCreateOption = () => {
+    if (inputValue.trim() !== "" && !value.includes(inputValue)) {
+      handleOptionSelect(inputValue);
+    }
+  };
+
+  // Remove selected item
+  const handleRemoveItem = (itemToRemove) => {
+    const newValue = value.filter(item => item !== itemToRemove);
+    onChange(newValue);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle key navigation
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    } else if (e.key === "Enter" && inputValue.trim() !== "") {
+      e.preventDefault();
+      handleCreateOption();
+    } else if (e.key === "ArrowDown") {
+      if (!isOpen) {
+        setIsOpen(true);
+      }
+    } else if (e.key === "Backspace" && inputValue === "" && value.length > 0) {
+      // Remove the last item when backspace is pressed in empty input
+      const newValue = [...value];
+      newValue.pop();
+      onChange(newValue);
+    }
+  };
+
+  return (
+    <MultiSelectContainer ref={containerRef}>
+      <SelectedItemsContainer onClick={() => inputRef.current && inputRef.current.focus()}>
+        {value.map((item, index) => (
+          <SelectedItem key={index}>
+            {item}
+            <RemoveItemButton 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemoveItem(item);
+              }}
+            >
+              ×
+            </RemoveItemButton>
+          </SelectedItem>
+        ))}
+        <MultiSelectInput
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsOpen(true)}
+          placeholder={value.length === 0 ? placeholder : ""}
+          autoComplete="off"
+        />
+      </SelectedItemsContainer>
+
+      {isOpen && (
+        <ComboBoxDropdown>
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option, index) => (
+              <ComboBoxOption
+                key={index}
+                onClick={() => handleOptionSelect(option)}
+              >
+                {option}
+              </ComboBoxOption>
+            ))
+          ) : (
+            inputValue.trim() !== "" && !value.includes(inputValue) && (
+              <ComboBoxCreateOption onClick={handleCreateOption}>
+                Create "{inputValue}"
+              </ComboBoxCreateOption>
+            )
+          )}
+
+          {filteredOptions.length > 0 &&
+            inputValue.trim() !== "" &&
+            !filteredOptions.includes(inputValue) &&
+            !value.includes(inputValue) && (
+              <ComboBoxCreateOption onClick={handleCreateOption}>
+                Create "{inputValue}"
+              </ComboBoxCreateOption>
+            )}
+        </ComboBoxDropdown>
+      )}
+    </MultiSelectContainer>
+  );
+};
+
 const ReportPage = () => {
   const router = useRouter();
   const { id, view } = router.query;
@@ -718,13 +937,19 @@ const ReportPage = () => {
   const [rows, setRows] = useState([
     {
       id: Date.now(),
+      platform: "",
+      projectInitiative: "",
       sdlcStep: "",
       sdlcTask: "",
-      hours: "",
+      taskCategory: "",
       taskDetails: "",
-      aiTool: "",
-      aiProductivity: "",
-      hoursSaved: "",
+      estimatedTimeWithoutAI: "",
+      actualTimeWithAI: "",
+      // timeSaved is calculated
+      aiToolUsed: [],
+      complexity: "",
+      qualityImpact: "",
+      notesHowAIHelped: "",
     },
   ]);
 
@@ -879,7 +1104,23 @@ const ReportPage = () => {
 
   const handleRowChange = (id, field, value) => {
     setRows((prevRows) =>
-      prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+      prevRows.map((row) => {
+        if (row.id === id) {
+          const updatedRow = { ...row, [field]: value };
+          
+          // Auto-calculate timeSaved if both time fields have values
+          if ((field === 'estimatedTimeWithoutAI' || field === 'actualTimeWithAI') && 
+              updatedRow.estimatedTimeWithoutAI && updatedRow.actualTimeWithAI) {
+            const estimatedTime = parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
+            const actualTime = parseFloat(updatedRow.actualTimeWithAI) || 0;
+            const timeSaved = Math.max(0, estimatedTime - actualTime).toFixed(1);
+            updatedRow.timeSaved = timeSaved;
+          }
+          
+          return updatedRow;
+        }
+        return row;
+      }),
     );
   };
 
@@ -888,13 +1129,19 @@ const ReportPage = () => {
       ...prevRows,
       {
         id: Date.now(),
+        platform: "",
+        projectInitiative: "",
         sdlcStep: "",
         sdlcTask: "",
-        hours: "",
+        taskCategory: "",
         taskDetails: "",
-        aiTool: "",
-        aiProductivity: "",
-        hoursSaved: "",
+        estimatedTimeWithoutAI: "",
+        actualTimeWithAI: "",
+        // timeSaved is calculated
+        aiToolUsed: [],
+        complexity: "",
+        qualityImpact: "",
+        notesHowAIHelped: "",
       },
     ]);
   };
@@ -920,13 +1167,20 @@ const ReportPage = () => {
       // Validate rows
       for (const row of rows) {
         if (
+          !row.platform ||
+          !row.projectInitiative ||
           !row.sdlcStep ||
           !row.sdlcTask ||
-          !row.hours ||
+          !row.taskCategory ||
           !row.taskDetails ||
-          !row.aiTool ||
-          !row.aiProductivity ||
-          !row.hoursSaved
+          !row.estimatedTimeWithoutAI ||
+          !row.actualTimeWithAI ||
+          !row.timeSaved ||
+          !row.aiToolUsed || 
+          row.aiToolUsed.length === 0 ||
+          !row.complexity ||
+          !row.qualityImpact ||
+          !row.notesHowAIHelped
         ) {
           throw new Error(
             "Please fill in all fields for each productivity entry",
@@ -986,13 +1240,19 @@ const ReportPage = () => {
       setRows([
         {
           id: Date.now(),
+          platform: "",
+          projectInitiative: "",
           sdlcStep: "",
           sdlcTask: "",
-          hours: "",
+          taskCategory: "",
           taskDetails: "",
-          aiTool: "",
-          aiProductivity: "",
-          hoursSaved: "",
+          estimatedTimeWithoutAI: "",
+          actualTimeWithAI: "",
+          // timeSaved is calculated
+          aiToolUsed: [],
+          complexity: "",
+          qualityImpact: "",
+          notesHowAIHelped: "",
         },
       ]);
     } catch (err) {
@@ -1285,13 +1545,19 @@ const ReportPage = () => {
                     <TableDesktop>
                       <thead>
                         <tr>
+                          <th>Platform</th>
+                          <th>Project / Initiative</th>
                           <th>SDLC Step</th>
                           <th>SDLC Task</th>
-                          <th>Hours</th>
+                          <th>Task Category</th>
                           <th>Task Details</th>
+                          <th>Est. Time WITHOUT AI (Hrs)</th>
+                          <th>Actual Time WITH AI (Hrs)</th>
+                          <th>Time Saved (Hrs)</th>
                           <th>AI Tool Used</th>
-                          <th>AI Productivity</th>
-                          <th>Hours Saved</th>
+                          <th>Complexity</th>
+                          <th>Quality Impact</th>
+                          <th>Notes / How AI Helped</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -1299,62 +1565,90 @@ const ReportPage = () => {
                         {rows.map((row) => (
                           <tr key={row.id}>
                             <td>
-                              <Select
-                                value={row.sdlcStep}
-                                onChange={(e) =>
-                                  handleSDLCStepChange(row.id, e.target.value)
+                              <CreatableComboBox
+                                value={row.platform}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "platform", value)
                                 }
-                                required
-                              >
-                                <option value="">Select Step</option>
-                                {sdlcSteps.map((step) => (
-                                  <option key={step} value={step}>
-                                    {step}
-                                  </option>
-                                ))}
-                              </Select>
-                            </td>
-                            <td>
-                              <Select
-                                value={row.sdlcTask}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "sdlcTask",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                disabled={!row.sdlcStep}
-                              >
-                                <option value="">Select Task</option>
-                                {row.sdlcStep &&
-                                  sdlcTasksMap[row.sdlcStep].map((task) => (
-                                    <option key={task} value={task}>
-                                      {task}
-                                    </option>
-                                  ))}
-                              </Select>
-                            </td>
-                            <td>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={row.hours}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "hours",
-                                    e.target.value,
-                                  )
-                                }
-                                required
+                                options={[
+                                  "Web",
+                                  "Mobile",
+                                  "Desktop",
+                                  "Backend",
+                                  "Cloud",
+                                  "Data",
+                                  "Machine Learning",
+                                  "DevOps",
+                                  "Security",
+                                  "Other"
+                                ]}
+                                placeholder="Select Platform"
+                                storageKey="platformOptions"
                               />
                             </td>
                             <td>
-                              <Input
-                                type="text"
+                              <CreatableComboBox
+                                value={row.projectInitiative}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "projectInitiative", value)
+                                }
+                                options={[
+                                  "Product Development",
+                                  "Internal Tools",
+                                  "Research",
+                                  "Integration",
+                                  "Maintenance",
+                                  "Migration",
+                                  "Upgrade"
+                                ]}
+                                placeholder="Select Initiative"
+                                storageKey="projectOptions"
+                              />
+                            </td>
+                            <td>
+                              <CreatableComboBox
+                                value={row.sdlcStep}
+                                onChange={(value) => 
+                                  handleSDLCStepChange(row.id, value)
+                                }
+                                options={sdlcSteps}
+                                placeholder="Select Step"
+                                storageKey="sdlcStepOptions"
+                              />
+                            </td>
+                            <td>
+                              <CreatableComboBox
+                                value={row.sdlcTask}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "sdlcTask", value)
+                                }
+                                options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+                                placeholder="Select Task"
+                                storageKey="sdlcTaskOptions"
+                              />
+                            </td>
+                            <td>
+                              <CreatableComboBox
+                                value={row.taskCategory}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "taskCategory", value)
+                                }
+                                options={[
+                                  "UI Development",
+                                  "API Integration",
+                                  "Code Refactoring",
+                                  "Documentation",
+                                  "Testing",
+                                  "Code Review",
+                                  "Bug Fixing",
+                                  "Performance Optimization"
+                                ]}
+                                placeholder="Select Category"
+                                storageKey="taskCategoryOptions"
+                              />
+                            </td>
+                            <td>
+                              <TextArea
                                 value={row.taskDetails}
                                 onChange={(e) =>
                                   handleRowChange(
@@ -1364,52 +1658,125 @@ const ReportPage = () => {
                                   )
                                 }
                                 required
-                              />
-                            </td>
-                            <td>
-                              <Input
-                                type="text"
-                                value={row.aiTool}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "aiTool",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="e.g., ChatGPT, GitHub Copilot"
-                              />
-                            </td>
-                            <td>
-                              <Input
-                                type="text"
-                                value={row.aiProductivity}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "aiProductivity",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="Describe productivity gain"
+                                placeholder="Describe the task in detail"
+                                rows={2}
                               />
                             </td>
                             <td>
                               <Input
                                 type="number"
                                 min="0"
-                                step="0.5"
-                                value={row.hoursSaved}
+                                step="0.1"
+                                value={row.estimatedTimeWithoutAI}
                                 onChange={(e) =>
                                   handleRowChange(
                                     row.id,
-                                    "hoursSaved",
+                                    "estimatedTimeWithoutAI",
                                     e.target.value,
                                   )
                                 }
                                 required
+                                placeholder="Hours"
+                              />
+                            </td>
+                            <td>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={row.actualTimeWithAI}
+                                onChange={(e) =>
+                                  handleRowChange(
+                                    row.id,
+                                    "actualTimeWithAI",
+                                    e.target.value,
+                                  )
+                                }
+                                required
+                                placeholder="Hours"
+                              />
+                            </td>
+                            <td>
+                              <Input
+                                type="number"
+                                value={row.timeSaved}
+                                readOnly
+                                style={{ backgroundColor: '#f1f5f9' }}
+                              />
+                            </td>
+                            <td>
+                              <CreatableMultiSelect
+                                value={row.aiToolUsed}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "aiToolUsed", value)
+                                }
+                                options={[
+                                  "ChatGPT",
+                                  "GitHub Copilot",
+                                  "Claude",
+                                  "DALL-E",
+                                  "Midjourney",
+                                  "Jasper",
+                                  "Hugging Face",
+                                  "Leonardo AI",
+                                  "Bard",
+                                  "GPT-4"
+                                ]}
+                                placeholder="Select AI Tools"
+                                storageKey="aiToolOptions"
+                              />
+                            </td>
+                            <td>
+                              <Select
+                                value={row.complexity}
+                                onChange={(e) =>
+                                  handleRowChange(
+                                    row.id,
+                                    "complexity",
+                                    e.target.value,
+                                  )
+                                }
+                                required
+                              >
+                                <option value="">Select Complexity</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                              </Select>
+                            </td>
+                            <td>
+                              <CreatableComboBox
+                                value={row.qualityImpact}
+                                onChange={(value) =>
+                                  handleRowChange(row.id, "qualityImpact", value)
+                                }
+                                options={[
+                                  "Improved Readability",
+                                  "Better Performance",
+                                  "More Comprehensive",
+                                  "More Accurate",
+                                  "Higher Consistency",
+                                  "More Secure",
+                                  "Better UX",
+                                  "More Scalable"
+                                ]}
+                                placeholder="Select Impact"
+                                storageKey="qualityImpactOptions"
+                              />
+                            </td>
+                            <td>
+                              <TextArea
+                                value={row.notesHowAIHelped}
+                                onChange={(e) =>
+                                  handleRowChange(
+                                    row.id,
+                                    "notesHowAIHelped",
+                                    e.target.value,
+                                  )
+                                }
+                                required
+                                placeholder="Describe how AI helped with this task"
+                                rows={2}
                               />
                             </td>
                             <td>
@@ -1455,7 +1822,10 @@ const ReportPage = () => {
                       color: '#6b7280',
                       fontWeight: 500
                     }}>
-                      {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | Total Hours: {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)} | Hours Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
+                      {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
+                      Total Estimated Time: {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} hrs | 
+                      Total Actual Time: {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} hrs | 
+                      Total Time Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)} hrs
                     </div>
 
                     {/* Mobile Card View */}

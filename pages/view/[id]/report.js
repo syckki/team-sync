@@ -119,7 +119,10 @@ const Input = styled.input`
 const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
-  z-index: 100; // Ensure container has z-index for proper stacking
+  z-index: 1000; // Higher z-index to ensure it stacks above all other elements
+  &:focus-within {
+    z-index: 1001; // Even higher when focused to ensure active dropdowns appear on top
+  }
 `;
 
 const ComboBoxInput = styled.input`
@@ -151,7 +154,7 @@ const ComboBoxDropdown = styled.ul`
   background-color: white;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1001; // Match the higher z-index from container
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: max-content;
   min-width: 100%;
@@ -835,7 +838,10 @@ const CreatableComboBox = ({
 const MultiSelectContainer = styled.div`
   position: relative;
   width: 100%;
-  z-index: 90; // Ensure container has z-index for proper stacking
+  z-index: 1000; // Higher z-index to match ComboBoxContainer
+  &:focus-within {
+    z-index: 1001; // Even higher when focused
+  }
 `;
 
 const SelectedItemsContainer = styled.div`

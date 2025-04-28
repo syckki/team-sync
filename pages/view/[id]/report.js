@@ -133,11 +133,13 @@ const ComboBoxInput = styled.input`
   font-size: 0.875rem;
   line-height: 1.25rem;
   background-color: #f8f9fa;
+  opacity: ${props => props.disabled ? 0.7 : 1};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
   &:focus {
     outline: none;
-    border-color: #4e7fff;
-    background-color: #fff;
+    border-color: ${props => props.disabled ? 'hsl(20 5.9% 90%)' : '#4e7fff'};
+    background-color: ${props => props.disabled ? '#f8f9fa' : '#fff'};
   }
 `;
 
@@ -715,6 +717,7 @@ const CreatableComboBox = ({
   options = [],
   placeholder,
   storageKey,
+  disabled = false,
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
@@ -798,12 +801,13 @@ const CreatableComboBox = ({
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => setIsOpen(true)}
+        onFocus={() => !disabled && setIsOpen(true)}
         placeholder={placeholder}
         autoComplete="off"
+        disabled={disabled}
       />
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <ComboBoxDropdown>
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => (
@@ -1826,7 +1830,7 @@ const ReportPage = () => {
                                     "Newapp Somos Belcorp",
                                     "FFVV",
                                   ]}
-                                  placeholder="Select Platform"
+                                  placeholder="Platform"
                                   storageKey="platformOptions"
                                 />
                               </td>
@@ -1840,16 +1844,8 @@ const ReportPage = () => {
                                       value,
                                     )
                                   }
-                                  options={[
-                                    "Product Development",
-                                    "Internal Tools",
-                                    "Research",
-                                    "Integration",
-                                    "Maintenance",
-                                    "Migration",
-                                    "Upgrade",
-                                  ]}
-                                  placeholder="Select Initiative"
+                                  options={[]}
+                                  placeholder="Initiative"
                                   storageKey="projectOptions"
                                 />
                               </td>
@@ -1860,7 +1856,7 @@ const ReportPage = () => {
                                     handleSDLCStepChange(row.id, value)
                                   }
                                   options={sdlcSteps}
-                                  placeholder="Select Step"
+                                  placeholder="SDLC Step"
                                   storageKey="sdlcStepOptions"
                                 />
                               </td>
@@ -1875,8 +1871,9 @@ const ReportPage = () => {
                                       ? sdlcTasksMap[row.sdlcStep] || []
                                       : []
                                   }
-                                  placeholder="Select Task"
+                                  placeholder={row.sdlcStep ? "SDLC Task" : "Select SDLC Step first"}
                                   storageKey="sdlcTaskOptions"
+                                  disabled={!row.sdlcStep}
                                 />
                               </td>
                               <td>

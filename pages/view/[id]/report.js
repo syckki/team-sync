@@ -296,10 +296,76 @@ const TableDesktop = styled.table`
   tr:nth-child(even) {
     background-color: #f8f9fa;
   }
+  
+  tr.expandable {
+    cursor: pointer;
+  }
+  
+  tr.expandable:hover {
+    background-color: rgba(78, 127, 255, 0.05);
+  }
+  
+  tr.expanded {
+    background-color: rgba(78, 127, 255, 0.08);
+  }
+  
+  tr.detail-row {
+    background-color: #f8fafc;
+    border-top: 1px dashed #e2e8f0;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+  
+  tr.detail-row td {
+    padding: 0;
+  }
+  
+  .expand-icon {
+    color: #4e7fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .expanded .expand-icon {
+    transform: rotate(90deg);
+  }
 
   @media (max-width: 992px) {
     display: none;
   }
+`;
+
+const DetailContainer = styled.div`
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+`;
+
+const DetailSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const DetailLabel = styled.div`
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: rgb(107 114 128);
+  text-transform: uppercase;
+`;
+
+const DetailContent = styled.div`
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 `;
 
 const TableMobile = styled.div`
@@ -936,6 +1002,7 @@ const ReportPage = () => {
   const [teamMember, setTeamMember] = useState("");
   const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [teamRole, setTeamRole] = useState("");
+  const [expandedRows, setExpandedRows] = useState({});
   const [rows, setRows] = useState([
     {
       id: Date.now(),
@@ -1150,6 +1217,13 @@ const ReportPage = () => {
 
   const removeRow = (id) => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+  
+  const toggleRowExpand = (rowId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [rowId]: !prev[rowId]
+    }));
   };
 
   const handleSubmit = async (e) => {

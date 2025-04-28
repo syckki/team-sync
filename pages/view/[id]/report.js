@@ -297,13 +297,7 @@ const TableDesktop = styled.table`
     background-color: #f8f9fa;
   }
   
-  tr.expandable {
-    cursor: pointer;
-  }
-  
-  tr.expandable:hover {
-    background-color: rgba(78, 127, 255, 0.05);
-  }
+  /* Row hover styling removed - only expand icon is clickable now */
   
   tr.expanded {
     background-color: rgba(78, 127, 255, 0.08);
@@ -1698,11 +1692,14 @@ const ReportPage = () => {
                       <tbody>
                         {rows.map((row) => (
                           <React.Fragment key={row.id}>
-                            <tr 
-                              className={`expandable ${expandedRows[row.id] ? 'expanded' : ''}`}
-                              onClick={() => toggleRowExpand(row.id)}
+                            <tr className={`${expandedRows[row.id] ? 'expanded' : ''}`}>
+                            <td 
+                              style={{ cursor: 'pointer' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRowExpand(row.id);
+                              }}
                             >
-                            <td>
                               <div className="expand-icon">
                                 <svg
                                   width="16"

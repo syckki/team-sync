@@ -135,7 +135,7 @@ const ComboBoxInputWrapper = styled.div`
 const ComboBoxInput = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
-  padding-right: ${props => props.hasValue ? '2rem' : '0.75rem'};
+  padding-right: 2rem;
   border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
@@ -772,6 +772,20 @@ const CustomSelect = ({
     onChange(option);
     setIsOpen(false);
   };
+  
+  // Handle key presses
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    } else if (e.key === "Tab") {
+      setIsOpen(false);
+    } else if (e.key === "ArrowDown") {
+      if (!isOpen) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+    }
+  };
 
   // Handle clear value
   const handleClearValue = (e) => {
@@ -786,6 +800,7 @@ const CustomSelect = ({
           type="text"
           value={value}
           readOnly
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           hasValue={value.length > 0}
@@ -920,6 +935,8 @@ const CreatableComboBox = ({
       if (!isOpen) {
         setIsOpen(true);
       }
+    } else if (e.key === "Tab") {
+      setIsOpen(false);
     }
   };
 
@@ -1149,6 +1166,8 @@ const CreatableMultiSelect = ({
       const newValue = [...value];
       newValue.pop();
       onChange(newValue);
+    } else if (e.key === "Tab") {
+      setIsOpen(false);
     }
   };
 

@@ -116,6 +116,8 @@ const Input = styled.input`
   }
 `;
 
+
+
 const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
@@ -1837,67 +1839,104 @@ const ReportPage = () => {
                           </MobileCardHeader>
                           <MobileCardBody>
                             <MobileCardField>
+                              <MobileFieldLabel>Platform</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.platform}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "platform", value)
+                                  }
+                                  options={[
+                                    "Web",
+                                    "Mobile",
+                                    "Desktop",
+                                    "Backend",
+                                    "Cloud",
+                                    "Data",
+                                    "Machine Learning",
+                                    "DevOps",
+                                    "Security",
+                                    "Other"
+                                  ]}
+                                  placeholder="Select Platform"
+                                  storageKey="platformOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Project / Initiative</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.projectInitiative}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "projectInitiative", value)
+                                  }
+                                  options={[
+                                    "Product Development",
+                                    "Internal Tools",
+                                    "Research",
+                                    "Integration",
+                                    "Maintenance",
+                                    "Migration",
+                                    "Upgrade"
+                                  ]}
+                                  placeholder="Select Initiative"
+                                  storageKey="projectOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
                               <MobileFieldLabel>SDLC Step</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Select
+                                <CreatableComboBox
                                   value={row.sdlcStep}
-                                  onChange={(e) =>
-                                    handleSDLCStepChange(row.id, e.target.value)
+                                  onChange={(value) => 
+                                    handleSDLCStepChange(row.id, value)
                                   }
-                                  required
-                                >
-                                  <option value="">Select Step</option>
-                                  {sdlcSteps.map((step) => (
-                                    <option key={step} value={step}>
-                                      {step}
-                                    </option>
-                                  ))}
-                                </Select>
+                                  options={sdlcSteps}
+                                  placeholder="Select Step"
+                                  storageKey="sdlcStepOptions"
+                                />
                               </MobileFieldValue>
                             </MobileCardField>
 
                             <MobileCardField>
                               <MobileFieldLabel>SDLC Task</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Select
+                                <CreatableComboBox
                                   value={row.sdlcTask}
-                                  onChange={(e) =>
-                                    handleRowChange(
-                                      row.id,
-                                      "sdlcTask",
-                                      e.target.value,
-                                    )
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "sdlcTask", value)
                                   }
-                                  required
-                                  disabled={!row.sdlcStep}
-                                >
-                                  <option value="">Select Task</option>
-                                  {row.sdlcStep &&
-                                    sdlcTasksMap[row.sdlcStep].map((task) => (
-                                      <option key={task} value={task}>
-                                        {task}
-                                      </option>
-                                    ))}
-                                </Select>
+                                  options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+                                  placeholder="Select Task"
+                                  storageKey="sdlcTaskOptions"
+                                />
                               </MobileFieldValue>
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Hours</MobileFieldLabel>
+                              <MobileFieldLabel>Task Category</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.5"
-                                  value={row.hours}
-                                  onChange={(e) =>
-                                    handleRowChange(
-                                      row.id,
-                                      "hours",
-                                      e.target.value,
-                                    )
+                                <CreatableComboBox
+                                  value={row.taskCategory}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "taskCategory", value)
                                   }
-                                  required
+                                  options={[
+                                    "UI Development",
+                                    "API Integration",
+                                    "Code Refactoring",
+                                    "Documentation",
+                                    "Testing",
+                                    "Code Review",
+                                    "Bug Fixing",
+                                    "Performance Optimization"
+                                  ]}
+                                  placeholder="Select Category"
+                                  storageKey="taskCategoryOptions"
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
@@ -1905,8 +1944,7 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Task Details</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Input
-                                  type="text"
+                                <TextArea
                                   value={row.taskDetails}
                                   onChange={(e) =>
                                     handleRowChange(
@@ -1916,6 +1954,62 @@ const ReportPage = () => {
                                     )
                                   }
                                   required
+                                  placeholder="Describe the task in detail"
+                                  rows={2}
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Est. Time WITHOUT AI (Hrs)</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.1"
+                                  value={row.estimatedTimeWithoutAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "estimatedTimeWithoutAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Actual Time WITH AI (Hrs)</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.1"
+                                  value={row.actualTimeWithAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "actualTimeWithAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Time Saved (Hrs)</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <Input
+                                  type="number"
+                                  value={row.timeSaved}
+                                  readOnly
+                                  style={{ backgroundColor: '#f1f5f9' }}
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
@@ -1923,59 +2017,90 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Input
-                                  type="text"
-                                  value={row.aiTool}
-                                  onChange={(e) =>
-                                    handleRowChange(
-                                      row.id,
-                                      "aiTool",
-                                      e.target.value,
-                                    )
+                                <CreatableMultiSelect
+                                  value={row.aiToolUsed}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "aiToolUsed", value)
                                   }
-                                  required
-                                  placeholder="e.g., ChatGPT, GitHub Copilot"
+                                  options={[
+                                    "ChatGPT",
+                                    "GitHub Copilot",
+                                    "Claude",
+                                    "DALL-E",
+                                    "Midjourney",
+                                    "Jasper",
+                                    "Hugging Face",
+                                    "Leonardo AI",
+                                    "Bard",
+                                    "GPT-4"
+                                  ]}
+                                  placeholder="Select AI Tools"
+                                  storageKey="aiToolOptions"
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>
-                                AI Productivity
-                              </MobileFieldLabel>
+                              <MobileFieldLabel>Complexity</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Input
-                                  type="text"
-                                  value={row.aiProductivity}
+                                <Select
+                                  value={row.complexity}
                                   onChange={(e) =>
                                     handleRowChange(
                                       row.id,
-                                      "aiProductivity",
+                                      "complexity",
                                       e.target.value,
                                     )
                                   }
                                   required
-                                  placeholder="Describe productivity gain"
+                                >
+                                  <option value="">Select Complexity</option>
+                                  <option value="Low">Low</option>
+                                  <option value="Medium">Medium</option>
+                                  <option value="High">High</option>
+                                </Select>
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Quality Impact</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.qualityImpact}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "qualityImpact", value)
+                                  }
+                                  options={[
+                                    "Improved Readability",
+                                    "Better Performance",
+                                    "More Comprehensive",
+                                    "More Accurate",
+                                    "Higher Consistency",
+                                    "More Secure",
+                                    "Better UX",
+                                    "More Scalable"
+                                  ]}
+                                  placeholder="Select Impact"
+                                  storageKey="qualityImpactOptions"
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Hours Saved</MobileFieldLabel>
+                              <MobileFieldLabel>Notes / How AI Helped</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.5"
-                                  value={row.hoursSaved}
+                                <TextArea
+                                  value={row.notesHowAIHelped}
                                   onChange={(e) =>
                                     handleRowChange(
                                       row.id,
-                                      "hoursSaved",
+                                      "notesHowAIHelped",
                                       e.target.value,
                                     )
                                   }
                                   required
+                                  placeholder="Describe how AI helped with this task"
+                                  rows={2}
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
@@ -2000,7 +2125,10 @@ const ReportPage = () => {
                         fontWeight: 500,
                         marginTop: '8px'
                       }}>
-                        {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | Total Hours: {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)} | Hours Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
+                        {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
+                        Total Estimated Time: {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} hrs | 
+                        Total Actual Time: {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} hrs | 
+                        Total Time Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)} hrs
                       </div>
                     </TableMobile>
                   </ResponsiveTable>

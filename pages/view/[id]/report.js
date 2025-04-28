@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
@@ -607,6 +607,41 @@ const sdlcSteps = [
   "Deployment",
   "Maintenance",
 ];
+
+// Custom hook for auto-resizing text areas
+const useAutoResizeTextArea = (value) => {
+  const textAreaRef = useRef(null);
+  
+  useEffect(() => {
+    const textArea = textAreaRef.current;
+    if (textArea) {
+      // Set height to auto to get the correct scrollHeight
+      textArea.style.height = "auto";
+      // Set the height to the scrollHeight to fit the content
+      textArea.style.height = `${textArea.scrollHeight}px`;
+    }
+  }, [value]);
+  
+  return textAreaRef;
+};
+
+// Custom TextArea component with auto-resize functionality
+const AutoResizeTextArea = ({ value, onChange, ...props }) => {
+  const textAreaRef = useAutoResizeTextArea(value);
+  
+  const handleChange = (e) => {
+    onChange(e);
+  };
+  
+  return (
+    <Textarea
+      ref={textAreaRef}
+      value={value}
+      onChange={handleChange}
+      {...props}
+    />
+  );
+};
 
 const sdlcTasksMap = {
   Requirements: [
@@ -1920,7 +1955,7 @@ const ReportPage = () => {
                                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                                     <div>
                                       <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>TASK DETAILS</div>
-                                      <Textarea
+                                      <AutoResizeTextArea
                                         value={row.taskDetails}
                                         onChange={(e) =>
                                           handleRowChange(
@@ -1938,7 +1973,7 @@ const ReportPage = () => {
                                     
                                     <div>
                                       <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>NOTES</div>
-                                      <Textarea
+                                      <AutoResizeTextArea
                                         value={row.notesHowAIHelped}
                                         onChange={(e) =>
                                           handleRowChange(
@@ -2090,7 +2125,7 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Task Details</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Textarea
+                                <AutoResizeTextArea
                                   value={row.taskDetails}
                                   onChange={(e) =>
                                     handleRowChange(
@@ -2236,7 +2271,7 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Notes</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Textarea
+                                <AutoResizeTextArea
                                   value={row.notesHowAIHelped}
                                   onChange={(e) =>
                                     handleRowChange(

@@ -116,8 +116,6 @@ const Input = styled.input`
   }
 `;
 
-
-
 const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
@@ -194,18 +192,30 @@ const ComboBoxCreateOption = styled.li`
 
 const Textarea = styled.textarea`
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 1rem;
   background-color: #f8f9fa;
   resize: vertical;
+
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(20 5.9% 90%);
+  border-radius: calc(0.5rem - 2px);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 
   &:focus {
     outline: none;
     border-color: #4e7fff;
     background-color: #fff;
   }
+`;
+
+const InnerLabel = styled.div`
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-transform: uppercase;
+  color: rgb(107 114 128);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
 `;
 
 const SubmitButton = styled.button`
@@ -307,23 +317,23 @@ const TableDesktop = styled.table`
   tr:nth-child(even) {
     background-color: #f8f9fa;
   }
-  
+
   /* Row hover styling removed - only expand icon is clickable now */
-  
+
   tr.expanded {
     background-color: rgba(78, 127, 255, 0.08);
   }
-  
+
   tr.detail-row {
     background-color: #f8fafc;
     border-top: 1px dashed #e2e8f0;
     border-bottom: 1px dashed #e2e8f0;
   }
-  
+
   tr.detail-row td {
     padding: 0;
   }
-  
+
   .expand-icon {
     color: #4e7fff;
     display: inline-flex;
@@ -333,7 +343,7 @@ const TableDesktop = styled.table`
     height: 1.5rem;
     transition: transform 0.2s ease;
   }
-  
+
   .expanded .expand-icon {
     transform: rotate(90deg);
   }
@@ -506,7 +516,8 @@ const ActionButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: ${(props) => (props.primary ? "#3d6bf3" : "hsl(60 4.8% 95.9%)")};
+    background-color: ${(props) =>
+      props.primary ? "#3d6bf3" : "hsl(60 4.8% 95.9%)"};
   }
 
   &:disabled {
@@ -616,7 +627,7 @@ const sdlcSteps = [
 // Custom hook for auto-resizing text areas
 const useAutoResizeTextArea = (value) => {
   const textAreaRef = useRef(null);
-  
+
   useEffect(() => {
     const textArea = textAreaRef.current;
     if (textArea) {
@@ -626,18 +637,18 @@ const useAutoResizeTextArea = (value) => {
       textArea.style.height = `${textArea.scrollHeight}px`;
     }
   }, [value]);
-  
+
   return textAreaRef;
 };
 
 // Custom TextArea component with auto-resize functionality
 const AutoResizeTextArea = ({ value, onChange, ...props }) => {
   const textAreaRef = useAutoResizeTextArea(value);
-  
+
   const handleChange = (e) => {
     onChange(e);
   };
-  
+
   return (
     <Textarea
       ref={textAreaRef}
@@ -695,7 +706,13 @@ const sdlcTasksMap = {
 
 // Creatable ComboBox Component
 // CreatableComboBox component for single-select fields
-const CreatableComboBox = ({ value, onChange, options = [], placeholder, storageKey }) => {
+const CreatableComboBox = ({
+  value,
+  onChange,
+  options = [],
+  placeholder,
+  storageKey,
+}) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -818,7 +835,7 @@ const CreatableComboBox = ({ value, onChange, options = [], placeholder, storage
 const MultiSelectContainer = styled.div`
   position: relative;
   width: 100%;
-  z-index: 100; // Ensure container has z-index for proper stacking
+  z-index: 90; // Ensure container has z-index for proper stacking
 `;
 
 const SelectedItemsContainer = styled.div`
@@ -831,7 +848,7 @@ const SelectedItemsContainer = styled.div`
   border-radius: calc(0.5rem - 2px);
   background-color: #f8f9fa;
   align-items: center;
-  
+
   &:focus-within {
     outline: none;
     border-color: #4e7fff;
@@ -861,7 +878,7 @@ const RemoveItemButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     color: #ef4444;
   }
@@ -878,7 +895,13 @@ const MultiSelectInput = styled.input`
 `;
 
 // CreatableMultiSelect component for multi-select fields
-const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder, storageKey }) => {
+const CreatableMultiSelect = ({
+  value = [],
+  onChange,
+  options = [],
+  placeholder,
+  storageKey,
+}) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -888,11 +911,13 @@ const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder,
   // Update filtered options when input changes
   useEffect(() => {
     if (inputValue.trim() === "") {
-      setFilteredOptions(options.filter(option => !value.includes(option)));
+      setFilteredOptions(options.filter((option) => !value.includes(option)));
     } else {
       const filtered = options
-        .filter(option => !value.includes(option))
-        .filter(option => option.toLowerCase().includes(inputValue.toLowerCase()));
+        .filter((option) => !value.includes(option))
+        .filter((option) =>
+          option.toLowerCase().includes(inputValue.toLowerCase()),
+        );
       setFilteredOptions(filtered);
     }
   }, [inputValue, options, value]);
@@ -910,14 +935,14 @@ const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder,
     const newValue = [...value, option];
     onChange(newValue);
     setInputValue("");
-    
+
     // Add to local storage if it's a new option
     if (!options.includes(option) && option.trim() !== "") {
       const updatedOptions = [...options, option];
       const key = storageKey || "aiToolOptions";
       localStorage.setItem(key, JSON.stringify(updatedOptions));
     }
-    
+
     // Keep focus on input
     if (inputRef.current) {
       inputRef.current.focus();
@@ -933,14 +958,17 @@ const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder,
 
   // Remove selected item
   const handleRemoveItem = (itemToRemove) => {
-    const newValue = value.filter(item => item !== itemToRemove);
+    const newValue = value.filter((item) => item !== itemToRemove);
     onChange(newValue);
   };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -972,11 +1000,13 @@ const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder,
 
   return (
     <MultiSelectContainer ref={containerRef}>
-      <SelectedItemsContainer onClick={() => inputRef.current && inputRef.current.focus()}>
+      <SelectedItemsContainer
+        onClick={() => inputRef.current && inputRef.current.focus()}
+      >
         {value.map((item, index) => (
           <SelectedItem key={index}>
             {item}
-            <RemoveItemButton 
+            <RemoveItemButton
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
@@ -1001,22 +1031,21 @@ const CreatableMultiSelect = ({ value = [], onChange, options = [], placeholder,
 
       {isOpen && (
         <ComboBoxDropdown>
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
-              <ComboBoxOption
-                key={index}
-                onClick={() => handleOptionSelect(option)}
-              >
-                {option}
-              </ComboBoxOption>
-            ))
-          ) : (
-            inputValue.trim() !== "" && !value.includes(inputValue) && (
-              <ComboBoxCreateOption onClick={handleCreateOption}>
-                Create "{inputValue}"
-              </ComboBoxCreateOption>
-            )
-          )}
+          {filteredOptions.length > 0
+            ? filteredOptions.map((option, index) => (
+                <ComboBoxOption
+                  key={index}
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  {option}
+                </ComboBoxOption>
+              ))
+            : inputValue.trim() !== "" &&
+              !value.includes(inputValue) && (
+                <ComboBoxCreateOption onClick={handleCreateOption}>
+                  Create "{inputValue}"
+                </ComboBoxCreateOption>
+              )}
 
           {filteredOptions.length > 0 &&
             inputValue.trim() !== "" &&
@@ -1221,8 +1250,10 @@ const ReportPage = () => {
   // Format time to 2-digit integer, 2-digit decimal (e.g., 01.50, 12.25)
   const formatTimeDisplay = (time) => {
     const value = parseFloat(time) || 0;
-    const intPart = Math.floor(value).toString().padStart(2, '0');
-    const decPart = (Math.round((value % 1) * 100)).toString().padStart(2, '0');
+    const intPart = Math.floor(value).toString().padStart(2, "0");
+    const decPart = Math.round((value % 1) * 100)
+      .toString()
+      .padStart(2, "0");
     return `${intPart}.${decPart}`;
   };
 
@@ -1231,28 +1262,36 @@ const ReportPage = () => {
       prevRows.map((row) => {
         if (row.id === id) {
           const updatedRow = { ...row, [field]: value };
-          
+
           // If changing time fields, apply quarter-hour rounding
-          if (field === 'estimatedTimeWithoutAI' || field === 'actualTimeWithAI') {
+          if (
+            field === "estimatedTimeWithoutAI" ||
+            field === "actualTimeWithAI"
+          ) {
             // Round to nearest quarter hour
-            if (field === 'estimatedTimeWithoutAI') {
+            if (field === "estimatedTimeWithoutAI") {
               updatedRow.estimatedTimeWithoutAI = roundToQuarterHour(value);
             }
-            if (field === 'actualTimeWithAI') {
+            if (field === "actualTimeWithAI") {
               updatedRow.actualTimeWithAI = roundToQuarterHour(value);
             }
           }
-          
+
           // Auto-calculate timeSaved if both time fields have values
-          if ((field === 'estimatedTimeWithoutAI' || field === 'actualTimeWithAI') && 
-              updatedRow.estimatedTimeWithoutAI && updatedRow.actualTimeWithAI) {
-            const estimatedTime = parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
+          if (
+            (field === "estimatedTimeWithoutAI" ||
+              field === "actualTimeWithAI") &&
+            updatedRow.estimatedTimeWithoutAI &&
+            updatedRow.actualTimeWithAI
+          ) {
+            const estimatedTime =
+              parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
             const actualTime = parseFloat(updatedRow.actualTimeWithAI) || 0;
             // We don't use Math.max here as we want to show negative savings too
             const timeSaved = (estimatedTime - actualTime).toFixed(2);
             updatedRow.timeSaved = timeSaved;
           }
-          
+
           return updatedRow;
         }
         return row;
@@ -1285,11 +1324,11 @@ const ReportPage = () => {
   const removeRow = (id) => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
   };
-  
+
   const toggleRowExpand = (rowId) => {
-    setExpandedRows(prev => ({
+    setExpandedRows((prev) => ({
       ...prev,
-      [rowId]: !prev[rowId]
+      [rowId]: !prev[rowId],
     }));
   };
 
@@ -1319,7 +1358,7 @@ const ReportPage = () => {
           !row.estimatedTimeWithoutAI ||
           !row.actualTimeWithAI ||
           !row.timeSaved ||
-          !row.aiToolUsed || 
+          !row.aiToolUsed ||
           row.aiToolUsed.length === 0 ||
           !row.complexity ||
           !row.qualityImpact ||
@@ -1511,20 +1550,36 @@ const ReportPage = () => {
                                 </tr>
                               ))}
                               {/* Summary row */}
-                              <tr className="summary-row" style={{ 
-                                backgroundColor: '#f8fafc', 
-                                fontWeight: 600,
-                                borderTop: '2px solid #e2e8f0' 
-                              }}>
+                              <tr
+                                className="summary-row"
+                                style={{
+                                  backgroundColor: "#f8fafc",
+                                  fontWeight: 600,
+                                  borderTop: "2px solid #e2e8f0",
+                                }}
+                              >
                                 <td colSpan={2}>Total</td>
                                 <td>
-                                  {report.entries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0).toFixed(1)}
+                                  {report.entries
+                                    .reduce(
+                                      (sum, entry) =>
+                                        sum + (parseFloat(entry.hours) || 0),
+                                      0,
+                                    )
+                                    .toFixed(1)}
                                 </td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
                                 <td>
-                                  {report.entries.reduce((sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0), 0).toFixed(1)}
+                                  {report.entries
+                                    .reduce(
+                                      (sum, entry) =>
+                                        sum +
+                                        (parseFloat(entry.hoursSaved) || 0),
+                                      0,
+                                    )
+                                    .toFixed(1)}
                                 </td>
                               </tr>
                             </tbody>
@@ -1591,9 +1646,7 @@ const ReportPage = () => {
                                   </MobileCardField>
 
                                   <MobileCardField>
-                                    <MobileFieldLabel>
-                                      Saved
-                                    </MobileFieldLabel>
+                                    <MobileFieldLabel>Saved</MobileFieldLabel>
                                     <MobileFieldValue>
                                       {entry.hoursSaved}
                                     </MobileFieldValue>
@@ -1601,18 +1654,22 @@ const ReportPage = () => {
                                 </MobileCardBody>
                               </MobileCard>
                             ))}
-                            
+
                             {/* Summary Card for Mobile */}
-                            <MobileCard style={{ 
-                              backgroundColor: '#f8fafc',
-                              borderColor: '#4e7fff',
-                              borderWidth: '2px'
-                            }}>
-                              <MobileCardHeader style={{ 
-                                backgroundColor: '#4e7fff',
-                                color: 'white',
-                                fontWeight: 'bold'
-                              }}>
+                            <MobileCard
+                              style={{
+                                backgroundColor: "#f8fafc",
+                                borderColor: "#4e7fff",
+                                borderWidth: "2px",
+                              }}
+                            >
+                              <MobileCardHeader
+                                style={{
+                                  backgroundColor: "#4e7fff",
+                                  color: "white",
+                                  fontWeight: "bold",
+                                }}
+                              >
                                 Summary
                               </MobileCardHeader>
                               <MobileCardBody>
@@ -1620,17 +1677,34 @@ const ReportPage = () => {
                                   <MobileFieldLabel>
                                     Total Hours
                                   </MobileFieldLabel>
-                                  <MobileFieldValue style={{ fontWeight: 'bold' }}>
-                                    {report.entries.reduce((sum, entry) => sum + (parseFloat(entry.hours) || 0), 0).toFixed(1)}
+                                  <MobileFieldValue
+                                    style={{ fontWeight: "bold" }}
+                                  >
+                                    {report.entries
+                                      .reduce(
+                                        (sum, entry) =>
+                                          sum + (parseFloat(entry.hours) || 0),
+                                        0,
+                                      )
+                                      .toFixed(1)}
                                   </MobileFieldValue>
                                 </MobileCardField>
-                                
+
                                 <MobileCardField>
                                   <MobileFieldLabel>
                                     Total Saved
                                   </MobileFieldLabel>
-                                  <MobileFieldValue style={{ fontWeight: 'bold' }}>
-                                    {report.entries.reduce((sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0), 0).toFixed(1)}
+                                  <MobileFieldValue
+                                    style={{ fontWeight: "bold" }}
+                                  >
+                                    {report.entries
+                                      .reduce(
+                                        (sum, entry) =>
+                                          sum +
+                                          (parseFloat(entry.hoursSaved) || 0),
+                                        0,
+                                      )
+                                      .toFixed(1)}
                                   </MobileFieldValue>
                                 </MobileCardField>
                               </MobileCardBody>
@@ -1694,8 +1768,8 @@ const ReportPage = () => {
                           <th>SDLC Step</th>
                           <th>SDLC Task</th>
                           <th>Task Category</th>
-                          <th>Est (h)</th>
-                          <th>Act (h)</th>
+                          <th style={{ width: "100px" }}>Est (h)</th>
+                          <th style={{ width: "100px" }}>Act (h)</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
                           <th>Action</th>
@@ -1704,207 +1778,20 @@ const ReportPage = () => {
                       <tbody>
                         {rows.map((row) => (
                           <React.Fragment key={row.id}>
-                            <tr className={`${expandedRows[row.id] ? 'expanded' : ''}`}>
-                            <td 
-                              style={{ cursor: 'pointer' }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleRowExpand(row.id);
-                              }}
+                            <tr
+                              className={`${expandedRows[row.id] ? "expanded" : ""}`}
                             >
-                              <div className="expand-icon">
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                              </div>
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.platform}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "platform", value)
-                                }
-                                options={[
-                                  "Web",
-                                  "Mobile",
-                                  "Desktop",
-                                  "Backend",
-                                  "Cloud",
-                                  "Data",
-                                  "Machine Learning",
-                                  "DevOps",
-                                  "Security",
-                                  "Other"
-                                ]}
-                                placeholder="Select Platform"
-                                storageKey="platformOptions"
-                              />
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.projectInitiative}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "projectInitiative", value)
-                                }
-                                options={[
-                                  "Product Development",
-                                  "Internal Tools",
-                                  "Research",
-                                  "Integration",
-                                  "Maintenance",
-                                  "Migration",
-                                  "Upgrade"
-                                ]}
-                                placeholder="Select Initiative"
-                                storageKey="projectOptions"
-                              />
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.sdlcStep}
-                                onChange={(value) => 
-                                  handleSDLCStepChange(row.id, value)
-                                }
-                                options={sdlcSteps}
-                                placeholder="Select Step"
-                                storageKey="sdlcStepOptions"
-                              />
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.sdlcTask}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "sdlcTask", value)
-                                }
-                                options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
-                                placeholder="Select Task"
-                                storageKey="sdlcTaskOptions"
-                              />
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.taskCategory}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "taskCategory", value)
-                                }
-                                options={[
-                                  "UI Development",
-                                  "API Integration",
-                                  "Code Refactoring",
-                                  "Documentation",
-                                  "Testing",
-                                  "Code Review",
-                                  "Bug Fixing",
-                                  "Performance Optimization"
-                                ]}
-                                placeholder="Select Category"
-                                storageKey="taskCategoryOptions"
-                              />
-                            </td>
-
-                            <td>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.25"
-                                value={row.estimatedTimeWithoutAI}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "estimatedTimeWithoutAI",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="Hours"
-                              />
-                            </td>
-                            <td>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.25"
-                                value={row.actualTimeWithAI}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "actualTimeWithAI",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="Hours"
-                                style={{
-                                  color: 
-                                    row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                                      ? parseFloat(row.actualTimeWithAI) < parseFloat(row.estimatedTimeWithoutAI)
-                                        ? '#16a34a' 
-                                        : parseFloat(row.actualTimeWithAI) > parseFloat(row.estimatedTimeWithoutAI)
-                                          ? '#dc2626'
-                                          : 'inherit'
-                                      : 'inherit',
-                                  fontWeight: row.estimatedTimeWithoutAI && row.actualTimeWithAI ? '500' : 'normal'
+                              <td
+                                style={{ cursor: "pointer" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRowExpand(row.id);
                                 }}
-                              />
-                            </td>
-
-                            <td>
-                              <Select
-                                value={row.complexity}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "complexity",
-                                    e.target.value,
-                                  )
-                                }
-                                required
                               >
-                                <option value="">Select Complexity</option>
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                              </Select>
-                            </td>
-                            <td>
-                              <CreatableComboBox
-                                value={row.qualityImpact}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "qualityImpact", value)
-                                }
-                                options={[
-                                  "Improved Readability",
-                                  "Better Performance",
-                                  "More Comprehensive",
-                                  "More Accurate",
-                                  "Higher Consistency",
-                                  "More Secure",
-                                  "Better UX",
-                                  "More Scalable"
-                                ]}
-                                placeholder="Select Impact"
-                                storageKey="qualityImpactOptions"
-                              />
-                            </td>
-
-                            <td>
-                              {rows.length > 1 && (
-                                <DeleteButton 
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent row expansion
-                                    removeRow(row.id);
-                                  }}
-                                >
+                                <div className="expand-icon">
                                   <svg
+                                    width="16"
+                                    height="16"
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
@@ -1912,112 +1799,363 @@ const ReportPage = () => {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   >
-                                    <path d="M3 6h18"></path>
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                    <line
-                                      x1="10"
-                                      x2="10"
-                                      y1="11"
-                                      y2="17"
-                                    ></line>
-                                    <line
-                                      x1="14"
-                                      x2="14"
-                                      y1="11"
-                                      y2="17"
-                                    ></line>
+                                    <polyline points="9 18 15 12 9 6"></polyline>
                                   </svg>
-                                </DeleteButton>
-                              )}
-                            </td>
-                          </tr>
-                          
-                          {expandedRows[row.id] && (
-                            <tr className="detail-row">
-                              <td colSpan="12">
-                                <div style={{ padding: '1rem' }}>
-                                  <div style={{ marginBottom: '1rem' }}>
-                                    <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>AI TOOL USED</div>
-                                    <CreatableMultiSelect
-                                      value={row.aiToolUsed}
-                                      onChange={(value) =>
-                                        handleRowChange(row.id, "aiToolUsed", value)
-                                      }
-                                      options={[
-                                        "ChatGPT",
-                                        "GitHub Copilot",
-                                        "Claude",
-                                        "DALL-E",
-                                        "Midjourney",
-                                        "Jasper",
-                                        "Hugging Face",
-                                        "Leonardo AI",
-                                        "Bard",
-                                        "GPT-4"
-                                      ]}
-                                      placeholder="Select AI Tools"
-                                      storageKey="aiToolOptions"
-                                    />
-                                  </div>
-                                  
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                    <div>
-                                      <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>TASK DETAILS</div>
-                                      <AutoResizeTextArea
-                                        value={row.taskDetails}
-                                        onChange={(e) =>
-                                          handleRowChange(
-                                            row.id,
-                                            "taskDetails",
-                                            e.target.value,
-                                          )
-                                        }
-                                        required
-                                        placeholder="Enter task details..."
-                                        rows={3}
-                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '0.75rem' }}
-                                      />
-                                    </div>
-                                    
-                                    <div>
-                                      <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>NOTES</div>
-                                      <AutoResizeTextArea
-                                        value={row.notesHowAIHelped}
-                                        onChange={(e) =>
-                                          handleRowChange(
-                                            row.id,
-                                            "notesHowAIHelped",
-                                            e.target.value,
-                                          )
-                                        }
-                                        required
-                                        placeholder="Describe how AI helped with this task"
-                                        rows={3}
-                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '0.75rem' }}
-                                      />
-                                    </div>
-                                  </div>
                                 </div>
                               </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.platform}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "platform", value)
+                                  }
+                                  options={[
+                                    "Unete",
+                                    "Revamp Somos Belcorp",
+                                    "Digital Catalog",
+                                    "Ecommerce Platform",
+                                    "Foundation Tool",
+                                    "Powder Tool",
+                                    "Skin Advisor",
+                                    "Newapp Somos Belcorp",
+                                    "FFVV",
+                                  ]}
+                                  placeholder="Select Platform"
+                                  storageKey="platformOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.projectInitiative}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "projectInitiative",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "Product Development",
+                                    "Internal Tools",
+                                    "Research",
+                                    "Integration",
+                                    "Maintenance",
+                                    "Migration",
+                                    "Upgrade",
+                                  ]}
+                                  placeholder="Select Initiative"
+                                  storageKey="projectOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.sdlcStep}
+                                  onChange={(value) =>
+                                    handleSDLCStepChange(row.id, value)
+                                  }
+                                  options={sdlcSteps}
+                                  placeholder="Select Step"
+                                  storageKey="sdlcStepOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.sdlcTask}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "sdlcTask", value)
+                                  }
+                                  options={
+                                    row.sdlcStep
+                                      ? sdlcTasksMap[row.sdlcStep] || []
+                                      : []
+                                  }
+                                  placeholder="Select Task"
+                                  storageKey="sdlcTaskOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.taskCategory}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "taskCategory",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "UI Development",
+                                    "API Integration",
+                                    "Code Refactoring",
+                                    "Documentation",
+                                    "Testing",
+                                    "Code Review",
+                                    "Bug Fixing",
+                                    "Performance Optimization",
+                                  ]}
+                                  placeholder="Select Category"
+                                  storageKey="taskCategoryOptions"
+                                />
+                              </td>
+
+                              <td>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.estimatedTimeWithoutAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "estimatedTimeWithoutAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                  style={{ width: "100px" }}
+                                />
+                              </td>
+                              <td>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.actualTimeWithAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "actualTimeWithAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                  style={{
+                                    width: "100px",
+                                    color:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? parseFloat(row.actualTimeWithAI) <
+                                          parseFloat(row.estimatedTimeWithoutAI)
+                                          ? "#16a34a"
+                                          : parseFloat(row.actualTimeWithAI) >
+                                              parseFloat(
+                                                row.estimatedTimeWithoutAI,
+                                              )
+                                            ? "#dc2626"
+                                            : "inherit"
+                                        : "inherit",
+                                    fontWeight:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? "500"
+                                        : "normal",
+                                  }}
+                                />
+                              </td>
+
+                              <td>
+                                <Select
+                                  value={row.complexity}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "complexity",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                >
+                                  <option value="">Select Complexity</option>
+                                  <option value="Low">Low</option>
+                                  <option value="Medium">Medium</option>
+                                  <option value="High">High</option>
+                                </Select>
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.qualityImpact}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "qualityImpact",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "Improved Readability",
+                                    "Better Performance",
+                                    "More Comprehensive",
+                                    "More Accurate",
+                                    "Higher Consistency",
+                                    "More Secure",
+                                    "Better UX",
+                                    "More Scalable",
+                                  ]}
+                                  placeholder="Select Impact"
+                                  storageKey="qualityImpactOptions"
+                                />
+                              </td>
+
+                              <td>
+                                {rows.length > 1 && (
+                                  <DeleteButton
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent row expansion
+                                      removeRow(row.id);
+                                    }}
+                                  >
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d="M3 6h18"></path>
+                                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                      <line
+                                        x1="10"
+                                        x2="10"
+                                        y1="11"
+                                        y2="17"
+                                      ></line>
+                                      <line
+                                        x1="14"
+                                        x2="14"
+                                        y1="11"
+                                        y2="17"
+                                      ></line>
+                                    </svg>
+                                  </DeleteButton>
+                                )}
+                              </td>
                             </tr>
-                          )}
-                        </React.Fragment>
-                      ))}
+
+                            {expandedRows[row.id] && (
+                              <tr className="detail-row">
+                                <td colSpan="12">
+                                  <div style={{ padding: "1rem" }}>
+                                    <div style={{ marginBottom: "1rem" }}>
+                                      <InnerLabel>AI TOOLS USED</InnerLabel>
+                                      <CreatableMultiSelect
+                                        value={row.aiToolUsed}
+                                        onChange={(value) =>
+                                          handleRowChange(
+                                            row.id,
+                                            "aiToolUsed",
+                                            value,
+                                          )
+                                        }
+                                        options={[
+                                          "ChatGPT",
+                                          "GitHub Copilot",
+                                          "Claude",
+                                          "DALL-E",
+                                          "Midjourney",
+                                          "Jasper",
+                                          "Hugging Face",
+                                          "Leonardo AI",
+                                          "Bard",
+                                          "GPT-4",
+                                        ]}
+                                        placeholder="Select AI Tools"
+                                        storageKey="aiToolOptions"
+                                      />
+                                    </div>
+
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr",
+                                        gap: "1.5rem",
+                                      }}
+                                    >
+                                      <div>
+                                        <InnerLabel>TASK DETAILS</InnerLabel>
+                                        <AutoResizeTextArea
+                                          value={row.taskDetails}
+                                          onChange={(e) =>
+                                            handleRowChange(
+                                              row.id,
+                                              "taskDetails",
+                                              e.target.value,
+                                            )
+                                          }
+                                          required
+                                          placeholder="Enter task details..."
+                                          rows={3}
+                                          style={{
+                                            width: "100%",
+                                            border: "1px solid #e2e8f0",
+                                            borderRadius: "4px",
+                                            padding: "0.75rem",
+                                          }}
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <InnerLabel>NOTES</InnerLabel>
+                                        <AutoResizeTextArea
+                                          value={row.notesHowAIHelped}
+                                          onChange={(e) =>
+                                            handleRowChange(
+                                              row.id,
+                                              "notesHowAIHelped",
+                                              e.target.value,
+                                            )
+                                          }
+                                          required
+                                          placeholder="Describe how AI helped with this task"
+                                          rows={3}
+                                          style={{
+                                            width: "100%",
+                                            border: "1px solid #e2e8f0",
+                                            borderRadius: "4px",
+                                            padding: "0.75rem",
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
                       </tbody>
                     </TableDesktop>
-                    
+
                     {/* Summary text below the table to match the screenshot */}
-                    <div style={{ 
-                      textAlign: 'right',
-                      padding: '12px 8px',
-                      fontSize: '0.875rem',
-                      color: '#6b7280',
-                      fontWeight: 500
-                    }}>
-                      {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
-                      Total Est (h): {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
-                      Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)}
+                    <div
+                      style={{
+                        textAlign: "right",
+                        padding: "12px 8px",
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {rows.length} {rows.length === 1 ? "entry" : "entries"} |
+                      Total Est (h):{" "}
+                      {rows
+                        .reduce(
+                          (sum, row) =>
+                            sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                          0,
+                        )
+                        .toFixed(1)}{" "}
+                      | Total Act (h):{" "}
+                      {rows
+                        .reduce(
+                          (sum, row) =>
+                            sum + (parseFloat(row.actualTimeWithAI) || 0),
+                          0,
+                        )
+                        .toFixed(1)}
                     </div>
 
                     {/* Mobile Card View */}
@@ -2046,7 +2184,7 @@ const ReportPage = () => {
                                     "Machine Learning",
                                     "DevOps",
                                     "Security",
-                                    "Other"
+                                    "Other",
                                   ]}
                                   placeholder="Select Platform"
                                   storageKey="platformOptions"
@@ -2060,7 +2198,11 @@ const ReportPage = () => {
                                 <CreatableComboBox
                                   value={row.projectInitiative}
                                   onChange={(value) =>
-                                    handleRowChange(row.id, "projectInitiative", value)
+                                    handleRowChange(
+                                      row.id,
+                                      "projectInitiative",
+                                      value,
+                                    )
                                   }
                                   options={[
                                     "Product Development",
@@ -2069,7 +2211,7 @@ const ReportPage = () => {
                                     "Integration",
                                     "Maintenance",
                                     "Migration",
-                                    "Upgrade"
+                                    "Upgrade",
                                   ]}
                                   placeholder="Select Initiative"
                                   storageKey="projectOptions"
@@ -2082,7 +2224,7 @@ const ReportPage = () => {
                               <MobileFieldValue>
                                 <CreatableComboBox
                                   value={row.sdlcStep}
-                                  onChange={(value) => 
+                                  onChange={(value) =>
                                     handleSDLCStepChange(row.id, value)
                                   }
                                   options={sdlcSteps}
@@ -2100,7 +2242,11 @@ const ReportPage = () => {
                                   onChange={(value) =>
                                     handleRowChange(row.id, "sdlcTask", value)
                                   }
-                                  options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+                                  options={
+                                    row.sdlcStep
+                                      ? sdlcTasksMap[row.sdlcStep] || []
+                                      : []
+                                  }
                                   placeholder="Select Task"
                                   storageKey="sdlcTaskOptions"
                                 />
@@ -2113,7 +2259,11 @@ const ReportPage = () => {
                                 <CreatableComboBox
                                   value={row.taskCategory}
                                   onChange={(value) =>
-                                    handleRowChange(row.id, "taskCategory", value)
+                                    handleRowChange(
+                                      row.id,
+                                      "taskCategory",
+                                      value,
+                                    )
                                   }
                                   options={[
                                     "UI Development",
@@ -2123,7 +2273,7 @@ const ReportPage = () => {
                                     "Testing",
                                     "Code Review",
                                     "Bug Fixing",
-                                    "Performance Optimization"
+                                    "Performance Optimization",
                                   ]}
                                   placeholder="Select Category"
                                   storageKey="taskCategoryOptions"
@@ -2149,7 +2299,7 @@ const ReportPage = () => {
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
-                            
+
                             <MobileCardField>
                               <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
                               <MobileFieldValue>
@@ -2168,7 +2318,7 @@ const ReportPage = () => {
                                     "Hugging Face",
                                     "Leonardo AI",
                                     "Bard",
-                                    "GPT-4"
+                                    "GPT-4",
                                   ]}
                                   placeholder="Select AI Tools"
                                   storageKey="aiToolOptions"
@@ -2215,21 +2365,28 @@ const ReportPage = () => {
                                   required
                                   placeholder="Hours"
                                   style={{
-                                    color: 
-                                      row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                                        ? parseFloat(row.actualTimeWithAI) < parseFloat(row.estimatedTimeWithoutAI)
-                                          ? '#16a34a' 
-                                          : parseFloat(row.actualTimeWithAI) > parseFloat(row.estimatedTimeWithoutAI)
-                                            ? '#dc2626'
-                                            : 'inherit'
-                                        : 'inherit',
-                                    fontWeight: row.estimatedTimeWithoutAI && row.actualTimeWithAI ? '500' : 'normal'
+                                    color:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? parseFloat(row.actualTimeWithAI) <
+                                          parseFloat(row.estimatedTimeWithoutAI)
+                                          ? "#16a34a"
+                                          : parseFloat(row.actualTimeWithAI) >
+                                              parseFloat(
+                                                row.estimatedTimeWithoutAI,
+                                              )
+                                            ? "#dc2626"
+                                            : "inherit"
+                                        : "inherit",
+                                    fontWeight:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? "500"
+                                        : "normal",
                                   }}
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
-
-
 
                             <MobileCardField>
                               <MobileFieldLabel>Complexity</MobileFieldLabel>
@@ -2254,12 +2411,18 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Quality Impact</MobileFieldLabel>
+                              <MobileFieldLabel>
+                                Quality Impact
+                              </MobileFieldLabel>
                               <MobileFieldValue>
                                 <CreatableComboBox
                                   value={row.qualityImpact}
                                   onChange={(value) =>
-                                    handleRowChange(row.id, "qualityImpact", value)
+                                    handleRowChange(
+                                      row.id,
+                                      "qualityImpact",
+                                      value,
+                                    )
                                   }
                                   options={[
                                     "Improved Readability",
@@ -2269,7 +2432,7 @@ const ReportPage = () => {
                                     "Higher Consistency",
                                     "More Secure",
                                     "Better UX",
-                                    "More Scalable"
+                                    "More Scalable",
                                   ]}
                                   placeholder="Select Impact"
                                   storageKey="qualityImpactOptions"
@@ -2306,19 +2469,36 @@ const ReportPage = () => {
                           )}
                         </MobileCard>
                       ))}
-                      
+
                       {/* Summary text for mobile to match the screenshot */}
-                      <div style={{ 
-                        textAlign: 'right',
-                        padding: '12px 8px',
-                        fontSize: '0.875rem',
-                        color: '#6b7280',
-                        fontWeight: 500,
-                        marginTop: '8px'
-                      }}>
-                        {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
-                        Total Est (h): {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
-                        Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)}
+                      <div
+                        style={{
+                          textAlign: "right",
+                          padding: "12px 8px",
+                          fontSize: "0.875rem",
+                          color: "#6b7280",
+                          fontWeight: 500,
+                          marginTop: "8px",
+                        }}
+                      >
+                        {rows.length} {rows.length === 1 ? "entry" : "entries"}{" "}
+                        | Total Est (h):{" "}
+                        {rows
+                          .reduce(
+                            (sum, row) =>
+                              sum +
+                              (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                            0,
+                          )
+                          .toFixed(1)}{" "}
+                        | Total Act (h):{" "}
+                        {rows
+                          .reduce(
+                            (sum, row) =>
+                              sum + (parseFloat(row.actualTimeWithAI) || 0),
+                            0,
+                          )
+                          .toFixed(1)}
                       </div>
                     </TableMobile>
                   </ResponsiveTable>

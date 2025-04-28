@@ -29,7 +29,7 @@ export const GlobalStyles = createGlobalStyle`
     }
   }
   
-  button {
+  button, textarea {
     font-family: inherit;
   }
   

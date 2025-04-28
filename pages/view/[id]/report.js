@@ -1865,38 +1865,34 @@ const ReportPage = () => {
                           {expandedRows[row.id] && (
                             <tr className="detail-row">
                               <td colSpan="12">
-                                <DetailContainer>
-                                  <DetailSection>
-                                    <DetailLabel>AI Tool Used</DetailLabel>
-                                    <DetailContent>
-                                      <CreatableMultiSelect
-                                        value={row.aiToolUsed}
-                                        onChange={(value) =>
-                                          handleRowChange(row.id, "aiToolUsed", value)
-                                        }
-                                        options={[
-                                          "ChatGPT",
-                                          "GitHub Copilot",
-                                          "Claude",
-                                          "DALL-E",
-                                          "Midjourney",
-                                          "Jasper",
-                                          "Hugging Face",
-                                          "Leonardo AI",
-                                          "Bard",
-                                          "GPT-4"
-                                        ]}
-                                        placeholder="Select AI Tools"
-                                        storageKey="aiToolOptions"
-                                      />
-                                    </DetailContent>
-                                  </DetailSection>
-                                </DetailContainer>
-                                
-                                <DetailContainer style={{ marginTop: '1rem' }}>
-                                  <DetailSection>
-                                    <DetailLabel>Task Details</DetailLabel>
-                                    <DetailContent>
+                                <div style={{ padding: '1rem' }}>
+                                  <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>AI TOOL USED</div>
+                                    <CreatableMultiSelect
+                                      value={row.aiToolUsed}
+                                      onChange={(value) =>
+                                        handleRowChange(row.id, "aiToolUsed", value)
+                                      }
+                                      options={[
+                                        "ChatGPT",
+                                        "GitHub Copilot",
+                                        "Claude",
+                                        "DALL-E",
+                                        "Midjourney",
+                                        "Jasper",
+                                        "Hugging Face",
+                                        "Leonardo AI",
+                                        "Bard",
+                                        "GPT-4"
+                                      ]}
+                                      placeholder="Select AI Tools"
+                                      storageKey="aiToolOptions"
+                                    />
+                                  </div>
+                                  
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div>
+                                      <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>TASK DETAILS</div>
                                       <Textarea
                                         value={row.taskDetails}
                                         onChange={(e) =>
@@ -1909,14 +1905,12 @@ const ReportPage = () => {
                                         required
                                         placeholder="Enter task details..."
                                         rows={3}
-                                        style={{ width: '100%', border: 'none' }}
+                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '0.75rem' }}
                                       />
-                                    </DetailContent>
-                                  </DetailSection>
-                                  
-                                  <DetailSection>
-                                    <DetailLabel>Notes</DetailLabel>
-                                    <DetailContent>
+                                    </div>
+                                    
+                                    <div>
+                                      <div style={{ fontWeight: 600, fontSize: '0.75rem', color: 'rgb(107 114 128)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>NOTES</div>
                                       <Textarea
                                         value={row.notesHowAIHelped}
                                         onChange={(e) =>
@@ -1929,11 +1923,11 @@ const ReportPage = () => {
                                         required
                                         placeholder="Describe how AI helped with this task"
                                         rows={3}
-                                        style={{ width: '100%', border: 'none' }}
+                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '0.75rem' }}
                                       />
-                                    </DetailContent>
-                                  </DetailSection>
-                                </DetailContainer>
+                                    </div>
+                                  </div>
+                                </div>
                               </td>
                             </tr>
                           )}

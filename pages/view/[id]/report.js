@@ -144,7 +144,6 @@ const ComboBoxDropdown = styled.ul`
   position: absolute;
   top: 100%;
   left: 0;
-  right: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -156,11 +155,16 @@ const ComboBoxDropdown = styled.ul`
   overflow-y: auto;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: max-content;
+  min-width: 100%;
+  white-space: nowrap;
 `;
 
 const ComboBoxOption = styled.li`
   padding: 0.75rem;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: visible;
 
   &:hover {
     background-color: #f1f5f9;
@@ -180,6 +184,8 @@ const ComboBoxCreateOption = styled.li`
   border-top: 1px dashed #e2e8f0;
   color: #4e7fff;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: visible;
 
   &:hover {
     background-color: #f1f5f9;

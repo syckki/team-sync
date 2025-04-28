@@ -125,9 +125,17 @@ const ComboBoxContainer = styled.div`
   }
 `;
 
+const ComboBoxInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+`;
+
 const ComboBoxInput = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
+  padding-right: ${props => props.hasValue ? '2rem' : '0.75rem'};
   border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
@@ -140,6 +148,31 @@ const ComboBoxInput = styled.input`
     outline: none;
     border-color: ${props => props.disabled ? 'hsl(20 5.9% 90%)' : '#4e7fff'};
     background-color: ${props => props.disabled ? '#f8f9fa' : '#fff'};
+  }
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #ef4444;
   }
 `;
 
@@ -794,18 +827,33 @@ const CreatableComboBox = ({
     }
   };
 
+  // Handle clear value
+  const handleClearValue = (e) => {
+    e.stopPropagation();
+    setInputValue("");
+    onChange("");
+  };
+
   return (
     <ComboBoxContainer ref={inputRef}>
-      <ComboBoxInput
-        type="text"
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        onFocus={() => !disabled && setIsOpen(true)}
-        placeholder={placeholder}
-        autoComplete="off"
-        disabled={disabled}
-      />
+      <ComboBoxInputWrapper>
+        <ComboBoxInput
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => !disabled && setIsOpen(true)}
+          placeholder={placeholder}
+          autoComplete="off"
+          disabled={disabled}
+          hasValue={inputValue.length > 0}
+        />
+        {inputValue.length > 0 && !disabled && (
+          <ClearButton onClick={handleClearValue} type="button" title="Clear">
+            ×
+          </ClearButton>
+        )}
+      </ComboBoxInputWrapper>
 
       {isOpen && !disabled && (
         <ComboBoxDropdown>

@@ -1548,18 +1548,18 @@ const ReportPage = () => {
                       <thead>
                         <tr>
                           <th>Platform</th>
-                          <th>Project / Initiative</th>
+                          <th>Initiative</th>
                           <th>SDLC Step</th>
                           <th>SDLC Task</th>
                           <th>Task Category</th>
                           <th>Task Details</th>
-                          <th>Est. Time WITHOUT AI (Hrs)</th>
-                          <th>Actual Time WITH AI (Hrs)</th>
-                          <th>Time Saved (Hrs)</th>
+                          <th>Estimated Time</th>
+                          <th>Actual Time</th>
+                          <th>Time Saved</th>
                           <th>AI Tool Used</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
-                          <th>Notes / How AI Helped</th>
+                          <th>Notes</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -1865,7 +1865,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Project / Initiative</MobileFieldLabel>
+                              <MobileFieldLabel>Initiative</MobileFieldLabel>
                               <MobileFieldValue>
                                 <CreatableComboBox
                                   value={row.projectInitiative}
@@ -1961,7 +1961,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Est. Time WITHOUT AI (Hrs)</MobileFieldLabel>
+                              <MobileFieldLabel>Estimated Time</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"
@@ -1982,7 +1982,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Actual Time WITH AI (Hrs)</MobileFieldLabel>
+                              <MobileFieldLabel>Actual Time</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"
@@ -2003,7 +2003,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Time Saved (Hrs)</MobileFieldLabel>
+                              <MobileFieldLabel>Time Saved</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"
@@ -2087,7 +2087,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Notes / How AI Helped</MobileFieldLabel>
+                              <MobileFieldLabel>Notes</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Textarea
                                   value={row.notesHowAIHelped}

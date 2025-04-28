@@ -1455,7 +1455,7 @@ const ReportPage = () => {
                                 <th>Task Details</th>
                                 <th>AI Tool</th>
                                 <th>AI Productivity</th>
-                                <th>Hours Saved</th>
+                                <th>Saved</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1552,7 +1552,7 @@ const ReportPage = () => {
 
                                   <MobileCardField>
                                     <MobileFieldLabel>
-                                      Hours Saved
+                                      Saved
                                     </MobileFieldLabel>
                                     <MobileFieldValue>
                                       {entry.hoursSaved}
@@ -1587,7 +1587,7 @@ const ReportPage = () => {
                                 
                                 <MobileCardField>
                                   <MobileFieldLabel>
-                                    Total Hours Saved
+                                    Total Saved
                                   </MobileFieldLabel>
                                   <MobileFieldValue style={{ fontWeight: 'bold' }}>
                                     {report.entries.reduce((sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0), 0).toFixed(1)}
@@ -2163,7 +2163,7 @@ const ReportPage = () => {
                                 <Input
                                   type="number"
                                   min="0"
-                                  step="0.1"
+                                  step="0.25"
                                   value={row.actualTimeWithAI}
                                   onChange={(e) =>
                                     handleRowChange(
@@ -2182,10 +2182,14 @@ const ReportPage = () => {
                               <MobileFieldLabel>Saved</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
-                                  type="number"
-                                  value={row.timeSaved}
+                                  type="text"
+                                  value={formatTimeDisplay(row.timeSaved)}
                                   readOnly
-                                  style={{ backgroundColor: '#f1f5f9' }}
+                                  style={{ 
+                                    backgroundColor: '#f1f5f9',
+                                    color: parseFloat(row.timeSaved) >= 0 ? '#16a34a' : '#dc2626',
+                                    fontWeight: '500'
+                                  }}
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
@@ -2278,9 +2282,9 @@ const ReportPage = () => {
                         marginTop: '8px'
                       }}>
                         {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
-                        Total Estimated Time: {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} hrs | 
-                        Total Actual Time: {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} hrs | 
-                        Total Time Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)} hrs
+                        Total Est (h): {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
+                        Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} | 
+                        Total Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)}
                       </div>
                     </TableMobile>
                   </ResponsiveTable>

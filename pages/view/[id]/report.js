@@ -1656,7 +1656,6 @@ const ReportPage = () => {
                           <th>Task Category</th>
                           <th>Est (h)</th>
                           <th>Act (h)</th>
-                          <th>Saved</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
                           <th>Action</th>
@@ -1801,17 +1800,16 @@ const ReportPage = () => {
                                 }
                                 required
                                 placeholder="Hours"
-                              />
-                            </td>
-                            <td>
-                              <Input
-                                type="text"
-                                value={formatTimeDisplay(row.timeSaved)}
-                                readOnly
-                                style={{ 
-                                  backgroundColor: '#f1f5f9',
-                                  color: parseFloat(row.timeSaved) >= 0 ? '#16a34a' : '#dc2626',
-                                  fontWeight: '500'
+                                style={{
+                                  color: 
+                                    row.estimatedTimeWithoutAI && row.actualTimeWithAI
+                                      ? parseFloat(row.actualTimeWithAI) < parseFloat(row.estimatedTimeWithoutAI)
+                                        ? '#16a34a' 
+                                        : parseFloat(row.actualTimeWithAI) > parseFloat(row.estimatedTimeWithoutAI)
+                                          ? '#dc2626'
+                                          : 'inherit'
+                                      : 'inherit',
+                                  fontWeight: row.estimatedTimeWithoutAI && row.actualTimeWithAI ? '500' : 'normal'
                                 }}
                               />
                             </td>
@@ -1975,9 +1973,8 @@ const ReportPage = () => {
                       fontWeight: 500
                     }}>
                       {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
-                      Total Estimated Time: {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} hrs | 
-                      Total Actual Time: {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} hrs | 
-                      Total Time Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)} hrs
+                      Total Est (h): {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
+                      Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)}
                     </div>
 
                     {/* Mobile Card View */}
@@ -2174,21 +2171,16 @@ const ReportPage = () => {
                                   }
                                   required
                                   placeholder="Hours"
-                                />
-                              </MobileFieldValue>
-                            </MobileCardField>
-
-                            <MobileCardField>
-                              <MobileFieldLabel>Saved</MobileFieldLabel>
-                              <MobileFieldValue>
-                                <Input
-                                  type="text"
-                                  value={formatTimeDisplay(row.timeSaved)}
-                                  readOnly
-                                  style={{ 
-                                    backgroundColor: '#f1f5f9',
-                                    color: parseFloat(row.timeSaved) >= 0 ? '#16a34a' : '#dc2626',
-                                    fontWeight: '500'
+                                  style={{
+                                    color: 
+                                      row.estimatedTimeWithoutAI && row.actualTimeWithAI
+                                        ? parseFloat(row.actualTimeWithAI) < parseFloat(row.estimatedTimeWithoutAI)
+                                          ? '#16a34a' 
+                                          : parseFloat(row.actualTimeWithAI) > parseFloat(row.estimatedTimeWithoutAI)
+                                            ? '#dc2626'
+                                            : 'inherit'
+                                        : 'inherit',
+                                    fontWeight: row.estimatedTimeWithoutAI && row.actualTimeWithAI ? '500' : 'normal'
                                   }}
                                 />
                               </MobileFieldValue>
@@ -2283,8 +2275,7 @@ const ReportPage = () => {
                       }}>
                         {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | 
                         Total Est (h): {rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
-                        Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)} | 
-                        Total Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.timeSaved) || 0), 0).toFixed(1)}
+                        Total Act (h): {rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)}
                       </div>
                     </TableMobile>
                   </ResponsiveTable>

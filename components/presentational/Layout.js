@@ -1,11 +1,13 @@
-import styled from 'styled-components';
-import Header from './Header';
+import styled from "styled-components";
+import Header from "./Header";
 
 const Main = styled.main`
-  max-width: 1200px;
+  /*max-width: 1200px;*/
   margin: 0 auto;
   padding: 2rem;
-  min-height: calc(100vh - 120px); /* Adjust based on header and footer height */
+  min-height: calc(
+    100vh - 120px
+  ); /* Adjust based on header and footer height */
 `;
 
 const Footer = styled.footer`
@@ -23,7 +25,10 @@ const Layout = ({ children }) => {
       <Header />
       <Main>{children}</Main>
       <Footer>
-        <p>&copy; {new Date().getFullYear()} AI Productivity Tracker. All encryption happens in your browser. Your data remains private.</p>
+        <p>
+          &copy; {new Date().getFullYear()} AI Productivity Tracker. All
+          encryption happens in your browser. Your data remains private.
+        </p>
       </Footer>
     </>
   );

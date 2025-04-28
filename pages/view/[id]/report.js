@@ -1631,7 +1631,6 @@ const ReportPage = () => {
                           <th>Estimated Time</th>
                           <th>Actual Time</th>
                           <th>Time Saved</th>
-                          <th>AI Tool Used</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
                           <th>Action</th>
@@ -1786,28 +1785,7 @@ const ReportPage = () => {
                                 style={{ backgroundColor: '#f1f5f9' }}
                               />
                             </td>
-                            <td>
-                              <CreatableMultiSelect
-                                value={row.aiToolUsed}
-                                onChange={(value) =>
-                                  handleRowChange(row.id, "aiToolUsed", value)
-                                }
-                                options={[
-                                  "ChatGPT",
-                                  "GitHub Copilot",
-                                  "Claude",
-                                  "DALL-E",
-                                  "Midjourney",
-                                  "Jasper",
-                                  "Hugging Face",
-                                  "Leonardo AI",
-                                  "Bard",
-                                  "GPT-4"
-                                ]}
-                                placeholder="Select AI Tools"
-                                storageKey="aiToolOptions"
-                              />
-                            </td>
+
                             <td>
                               <Select
                                 value={row.complexity}
@@ -1886,8 +1864,36 @@ const ReportPage = () => {
                           
                           {expandedRows[row.id] && (
                             <tr className="detail-row">
-                              <td colSpan="13">
+                              <td colSpan="12">
                                 <DetailContainer>
+                                  <DetailSection>
+                                    <DetailLabel>AI Tool Used</DetailLabel>
+                                    <DetailContent>
+                                      <CreatableMultiSelect
+                                        value={row.aiToolUsed}
+                                        onChange={(value) =>
+                                          handleRowChange(row.id, "aiToolUsed", value)
+                                        }
+                                        options={[
+                                          "ChatGPT",
+                                          "GitHub Copilot",
+                                          "Claude",
+                                          "DALL-E",
+                                          "Midjourney",
+                                          "Jasper",
+                                          "Hugging Face",
+                                          "Leonardo AI",
+                                          "Bard",
+                                          "GPT-4"
+                                        ]}
+                                        placeholder="Select AI Tools"
+                                        storageKey="aiToolOptions"
+                                      />
+                                    </DetailContent>
+                                  </DetailSection>
+                                </DetailContainer>
+                                
+                                <DetailContainer style={{ marginTop: '1rem' }}>
                                   <DetailSection>
                                     <DetailLabel>Task Details</DetailLabel>
                                     <DetailContent>
@@ -2079,6 +2085,32 @@ const ReportPage = () => {
                                 />
                               </MobileFieldValue>
                             </MobileCardField>
+                            
+                            <MobileCardField>
+                              <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableMultiSelect
+                                  value={row.aiToolUsed}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "aiToolUsed", value)
+                                  }
+                                  options={[
+                                    "ChatGPT",
+                                    "GitHub Copilot",
+                                    "Claude",
+                                    "DALL-E",
+                                    "Midjourney",
+                                    "Jasper",
+                                    "Hugging Face",
+                                    "Leonardo AI",
+                                    "Bard",
+                                    "GPT-4"
+                                  ]}
+                                  placeholder="Select AI Tools"
+                                  storageKey="aiToolOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
 
                             <MobileCardField>
                               <MobileFieldLabel>Estimated Time</MobileFieldLabel>
@@ -2134,31 +2166,7 @@ const ReportPage = () => {
                               </MobileFieldValue>
                             </MobileCardField>
 
-                            <MobileCardField>
-                              <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
-                              <MobileFieldValue>
-                                <CreatableMultiSelect
-                                  value={row.aiToolUsed}
-                                  onChange={(value) =>
-                                    handleRowChange(row.id, "aiToolUsed", value)
-                                  }
-                                  options={[
-                                    "ChatGPT",
-                                    "GitHub Copilot",
-                                    "Claude",
-                                    "DALL-E",
-                                    "Midjourney",
-                                    "Jasper",
-                                    "Hugging Face",
-                                    "Leonardo AI",
-                                    "Bard",
-                                    "GPT-4"
-                                  ]}
-                                  placeholder="Select AI Tools"
-                                  storageKey="aiToolOptions"
-                                />
-                              </MobileFieldValue>
-                            </MobileCardField>
+
 
                             <MobileCardField>
                               <MobileFieldLabel>Complexity</MobileFieldLabel>

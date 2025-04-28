@@ -140,7 +140,7 @@ const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: #f8f9fa;
+  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
   opacity: ${props => props.disabled ? 0.7 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
@@ -740,6 +740,102 @@ const sdlcTasksMap = {
     "Security Updates",
     "Documentation Updates",
   ],
+};
+
+// Custom Select Component for dropdowns
+const CustomSelect = ({
+  value,
+  onChange,
+  options = [],
+  placeholder,
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle option select
+  const handleOptionSelect = (option) => {
+    onChange(option);
+    setIsOpen(false);
+  };
+
+  // Handle clear value
+  const handleClearValue = (e) => {
+    e.stopPropagation();
+    onChange("");
+  };
+
+  return (
+    <ComboBoxContainer ref={selectRef}>
+      <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
+        <ComboBoxInput
+          type="text"
+          value={value}
+          readOnly
+          placeholder={placeholder}
+          disabled={disabled}
+          hasValue={value.length > 0}
+          style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        />
+        {value.length > 0 && !disabled && (
+          <ClearButton onClick={handleClearValue} type="button" title="Clear">
+            ×
+          </ClearButton>
+        )}
+        <div
+          style={{
+            position: "absolute",
+            right: value.length > 0 ? "2rem" : "0.5rem",
+            top: "50%",
+            transform: "translateY(-50%)",
+            transition: "transform 0.2s",
+            transform: isOpen ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+          }}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </ComboBoxInputWrapper>
+
+      {isOpen && !disabled && (
+        <ComboBoxDropdown>
+          {options.map((option, index) => (
+            <ComboBoxOption
+              key={index}
+              onClick={() => handleOptionSelect(option)}
+              $isSelected={option === value}
+            >
+              {option}
+            </ComboBoxOption>
+          ))}
+        </ComboBoxDropdown>
+      )}
+    </ComboBoxContainer>
+  );
 };
 
 // Creatable ComboBox Component
@@ -1919,7 +2015,7 @@ const ReportPage = () => {
                                       ? sdlcTasksMap[row.sdlcStep] || []
                                       : []
                                   }
-                                  placeholder={row.sdlcStep ? "SDLC Task" : "Select SDLC Step first"}
+                                  placeholder="SDLC Task"
                                   storageKey="sdlcTaskOptions"
                                   disabled={!row.sdlcStep}
                                 />
@@ -1944,7 +2040,7 @@ const ReportPage = () => {
                                     "Bug Fixing",
                                     "Performance Optimization",
                                   ]}
-                                  placeholder="Select Category"
+                                  placeholder="Task Category"
                                   storageKey="taskCategoryOptions"
                                 />
                               </td>
@@ -1963,7 +2059,7 @@ const ReportPage = () => {
                                     )
                                   }
                                   required
-                                  placeholder="Hours"
+                                  placeholder="Est (Hrs)"
                                   style={{ width: "100px" }}
                                 />
                               </td>
@@ -1981,7 +2077,7 @@ const ReportPage = () => {
                                     )
                                   }
                                   required
-                                  placeholder="Hours"
+                                  placeholder="Act (Hrs)"
                                   style={{
                                     width: "100px",
                                     color:
@@ -2007,22 +2103,18 @@ const ReportPage = () => {
                               </td>
 
                               <td>
-                                <Select
+                                <CustomSelect
                                   value={row.complexity}
-                                  onChange={(e) =>
+                                  onChange={(value) =>
                                     handleRowChange(
                                       row.id,
                                       "complexity",
-                                      e.target.value,
+                                      value
                                     )
                                   }
-                                  required
-                                >
-                                  <option value="">Select Complexity</option>
-                                  <option value="Low">Low</option>
-                                  <option value="Medium">Medium</option>
-                                  <option value="High">High</option>
-                                </Select>
+                                  options={["Low", "Medium", "High"]}
+                                  placeholder="Complexity"
+                                />
                               </td>
                               <td>
                                 <CreatableComboBox
@@ -2044,7 +2136,7 @@ const ReportPage = () => {
                                     "Better UX",
                                     "More Scalable",
                                   ]}
-                                  placeholder="Select Impact"
+                                  placeholder="Quality Impact"
                                   storageKey="qualityImpactOptions"
                                 />
                               </td>
@@ -2443,22 +2535,18 @@ const ReportPage = () => {
                             <MobileCardField>
                               <MobileFieldLabel>Complexity</MobileFieldLabel>
                               <MobileFieldValue>
-                                <Select
+                                <CustomSelect
                                   value={row.complexity}
-                                  onChange={(e) =>
+                                  onChange={(value) =>
                                     handleRowChange(
                                       row.id,
                                       "complexity",
-                                      e.target.value,
+                                      value
                                     )
                                   }
-                                  required
-                                >
-                                  <option value="">Select Complexity</option>
-                                  <option value="Low">Low</option>
-                                  <option value="Medium">Medium</option>
-                                  <option value="High">High</option>
-                                </Select>
+                                  options={["Low", "Medium", "High"]}
+                                  placeholder="Select Complexity"
+                                />
                               </MobileFieldValue>
                             </MobileCardField>
 

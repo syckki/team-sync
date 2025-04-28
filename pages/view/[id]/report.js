@@ -1621,25 +1621,44 @@ const ReportPage = () => {
                     <TableDesktop>
                       <thead>
                         <tr>
+                          <th></th>
                           <th>Platform</th>
                           <th>Initiative</th>
                           <th>SDLC Step</th>
                           <th>SDLC Task</th>
                           <th>Task Category</th>
-                          <th>Task Details</th>
                           <th>Estimated Time</th>
                           <th>Actual Time</th>
                           <th>Time Saved</th>
                           <th>AI Tool Used</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
-                          <th>Notes</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((row) => (
-                          <tr key={row.id}>
+                          <React.Fragment key={row.id}>
+                            <tr 
+                              className={`expandable ${expandedRows[row.id] ? 'expanded' : ''}`}
+                              onClick={() => toggleRowExpand(row.id)}
+                            >
+                            <td>
+                              <div className="expand-icon">
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                              </div>
+                            </td>
                             <td>
                               <CreatableComboBox
                                 value={row.platform}
@@ -1723,21 +1742,7 @@ const ReportPage = () => {
                                 storageKey="taskCategoryOptions"
                               />
                             </td>
-                            <td>
-                              <Textarea
-                                value={row.taskDetails}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "taskDetails",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="Describe the task in detail"
-                                rows={2}
-                              />
-                            </td>
+
                             <td>
                               <Input
                                 type="number"
@@ -1840,24 +1845,15 @@ const ReportPage = () => {
                                 storageKey="qualityImpactOptions"
                               />
                             </td>
-                            <td>
-                              <Textarea
-                                value={row.notesHowAIHelped}
-                                onChange={(e) =>
-                                  handleRowChange(
-                                    row.id,
-                                    "notesHowAIHelped",
-                                    e.target.value,
-                                  )
-                                }
-                                required
-                                placeholder="Describe how AI helped with this task"
-                                rows={2}
-                              />
-                            </td>
+
                             <td>
                               {rows.length > 1 && (
-                                <DeleteButton onClick={() => removeRow(row.id)}>
+                                <DeleteButton 
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent row expansion
+                                    removeRow(row.id);
+                                  }}
+                                >
                                   <svg
                                     viewBox="0 0 24 24"
                                     fill="none"
@@ -1886,7 +1882,56 @@ const ReportPage = () => {
                               )}
                             </td>
                           </tr>
-                        ))}
+                          
+                          {expandedRows[row.id] && (
+                            <tr className="detail-row">
+                              <td colSpan="13">
+                                <DetailContainer>
+                                  <DetailSection>
+                                    <DetailLabel>Task Details</DetailLabel>
+                                    <DetailContent>
+                                      <Textarea
+                                        value={row.taskDetails}
+                                        onChange={(e) =>
+                                          handleRowChange(
+                                            row.id,
+                                            "taskDetails",
+                                            e.target.value,
+                                          )
+                                        }
+                                        required
+                                        placeholder="Enter task details..."
+                                        rows={3}
+                                        style={{ width: '100%', border: 'none' }}
+                                      />
+                                    </DetailContent>
+                                  </DetailSection>
+                                  
+                                  <DetailSection>
+                                    <DetailLabel>Notes</DetailLabel>
+                                    <DetailContent>
+                                      <Textarea
+                                        value={row.notesHowAIHelped}
+                                        onChange={(e) =>
+                                          handleRowChange(
+                                            row.id,
+                                            "notesHowAIHelped",
+                                            e.target.value,
+                                          )
+                                        }
+                                        required
+                                        placeholder="Describe how AI helped with this task"
+                                        rows={3}
+                                        style={{ width: '100%', border: 'none' }}
+                                      />
+                                    </DetailContent>
+                                  </DetailSection>
+                                </DetailContainer>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))}
                       </tbody>
                     </TableDesktop>
                     

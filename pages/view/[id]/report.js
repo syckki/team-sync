@@ -11,10 +11,9 @@ import {
 } from "../../../lib/cryptoUtils";
 
 const Container = styled.div`
-  max-width: 1240px;
+  width: 100%;
   margin: 0 auto;
   padding: 0;
-  width: 100%;
   box-sizing: border-box;
   background-color: #fff;
   border-radius: 8px;
@@ -192,8 +191,8 @@ const Textarea = styled.textarea`
   border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-size: 1rem;
-  min-height: 150px;
   background-color: #f8f9fa;
+  resize: vertical;
 
   &:focus {
     outline: none;

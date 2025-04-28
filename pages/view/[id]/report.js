@@ -323,7 +323,7 @@ const TableDesktop = styled.table`
     background-color: #f8f9fa;
   }
 
-  /* Row hover styling removed - only expand icon is clickable now */
+  /* We're only making the arrow clickable for expansion */
 
   tr.expanded {
     background-color: rgba(78, 127, 255, 0.08);
@@ -2250,8 +2250,9 @@ const ReportPage = () => {
                                       ? sdlcTasksMap[row.sdlcStep] || []
                                       : []
                                   }
-                                  placeholder="Select Task"
+                                  placeholder={row.sdlcStep ? "Select Task" : "Select SDLC Step first"}
                                   storageKey="sdlcTaskOptions"
+                                  disabled={!row.sdlcStep}
                                 />
                               </MobileFieldValue>
                             </MobileCardField>

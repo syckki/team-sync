@@ -121,6 +121,7 @@ const Input = styled.input`
 const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
+  z-index: 100; // Ensure container has z-index for proper stacking
 `;
 
 const ComboBoxInput = styled.input`
@@ -153,7 +154,7 @@ const ComboBoxDropdown = styled.ul`
   background-color: white;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
@@ -258,7 +259,7 @@ const ResponsiveTable = styled.div`
   width: 100%;
   margin-bottom: 1rem;
   border-radius: calc(0.5rem - 2px);
-  overflow: hidden;
+  position: relative;
   border: 1px solid rgb(229 231 235);
 `;
 
@@ -268,6 +269,10 @@ const TableDesktop = styled.table`
 
   thead {
     background-color: rgb(249 250 251);
+  }
+
+  tbody td:not(:first-of-type):not(:last-of-type) {
+    padding: 0.75rem 0.75rem 0.75rem 0;
   }
 
   th,
@@ -807,6 +812,7 @@ const CreatableComboBox = ({ value, onChange, options = [], placeholder, storage
 const MultiSelectContainer = styled.div`
   position: relative;
   width: 100%;
+  z-index: 100; // Ensure container has z-index for proper stacking
 `;
 
 const SelectedItemsContainer = styled.div`

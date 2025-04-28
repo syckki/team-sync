@@ -1,3 +1,4 @@
+import React from "react";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";

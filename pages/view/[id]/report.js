@@ -1172,18 +1172,44 @@ const ReportPage = () => {
     );
   };
 
+  // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
+  const roundToQuarterHour = (time) => {
+    const value = parseFloat(time) || 0;
+    return (Math.round(value * 4) / 4).toFixed(2);
+  };
+
+  // Format time to 2-digit integer, 2-digit decimal (e.g., 01.50, 12.25)
+  const formatTimeDisplay = (time) => {
+    const value = parseFloat(time) || 0;
+    const intPart = Math.floor(value).toString().padStart(2, '0');
+    const decPart = (Math.round((value % 1) * 100)).toString().padStart(2, '0');
+    return `${intPart}.${decPart}`;
+  };
+
   const handleRowChange = (id, field, value) => {
     setRows((prevRows) =>
       prevRows.map((row) => {
         if (row.id === id) {
           const updatedRow = { ...row, [field]: value };
           
+          // If changing time fields, apply quarter-hour rounding
+          if (field === 'estimatedTimeWithoutAI' || field === 'actualTimeWithAI') {
+            // Round to nearest quarter hour
+            if (field === 'estimatedTimeWithoutAI') {
+              updatedRow.estimatedTimeWithoutAI = roundToQuarterHour(value);
+            }
+            if (field === 'actualTimeWithAI') {
+              updatedRow.actualTimeWithAI = roundToQuarterHour(value);
+            }
+          }
+          
           // Auto-calculate timeSaved if both time fields have values
           if ((field === 'estimatedTimeWithoutAI' || field === 'actualTimeWithAI') && 
               updatedRow.estimatedTimeWithoutAI && updatedRow.actualTimeWithAI) {
             const estimatedTime = parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
             const actualTime = parseFloat(updatedRow.actualTimeWithAI) || 0;
-            const timeSaved = Math.max(0, estimatedTime - actualTime).toFixed(1);
+            // We don't use Math.max here as we want to show negative savings too
+            const timeSaved = (estimatedTime - actualTime).toFixed(2);
             updatedRow.timeSaved = timeSaved;
           }
           
@@ -1628,9 +1654,9 @@ const ReportPage = () => {
                           <th>SDLC Step</th>
                           <th>SDLC Task</th>
                           <th>Task Category</th>
-                          <th>Estimated Time</th>
-                          <th>Actual Time</th>
-                          <th>Time Saved</th>
+                          <th>Est (h)</th>
+                          <th>Act (h)</th>
+                          <th>Saved</th>
                           <th>Complexity</th>
                           <th>Quality Impact</th>
                           <th>Action</th>
@@ -2107,7 +2133,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Estimated Time</MobileFieldLabel>
+                              <MobileFieldLabel>Est (h)</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"
@@ -2128,7 +2154,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Actual Time</MobileFieldLabel>
+                              <MobileFieldLabel>Act (h)</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"
@@ -2149,7 +2175,7 @@ const ReportPage = () => {
                             </MobileCardField>
 
                             <MobileCardField>
-                              <MobileFieldLabel>Time Saved</MobileFieldLabel>
+                              <MobileFieldLabel>Saved</MobileFieldLabel>
                               <MobileFieldValue>
                                 <Input
                                   type="number"

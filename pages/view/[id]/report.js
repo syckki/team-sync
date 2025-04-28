@@ -1444,26 +1444,19 @@ const ReportPage = () => {
                             </td>
                           </tr>
                         ))}
-                        {/* Summary row */}
-                        <tr className="summary-row" style={{ 
-                          backgroundColor: '#f8fafc', 
-                          fontWeight: 600,
-                          borderTop: '2px solid #e2e8f0' 
-                        }}>
-                          <td colSpan={2}>Total</td>
-                          <td>
-                            {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)}
-                          </td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td>
-                            {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
-                          </td>
-                          <td></td>
-                        </tr>
                       </tbody>
                     </TableDesktop>
+                    
+                    {/* Summary text below the table to match the screenshot */}
+                    <div style={{ 
+                      textAlign: 'right',
+                      padding: '12px 8px',
+                      fontSize: '0.875rem',
+                      color: '#6b7280',
+                      fontWeight: 500
+                    }}>
+                      {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | Total Hours: {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)} | Hours Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
+                    </div>
 
                     {/* Mobile Card View */}
                     <TableMobile>
@@ -1628,39 +1621,17 @@ const ReportPage = () => {
                         </MobileCard>
                       ))}
                       
-                      {/* Summary Card for Mobile */}
-                      <MobileCard style={{ 
-                        backgroundColor: '#f8fafc',
-                        borderColor: '#4e7fff',
-                        borderWidth: '2px'
+                      {/* Summary text for mobile to match the screenshot */}
+                      <div style={{ 
+                        textAlign: 'right',
+                        padding: '12px 8px',
+                        fontSize: '0.875rem',
+                        color: '#6b7280',
+                        fontWeight: 500,
+                        marginTop: '8px'
                       }}>
-                        <MobileCardHeader style={{ 
-                          backgroundColor: '#4e7fff',
-                          color: 'white',
-                          fontWeight: 'bold'
-                        }}>
-                          Summary
-                        </MobileCardHeader>
-                        <MobileCardBody>
-                          <MobileCardField>
-                            <MobileFieldLabel>
-                              Total Hours
-                            </MobileFieldLabel>
-                            <MobileFieldValue style={{ fontWeight: 'bold' }}>
-                              {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)}
-                            </MobileFieldValue>
-                          </MobileCardField>
-                          
-                          <MobileCardField>
-                            <MobileFieldLabel>
-                              Total Hours Saved
-                            </MobileFieldLabel>
-                            <MobileFieldValue style={{ fontWeight: 'bold' }}>
-                              {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
-                            </MobileFieldValue>
-                          </MobileCardField>
-                        </MobileCardBody>
-                      </MobileCard>
+                        {rows.length} {rows.length === 1 ? 'entry' : 'entries'} | Total Hours: {rows.reduce((sum, row) => sum + (parseFloat(row.hours) || 0), 0).toFixed(1)} | Hours Saved: {rows.reduce((sum, row) => sum + (parseFloat(row.hoursSaved) || 0), 0).toFixed(1)}
+                      </div>
                     </TableMobile>
                   </ResponsiveTable>
 

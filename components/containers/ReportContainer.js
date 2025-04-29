@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Head from "next/head";
 import styled from "styled-components";
 import ReportForm from "./ReportForm";
 import ReportViewer from "./ReportViewer";
@@ -8,105 +7,88 @@ import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
 
 // Styled components
 const Container = styled.div`
-  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  padding: 1rem;
+`;
+
+const Header = styled.div`
   margin-bottom: 2rem;
 `;
 
-const HeaderBanner = styled.div`
-  background-color: hsl(217 91% 60%);
-  color: white;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
+const Title = styled.h1`
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
 `;
 
-const PageTitle = styled.h1`
-  color: white;
-  margin: 0;
-  font-size: 1.125rem;
-  line-height: 1.5rem;
-  letter-spacing: -0.025em;
-  font-weight: 500;
+const Subtitle = styled.p`
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+`;
+
+const Tabs = styled.div`
   display: flex;
-  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
 `;
 
-const LockIcon = styled.div`
-  width: 1.25rem;
-  height: auto;
-  margin-right: 0.5rem;
-  display: inline-flex;
-`;
+const Tab = styled.button`
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: ${({ active }) => (active ? "#4e7fff" : "#64748b")};
+  border-bottom: 2px solid
+    ${({ active }) => (active ? "#4e7fff" : "transparent")};
+  transition: all 0.2s;
 
-const PageSubtitle = styled.p`
-  margin: 0;
-  margin-top: 0.375rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  color: rgb(255 255 255 / 0.9);
-`;
-
-const ContentContainer = styled.div`
-  padding: 0 2rem 2rem;
-
-  @media (max-width: 768px) {
-    padding: 0 1rem 1.5rem;
+  &:hover {
+    color: ${({ active }) => (active ? "#4e7fff" : "#1e293b")};
   }
 `;
 
 const ErrorMessage = styled.div`
-  color: #e53e3e;
-  padding: 0.75rem;
-  background-color: #fff5f5;
-  border: 1px solid #fed7d7;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f87171;
 `;
 
 const SuccessMessage = styled.div`
-  color: #38a169;
-  padding: 0.75rem;
-  background-color: #f0fff4;
-  border: 1px solid #c6f6d5;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-`;
-
-const BackLinkText = styled.span`
-  display: inline-block;
-  margin-top: 1rem;
-  color: #4e7fff;
-  text-decoration: none;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  background-color: #ecfdf5;
+  color: #065f46;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #34d399;
 `;
 
 /**
- * ReportContainer - The main container for the report page
- * Handles routing, mode detection, and encryption key management
+ * ReportContainer Component - Manages the report form and viewer
  */
 const ReportContainer = () => {
   const router = useRouter();
-  const { id, view } = router.query;
-  const isViewMode = view === "true";
-
-  const [key, setKey] = useState(null);
+  const { id } = router.query;
+  
+  // State variables
+  const [activeTab, setActiveTab] = useState("submit");
+  const [keyValue, setKeyValue] = useState("");
   const [cryptoKey, setCryptoKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
+  const [success, setSuccess] = useState(null);
+  
+  // Check if we're in view-only mode
+  const isViewMode = router.pathname.includes("/view");
+  
   // Extract the key from URL fragment on mount
   useEffect(() => {
     if (!router.isReady) return;
@@ -122,228 +104,128 @@ const ReportContainer = () => {
         return;
       }
 
-      setKey(fragment);
+      setKeyValue(fragment);
 
-      // If in view mode, fetch the reports
-      if (isViewMode) {
-        fetchReports(fragment);
-      }
+      // Import the crypto key
+      importKeyFromBase64(fragment)
+        .then((importedKey) => {
+          setCryptoKey(importedKey);
+          
+          // If in view mode, fetch thread metadata to get title
+          fetchThreadMetadata(id);
+        })
+        .catch((err) => {
+          console.error("Error importing key:", err);
+          setError("Invalid encryption key format.");
+        });
     } catch (err) {
       console.error("Error parsing key:", err);
       setError("Could not retrieve encryption key from URL.");
     } finally {
       setIsLoading(false);
     }
-  }, [router.isReady, isViewMode, id]);
-
-  // Fetch thread title when key is available
-  useEffect(() => {
-    if (key && id) {
-      const authorId = localStorage.getItem("encrypted-app-author-id");
-      if (authorId) {
-        fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            setThreadTitle(data.threadTitle || id);
-          })
-          .catch((err) => {
-            console.error("Error fetching thread data:", err);
-          });
-      }
-    }
-  }, [key, id]);
-
-  // Import the crypto key for use in child components
-  useEffect(() => {
-    if (key) {
-      importKeyFromBase64(key)
-        .then((importedKey) => {
-          setCryptoKey(importedKey);
-        })
-        .catch((err) => {
-          console.error("Error importing crypto key:", err);
-          setError("Failed to process encryption key.");
-        });
-    }
-  }, [key]);
-
-  const fetchReports = async (keyValue) => {
+  }, [router.isReady, id]);
+  
+  // Fetch thread metadata to get the title
+  const fetchThreadMetadata = async (threadId) => {
     try {
-      setIsLoading(true);
-
-      // Get author ID from localStorage
-      const authorId = localStorage.getItem("encrypted-app-author-id");
-      if (!authorId) {
-        throw new Error(
-          "Author ID not found. Please go back to the thread view."
-        );
-      }
-
-      // Fetch all messages from the thread
-      const response = await fetch(
-        `/api/download?threadId=${id}&authorId=${authorId}`
-      );
-
+      const response = await fetch(`/api/thread-meta?threadId=${threadId}`);
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch thread data");
+        throw new Error("Failed to fetch thread metadata");
       }
-
-      const threadData = await response.json();
-
-      // Import the key from fragment
-      const cryptoKey = await importKeyFromBase64(keyValue);
-
-      // Filter and decrypt reports
-      const decryptedReports = [];
-
-      for (const message of threadData.messages) {
-        // Check if this message is marked as a report in metadata
-        if (message.metadata && message.metadata.isReport) {
-          try {
-            // Convert base64 data back to ArrayBuffer
-            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
-              c.charCodeAt(0)
-            );
-
-            // Extract IV and ciphertext
-            const iv = encryptedBytes.slice(0, 12);
-            const ciphertext = encryptedBytes.slice(12);
-
-            // Decrypt the data
-            const decrypted = await decryptData(ciphertext, cryptoKey, iv);
-
-            // Parse the decrypted JSON
-            const content = JSON.parse(new TextDecoder().decode(decrypted));
-
-            decryptedReports.push({
-              id: message.index,
-              timestamp: message.metadata.timestamp || new Date().toISOString(),
-              authorId: message.metadata.authorId,
-              isCurrentUser: message.metadata.authorId === authorId,
-              ...content,
-            });
-          } catch (err) {
-            console.error("Error decrypting report:", err);
-          }
-        }
+      
+      const data = await response.json();
+      
+      if (data && data.title) {
+        setThreadTitle(data.title);
       }
-
-      // Sort reports by timestamp, newest first
-      decryptedReports.sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
-
-      setReports(decryptedReports);
     } catch (err) {
-      console.error("Error fetching reports:", err);
-      setError(`Failed to load reports: ${err.message}`);
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching thread metadata:", err);
+      // Non-critical error, continue with empty title
     }
   };
-
-  // Handler for when a report is successfully submitted
-  const handleReportSubmitted = () => {
-    setSuccess(true);
-    
-    // Refresh the reports if in view mode
-    if (isViewMode) {
-      fetchReports(key);
-    }
-    
-    // Scroll to top
-    window.scrollTo(0, 0);
-    
-    // Reset success message after 5 seconds
+  
+  // Handle form submission success
+  const handleSubmitSuccess = () => {
+    setSuccess("Report submitted successfully!");
     setTimeout(() => {
-      setSuccess(false);
+      setActiveTab("view");
+      setSuccess(null);
+    }, 2000);
+  };
+  
+  // Handle submission error
+  const handleSubmitError = (errorMsg) => {
+    setError(errorMsg);
+    setTimeout(() => {
+      setError(null);
     }, 5000);
   };
-
+  
   if (isLoading) {
     return (
       <Container>
-        <p>Loading...</p>
+        <div>Loading...</div>
       </Container>
     );
   }
-
-  return (
-    <>
-      <Head>
-        <title>
-          {isViewMode
-            ? "View AI Productivity Reports"
-            : "Submit AI Productivity Report"}
-        </title>
-        <meta
-          name="description"
-          content="AI Productivity Reporting for Secure Teams"
-        />
-        <meta name="robots" content="noindex, nofollow" />
-      </Head>
-
+  
+  if (error && !success) {
+    return (
       <Container>
-        <HeaderBanner>
-          <PageTitle>
-            <LockIcon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </LockIcon>
-            {isViewMode ? "AI Productivity Reports" : "Submit AI Productivity Report"}
-          </PageTitle>
-          <PageSubtitle>
-            {isViewMode
-              ? `Viewing reports for ${threadTitle}`
-              : `New report for ${threadTitle}`}
-          </PageSubtitle>
-        </HeaderBanner>
-
-        <ContentContainer>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          {success && (
-            <SuccessMessage>
-              Your AI productivity report has been submitted successfully!
-            </SuccessMessage>
-          )}
-
-          {isViewMode ? (
-            // View mode - show report viewer
-            <ReportViewer 
-              reports={reports} 
-              threadTitle={threadTitle} 
-              isLoading={isLoading}
-            />
-          ) : (
-            // Edit mode - show report form
-            <ReportForm
-              threadId={id}
-              threadTitle={threadTitle}
-              cryptoKey={cryptoKey}
-              onSubmitSuccess={handleReportSubmitted}
-              onError={setError}
-            />
-          )}
-
-          <div>
-            <BackLinkText onClick={() => router.back()}>
-              ← Back to thread
-            </BackLinkText>
-          </div>
-        </ContentContainer>
+        <ErrorMessage>{error}</ErrorMessage>
+        {keyValue && (
+          <button onClick={() => setError(null)}>Try Again</button>
+        )}
       </Container>
-    </>
+    );
+  }
+  
+  return (
+    <Container>
+      <Header>
+        <Title>AI Productivity Report</Title>
+        <Subtitle>
+          Track and analyze how AI tools are improving your team's productivity
+        </Subtitle>
+      </Header>
+      
+      {success && <SuccessMessage>{success}</SuccessMessage>}
+      
+      {!isViewMode && (
+        <Tabs>
+          <Tab
+            active={activeTab === "submit"}
+            onClick={() => setActiveTab("submit")}
+          >
+            Submit Report
+          </Tab>
+          <Tab
+            active={activeTab === "view"}
+            onClick={() => setActiveTab("view")}
+          >
+            View Reports
+          </Tab>
+        </Tabs>
+      )}
+      
+      {(activeTab === "submit" && !isViewMode) ? (
+        <ReportForm
+          threadId={id}
+          threadTitle={threadTitle}
+          cryptoKey={cryptoKey}
+          onSubmitSuccess={handleSubmitSuccess}
+          onError={handleSubmitError}
+        />
+      ) : (
+        <ReportViewer
+          threadId={id}
+          keyValue={keyValue}
+          threadTitle={threadTitle}
+        />
+      )}
+    </Container>
   );
 };
 

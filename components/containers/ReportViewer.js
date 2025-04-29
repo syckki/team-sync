@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import styled from "styled-components";
 import ResponsiveTable from "../presentational/ResponsiveTable";
 import CustomSelect from "../presentational/CustomSelect";
-import CreatableComboBox from "../presentational/CreatableComboBox";
+import useReportData from "../../hooks/useReportData";
 
 // Styled components
 const ViewerContainer = styled.div`
@@ -106,117 +106,49 @@ const StatLabel = styled.div`
  * ReportViewer Component - Displays reports with filtering and analysis
  *
  * @param {Object} props Component props
- * @param {Array} props.reports Array of report objects
+ * @param {string} props.threadId The thread ID for fetching reports
+ * @param {string} props.keyValue The encryption key as Base64 string
  * @param {string} props.threadTitle Title of the thread
- * @param {boolean} props.isLoading Loading state
+ * @param {Array} props.reports Array of report objects (optional, will fetch if not provided)
+ * @param {boolean} props.isLoading Loading state (optional)
  */
-const ReportViewer = ({ reports = [], threadTitle = "", isLoading = false }) => {
-  // States for filters
-  const [platformFilter, setPlatformFilter] = useState("");
-  const [memberFilter, setMemberFilter] = useState("");
-  const [sdlcFilter, setSdlcFilter] = useState("");
-  const [timeFrame, setTimeFrame] = useState("all");
+const ReportViewer = ({ 
+  threadId,
+  keyValue,
+  threadTitle = "",
+  reports = [],
+  isLoading: initialLoading = false 
+}) => {
+  // Use the custom hook for report data and filtering
+  const {
+    // Data
+    filteredReports,
+    tableData,
+    stats,
+    
+    // Filter options
+    filterOptions,
+    
+    // Filter state and setters
+    platformFilter,
+    setPlatformFilter,
+    memberFilter,
+    setMemberFilter,
+    sdlcFilter,
+    setSdlcFilter,
+    timeFrame,
+    setTimeFrame,
+  } = useReportData({
+    // The hook expects threadId and keyValue, but since we're
+    // getting reports directly as props in this component, we just pass 
+    // the reports data and ignore the fetch functionality
+    threadId: null,
+    keyValue: null,
+    // Override the fetched reports with the ones passed as props
+    reports,
+  });
 
-  // Extract unique options for filters
-  const platforms = useMemo(() => {
-    const platformSet = new Set();
-    reports.forEach((report) => {
-      report.tasks.forEach((task) => {
-        if (task.platform) platformSet.add(task.platform);
-      });
-    });
-    return Array.from(platformSet);
-  }, [reports]);
-
-  const teamMembers = useMemo(() => {
-    const memberSet = new Set();
-    reports.forEach((report) => {
-      if (report.teamMember) memberSet.add(report.teamMember);
-    });
-    return Array.from(memberSet);
-  }, [reports]);
-
-  const sdlcSteps = useMemo(() => {
-    const sdlcSet = new Set();
-    reports.forEach((report) => {
-      report.tasks.forEach((task) => {
-        if (task.sdlcStep) sdlcSet.add(task.sdlcStep);
-      });
-    });
-    return Array.from(sdlcSet);
-  }, [reports]);
-
-  // Filter reports based on selected filters
-  const filteredReports = useMemo(() => {
-    return reports.filter((report) => {
-      // Time frame filter
-      if (timeFrame !== "all") {
-        const reportDate = new Date(report.timestamp);
-        const now = new Date();
-        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const oneMonthAgo = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          now.getDate()
-        );
-
-        if (timeFrame === "week" && reportDate < oneWeekAgo) return false;
-        if (timeFrame === "month" && reportDate < oneMonthAgo) return false;
-      }
-
-      // Team member filter
-      if (memberFilter && report.teamMember !== memberFilter) return false;
-
-      // Task-based filters (platform and SDLC)
-      if (platformFilter || sdlcFilter) {
-        // Check if any task matches the filters
-        const matchingTasks = report.tasks.filter((task) => {
-          if (platformFilter && task.platform !== platformFilter) return false;
-          if (sdlcFilter && task.sdlcStep !== sdlcFilter) return false;
-          return true;
-        });
-
-        // Report matches if at least one task matches filters
-        return matchingTasks.length > 0;
-      }
-
-      return true;
-    });
-  }, [reports, platformFilter, memberFilter, sdlcFilter, timeFrame]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    if (filteredReports.length === 0) {
-      return {
-        totalTasks: 0,
-        totalTimeSaved: 0,
-        avgTimeSaved: 0,
-        totalReports: 0,
-      };
-    }
-
-    let totalTasks = 0;
-    let totalTimeSaved = 0;
-
-    filteredReports.forEach((report) => {
-      const reportTasks = report.tasks || [];
-      totalTasks += reportTasks.length;
-
-      reportTasks.forEach((task) => {
-        const timeSaved = parseFloat(task.timeSaved) || 0;
-        totalTimeSaved += timeSaved;
-      });
-    });
-
-    return {
-      totalTasks,
-      totalTimeSaved: totalTimeSaved.toFixed(2),
-      avgTimeSaved: totalTasks > 0 ? (totalTimeSaved / totalTasks).toFixed(2) : 0,
-      totalReports: filteredReports.length,
-    };
-  }, [filteredReports]);
-
-  // Prepare data for the table
+  // Prepare the table columns configuration
   const tableColumns = [
     { id: "member", label: "Team Member", fixedWidth: "150px" },
     { id: "date", label: "Date", fixedWidth: "120px" },
@@ -235,41 +167,6 @@ const ReportViewer = ({ reports = [], threadTitle = "", isLoading = false }) => 
       renderer: (value) => `${value}%`
     },
   ];
-
-  const tableData = useMemo(() => {
-    const data = [];
-    
-    filteredReports.forEach((report) => {
-      const { teamMember, timestamp, tasks } = report;
-      const date = new Date(timestamp).toLocaleDateString();
-      
-      tasks.forEach((task) => {
-        const estimated = parseFloat(task.estimatedTimeWithoutAI) || 0;
-        const actual = parseFloat(task.actualTimeWithAI) || 0;
-        const saved = parseFloat(task.timeSaved) || 0;
-        const percentageSaved = estimated > 0 
-          ? Math.round((saved / estimated) * 100) 
-          : 0;
-        
-        data.push({
-          member: teamMember,
-          date,
-          platform: task.platform,
-          initiative: task.projectInitiative,
-          sdlc: task.sdlcStep,
-          task: task.taskDetails,
-          est: task.estimatedTimeWithoutAI,
-          act: task.actualTimeWithAI,
-          saved: task.timeSaved,
-          percentage: percentageSaved,
-          // Include all original data for potential detailed view
-          original: { ...task, teamMember, date, percentageSaved }
-        });
-      });
-    });
-    
-    return data;
-  }, [filteredReports]);
 
   if (isLoading) {
     return <div>Loading reports...</div>;
@@ -299,7 +196,7 @@ const ReportViewer = ({ reports = [], threadTitle = "", isLoading = false }) => 
               <CustomSelect
                 value={platformFilter}
                 onChange={setPlatformFilter}
-                options={["", ...platforms]}
+                options={["", ...filterOptions.platforms]}
                 placeholder="All Platforms"
               />
             </FilterGroup>
@@ -309,7 +206,7 @@ const ReportViewer = ({ reports = [], threadTitle = "", isLoading = false }) => 
               <CustomSelect
                 value={memberFilter}
                 onChange={setMemberFilter}
-                options={["", ...teamMembers]}
+                options={["", ...filterOptions.members]}
                 placeholder="All Members"
               />
             </FilterGroup>
@@ -319,7 +216,7 @@ const ReportViewer = ({ reports = [], threadTitle = "", isLoading = false }) => 
               <CustomSelect
                 value={sdlcFilter}
                 onChange={setSdlcFilter}
-                options={["", ...sdlcSteps]}
+                options={["", ...filterOptions.sdlcSteps]}
                 placeholder="All Phases"
               />
             </FilterGroup>

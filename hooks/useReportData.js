@@ -7,12 +7,13 @@ import { importKeyFromBase64, decryptData } from "../lib/cryptoUtils";
  * @param {Object} options - Hook configuration options
  * @param {string} options.threadId - The thread ID to fetch reports from
  * @param {string} options.keyValue - The encryption key as Base64 string
+ * @param {Array} options.reports - Optional array of pre-loaded reports
  * @returns {Object} Report data and filtering functions
  */
-const useReportData = ({ threadId, keyValue }) => {
+const useReportData = ({ threadId, keyValue, reports: initialReports = [] }) => {
   // State
-  const [reports, setReports] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [reports, setReports] = useState(initialReports);
+  const [isLoading, setIsLoading] = useState(initialReports.length === 0);
   const [error, setError] = useState(null);
   
   // Filters
@@ -21,12 +22,14 @@ const useReportData = ({ threadId, keyValue }) => {
   const [sdlcFilter, setSdlcFilter] = useState("");
   const [timeFrame, setTimeFrame] = useState("all");
   
-  // Fetch reports when threadId or keyValue changes
+  // Fetch reports when threadId or keyValue changes, only if reports were not provided
   useEffect(() => {
-    if (threadId && keyValue) {
+    if (threadId && keyValue && !reports.length) {
       fetchReports();
+    } else {
+      setIsLoading(false);
     }
-  }, [threadId, keyValue]);
+  }, [threadId, keyValue, reports.length]);
   
   // Function to fetch and decrypt reports
   const fetchReports = async () => {

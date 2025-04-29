@@ -953,6 +953,7 @@ const CreatableComboBox = ({
           if (disabled) {
             e.preventDefault();
             e.stopPropagation();
+            return false;
           } else {
             setIsOpen(true);
           }
@@ -962,7 +963,15 @@ const CreatableComboBox = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => !disabled && setIsOpen(true)}
+          onFocus={(e) => {
+            if (disabled) {
+              e.preventDefault();
+              e.target.blur(); // Remove focus when disabled
+              return false;
+            } else {
+              setIsOpen(true);
+            }
+          }}
           placeholder={placeholder}
           autoComplete="off"
           disabled={disabled}

@@ -26,7 +26,7 @@ export const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
+  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
   opacity: ${props => props.disabled ? 0.7 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
@@ -161,7 +161,7 @@ const CustomSelect = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          hasValue={value.length > 0}
+          $hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
         />
         {value.length > 0 && !disabled && (

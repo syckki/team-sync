@@ -129,7 +129,7 @@ const CreatableComboBox = ({
           placeholder={placeholder}
           autoComplete="off"
           disabled={disabled}
-          hasValue={inputValue.length > 0}
+          $hasValue={inputValue.length > 0}
         />
         {inputValue.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

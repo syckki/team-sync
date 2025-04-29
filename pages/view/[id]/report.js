@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
@@ -117,136 +117,6 @@ const Input = styled.input`
   &:read-only {
     background-color: rgb(243 244 246);
     cursor: not-allowed;
-  }
-`;
-
-const ComboBoxContainer = styled.div`
-  position: relative;
-  width: 100%;
-  z-index: 1000; // Higher z-index to ensure it stacks above all other elements
-  &:focus-within {
-    z-index: 1001; // Even higher when focused to ensure active dropdowns appear on top
-  }
-`;
-
-const ComboBoxInputWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-`;
-
-const ComboBoxInput = styled.input`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  padding-right: 2rem;
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
-  opacity: ${props => props.disabled ? 0.7 : 1};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.disabled ? 'hsl(20 5.9% 90%)' : '#4e7fff'};
-    background-color: ${props => props.disabled ? '#f8f9fa' : '#fff'};
-  }
-`;
-
-const ClearButton = styled.button`
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #ef4444;
-  }
-`;
-
-const ComboBoxDropdown = styled.ul`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid #e2e8f0;
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  background-color: white;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1001; // Match the higher z-index from container
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: max-content;
-  min-width: 100%;
-  white-space: nowrap;
-`;
-
-const ComboBoxOption = styled.li`
-  padding: 0.75rem;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: visible;
-
-  &:hover {
-    background-color: #f1f5f9;
-  }
-
-  ${(props) =>
-    props.$isSelected &&
-    `
-    background-color: #f8fafc;
-    font-weight: 600;
-  `}
-`;
-
-const ComboBoxCreateOption = styled.li`
-  padding: 0.75rem;
-  cursor: pointer;
-  border-top: 1px dashed #e2e8f0;
-  color: #4e7fff;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: visible;
-
-  &:hover {
-    background-color: #f1f5f9;
-  }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  background-color: #f8f9fa;
-  resize: vertical;
-
-  padding: 0.5rem 0.75rem;
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-
-  &:focus {
-    outline: none;
-    border-color: #4e7fff;
-    background-color: #fff;
   }
 `;
 
@@ -395,36 +265,6 @@ const TableDesktop = styled.table`
   }
 `;
 
-const DetailContainer = styled.div`
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-`;
-
-const DetailSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const DetailLabel = styled.div`
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: rgb(107 114 128);
-  text-transform: uppercase;
-`;
-
-const DetailContent = styled.div`
-  font-size: 0.875rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  padding: 0.75rem;
-  background-color: white;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
-`;
-
 const TableMobile = styled.div`
   display: none;
 
@@ -486,49 +326,6 @@ const MobileActions = styled.div`
   background-color: #f8f9fa;
   display: flex;
   justify-content: flex-end;
-`;
-
-// Keep the original table styled for backward compatibility
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-
-  th,
-  td {
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    padding: 0.75rem;
-    text-align: left;
-  }
-
-  th {
-    background-color: ${({ theme }) => theme.colors.backgroundAlt};
-    font-weight: 600;
-  }
-
-  tr:nth-child(even) {
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
-  }
-
-  @media (max-width: 992px) {
-    display: none;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  background-color: #f8f9fa;
-
-  &:focus {
-    outline: none;
-    border-color: #4e7fff;
-    background-color: #fff;
-  }
 `;
 
 const ButtonRow = styled.div`
@@ -640,23 +437,6 @@ const ReportContent = styled.div`
   line-height: 1.5;
 `;
 
-const TeamInfo = styled.div`
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-
-  p {
-    margin: 0.5rem 0;
-    color: #2d3748;
-  }
-`;
-
-const TeamInfoLabel = styled.span`
-  font-weight: 600;
-  margin-right: 0.5rem;
-  color: #4a5568;
-`;
-
 const sdlcSteps = [
   "Requirements",
   "Design",
@@ -665,25 +445,6 @@ const sdlcSteps = [
   "Deployment",
   "Maintenance",
 ];
-
-// Custom hook for auto-resizing text areas
-const useAutoResizeTextArea = (value) => {
-  const textAreaRef = useRef(null);
-
-  useEffect(() => {
-    const textArea = textAreaRef.current;
-    if (textArea) {
-      // Set height to auto to get the correct scrollHeight
-      textArea.style.height = "auto";
-      // Set the height to the scrollHeight to fit the content
-      textArea.style.height = `${textArea.scrollHeight}px`;
-    }
-  }, [value]);
-
-  return textAreaRef;
-};
-
-
 
 const sdlcTasksMap = {
   Requirements: [
@@ -729,14 +490,6 @@ const sdlcTasksMap = {
     "Documentation Updates",
   ],
 };
-
-
-
-
-
-
-
-
 
 const ReportPage = () => {
   const router = useRouter();
@@ -922,16 +675,6 @@ const ReportPage = () => {
   const roundToQuarterHour = (time) => {
     const value = parseFloat(time) || 0;
     return (Math.round(value * 4) / 4).toFixed(2);
-  };
-
-  // Format time to 2-digit integer, 2-digit decimal (e.g., 01.50, 12.25)
-  const formatTimeDisplay = (time) => {
-    const value = parseFloat(time) || 0;
-    const intPart = Math.floor(value).toString().padStart(2, "0");
-    const decPart = Math.round((value % 1) * 100)
-      .toString()
-      .padStart(2, "0");
-    return `${intPart}.${decPart}`;
   };
 
   const handleRowChange = (id, field, value) => {
@@ -2194,7 +1937,7 @@ const ReportPage = () => {
             </>
           )}
 
-          <Link href={`/view/${id}`} legacyBehavior passHref>
+          <Link href={`/view/${id}`}>
             <BackLinkText>← Back to inbox</BackLinkText>
           </Link>
         </ContentContainer>

@@ -1,0 +1,224 @@
+import React, { useState, useRef, useEffect } from "react";
+import styled from "styled-components";
+
+// Styled components for the CustomSelect
+const ComboBoxContainer = styled.div`
+  position: relative;
+  width: 100%;
+  z-index: 1000; // Higher z-index to ensure it stacks above all other elements
+  &:focus-within {
+    z-index: 1001; // Even higher when focused to ensure active dropdowns appear on top
+  }
+`;
+
+const ComboBoxInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+`;
+
+const ComboBoxInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  padding-right: ${props => props.hasValue ? '2rem' : '0.75rem'};
+  border: 1px solid hsl(20 5.9% 90%);
+  border-radius: calc(0.5rem - 2px);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
+  opacity: ${props => props.disabled ? 0.7 : 1};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.disabled ? 'hsl(20 5.9% 90%)' : '#4e7fff'};
+    background-color: ${props => props.disabled ? '#f8f9fa' : '#fff'};
+  }
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #ef4444;
+  }
+`;
+
+const ComboBoxDropdown = styled.ul`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background-color: white;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001; // Match the higher z-index from container
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: max-content;
+  min-width: 100%;
+  white-space: nowrap;
+`;
+
+const ComboBoxOption = styled.li`
+  padding: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: visible;
+
+  &:hover {
+    background-color: #f1f5f9;
+  }
+
+  ${(props) =>
+    props.$isSelected &&
+    `
+    background-color: #f8fafc;
+    font-weight: 600;
+  `}
+`;
+
+// CustomSelect Component
+const CustomSelect = ({
+  value,
+  onChange,
+  options = [],
+  placeholder,
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle option select
+  const handleOptionSelect = (option) => {
+    onChange(option);
+    setIsOpen(false);
+  };
+  
+  // Handle key presses
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    } else if (e.key === "Tab") {
+      setIsOpen(false);
+    } else if (e.key === "ArrowDown") {
+      if (!isOpen) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+    }
+  };
+
+  // Handle clear value
+  const handleClearValue = (e) => {
+    e.stopPropagation();
+    onChange("");
+  };
+
+  return (
+    <ComboBoxContainer ref={selectRef}>
+      <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
+        <ComboBoxInput
+          type="text"
+          value={value}
+          readOnly
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          hasValue={value.length > 0}
+          style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        />
+        {value.length > 0 && !disabled && (
+          <ClearButton onClick={handleClearValue} type="button" title="Clear">
+            ×
+          </ClearButton>
+        )}
+        <div
+          style={{
+            position: "absolute",
+            right: value.length > 0 ? "2rem" : "0.5rem",
+            top: "50%",
+            transform: "translateY(-50%)",
+            transition: "transform 0.2s",
+            transform: isOpen ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+          }}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </ComboBoxInputWrapper>
+
+      {isOpen && !disabled && (
+        <ComboBoxDropdown>
+          {options.map((option, index) => (
+            <ComboBoxOption
+              key={index}
+              onClick={() => handleOptionSelect(option)}
+              $isSelected={option === value}
+            >
+              {option}
+            </ComboBoxOption>
+          ))}
+        </ComboBoxDropdown>
+      )}
+    </ComboBoxContainer>
+  );
+};
+
+export default CustomSelect;
+
+// Export styled components so they can be reused
+export {
+  ComboBoxContainer,
+  ComboBoxInputWrapper,
+  ComboBoxInput,
+  ClearButton,
+  ComboBoxDropdown,
+  ComboBoxOption
+};

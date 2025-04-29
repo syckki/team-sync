@@ -803,7 +803,7 @@ const CustomSelect = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          hasValue={value.length > 0}
+          $hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
         />
         {value.length > 0 && !disabled && (
@@ -842,7 +842,7 @@ const CustomSelect = ({
             <ComboBoxOption
               key={index}
               onClick={() => handleOptionSelect(option)}
-              isSelected={option === value}
+              $isSelected={option === value}
             >
               {option}
             </ComboBoxOption>
@@ -966,7 +966,7 @@ const CreatableComboBox = ({
           placeholder={placeholder}
           autoComplete="off"
           disabled={disabled}
-          hasValue={inputValue.length > 0}
+          $hasValue={inputValue.length > 0}
         />
         {inputValue.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">
@@ -982,7 +982,7 @@ const CreatableComboBox = ({
               <ComboBoxOption
                 key={index}
                 onClick={() => handleOptionSelect(option)}
-                isSelected={option === inputValue}
+                $isSelected={option === inputValue}
               >
                 {option}
               </ComboBoxOption>

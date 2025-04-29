@@ -140,7 +140,7 @@ const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
+  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
   opacity: ${props => props.disabled ? 0.7 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
@@ -779,7 +779,7 @@ const CustomSelect = ({
       setIsOpen(false);
     } else if (e.key === "Tab") {
       setIsOpen(false);
-    } else if (e.key === "ArrowDown" && !disabled) {
+    } else if (e.key === "ArrowDown") {
       if (!isOpen) {
         e.preventDefault();
         setIsOpen(true);
@@ -803,7 +803,7 @@ const CustomSelect = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          $hasValue={value.length > 0}
+          hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
         />
         {value.length > 0 && !disabled && (
@@ -883,7 +883,7 @@ const CreatableComboBox = ({
   // Handle input change
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    if (!isOpen && !disabled) {
+    if (!isOpen) {
       setIsOpen(true);
     }
   };
@@ -949,33 +949,17 @@ const CreatableComboBox = ({
 
   return (
     <ComboBoxContainer ref={inputRef}>
-      <ComboBoxInputWrapper onClick={(e) => {
-          if (disabled) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          } else {
-            setIsOpen(true);
-          }
-        }}>
+      <ComboBoxInputWrapper>
         <ComboBoxInput
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={(e) => {
-            if (disabled) {
-              e.preventDefault();
-              e.target.blur(); // Remove focus when disabled
-              return false;
-            } else {
-              setIsOpen(true);
-            }
-          }}
+          onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
           disabled={disabled}
-          $hasValue={inputValue.length > 0}
+          hasValue={inputValue.length > 0}
         />
         {inputValue.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

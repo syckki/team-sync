@@ -149,6 +149,15 @@ const TableRow = styled.tr`
       background-color: #dcfce7;
     }
   `}
+  
+  ${props => props.$status === 'summary' && `
+    background-color: #f8fafc;
+    font-weight: 600;
+    border-top: 2px solid #e2e8f0;
+    &:hover {
+      background-color: #f1f5f9;
+    }
+  `}
 `;
 
 // Empty state component for when there is no data

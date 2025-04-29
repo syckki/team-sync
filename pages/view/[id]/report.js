@@ -944,194 +944,131 @@ const ReportPage = () => {
                       </ReportHeader>
 
                       <ReportContent>
-                        <LegacyResponsiveTable>
-                          {/* Desktop Table View */}
-                          <TableDesktop>
-                            <thead>
-                              <tr>
-                                <th>SDLC Step</th>
-                                <th>SDLC Task</th>
-                                <th>Hours</th>
-                                <th>Task Details</th>
-                                <th>AI Tool</th>
-                                <th>AI Productivity</th>
-                                <th>Saved</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {report.entries.map((entry, i) => (
-                                <tr key={i}>
-                                  <td>{entry.sdlcStep}</td>
-                                  <td>{entry.sdlcTask}</td>
-                                  <td>{entry.hours}</td>
-                                  <td>{entry.taskDetails}</td>
-                                  <td>{entry.aiTool}</td>
-                                  <td>{entry.aiProductivity}</td>
-                                  <td>{entry.hoursSaved}</td>
-                                </tr>
-                              ))}
-                              {/* Summary row */}
-                              <tr
-                                className="summary-row"
-                                style={{
-                                  backgroundColor: "#f8fafc",
-                                  fontWeight: 600,
-                                  borderTop: "2px solid #e2e8f0",
-                                }}
-                              >
-                                <td colSpan={2}>Total</td>
-                                <td>
-                                  {report.entries
-                                    .reduce(
-                                      (sum, entry) =>
-                                        sum + (parseFloat(entry.hours) || 0),
-                                      0,
-                                    )
-                                    .toFixed(1)}
-                                </td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                  {report.entries
-                                    .reduce(
-                                      (sum, entry) =>
-                                        sum +
-                                        (parseFloat(entry.hoursSaved) || 0),
-                                      0,
-                                    )
-                                    .toFixed(1)}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </TableDesktop>
-
-                          {/* Mobile Card View */}
-                          <TableMobile>
-                            {report.entries.map((entry, i) => (
-                              <MobileCard key={i}>
-                                <MobileCardHeader>
-                                  Record #{i + 1}
-                                </MobileCardHeader>
-                                <MobileCardBody>
-                                  <MobileCardField>
-                                    <MobileFieldLabel>
-                                      SDLC Step
-                                    </MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.sdlcStep}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>
-                                      SDLC Task
-                                    </MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.sdlcTask}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>Hours</MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.hours}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>
-                                      Task Details
-                                    </MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.taskDetails}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>
-                                      AI Tool Used
-                                    </MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.aiTool}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>
-                                      AI Productivity
-                                    </MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.aiProductivity}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-
-                                  <MobileCardField>
-                                    <MobileFieldLabel>Saved</MobileFieldLabel>
-                                    <MobileFieldValue>
-                                      {entry.hoursSaved}
-                                    </MobileFieldValue>
-                                  </MobileCardField>
-                                </MobileCardBody>
-                              </MobileCard>
-                            ))}
-
-                            {/* Summary Card for Mobile */}
-                            <MobileCard
-                              style={{
-                                backgroundColor: "#f8fafc",
-                                borderColor: "#4e7fff",
-                                borderWidth: "2px",
+                        {/* Define the report view columns */}
+                        {(() => {
+                          // Calculate totals for the report
+                          const totalHours = report.entries
+                            .reduce(
+                              (sum, entry) => sum + (parseFloat(entry.hours) || 0),
+                              0
+                            )
+                            .toFixed(1);
+                          
+                          const totalSaved = report.entries
+                            .reduce(
+                              (sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0),
+                              0
+                            )
+                            .toFixed(1);
+                          
+                          // Column definitions for the report view
+                          const reportColumns = [
+                            {
+                              id: 'sdlcStep',
+                              label: 'SDLC Step',
+                              align: 'left'
+                            },
+                            {
+                              id: 'sdlcTask',
+                              label: 'SDLC Task',
+                              align: 'left'
+                            },
+                            {
+                              id: 'hours',
+                              label: 'Hours',
+                              fixedWidth: '100px',
+                              align: 'right'
+                            },
+                            {
+                              id: 'taskDetails',
+                              label: 'Task Details',
+                              align: 'left'
+                            },
+                            {
+                              id: 'aiTool',
+                              label: 'AI Tool',
+                              align: 'left',
+                              hideOnMobile: false
+                            },
+                            {
+                              id: 'aiProductivity',
+                              label: 'AI Productivity',
+                              align: 'left'
+                            },
+                            {
+                              id: 'hoursSaved',
+                              label: 'Saved',
+                              fixedWidth: '100px',
+                              align: 'right',
+                              cellStyle: `
+                                color: #16a34a;
+                                font-weight: 500;
+                              `
+                            }
+                          ];
+                          
+                          // Create a special footer row for totals
+                          const dataWithFooter = [
+                            ...report.entries,
+                            {
+                              id: 'footer',
+                              isFooter: true,
+                              sdlcStep: 'Total',
+                              sdlcTask: '',
+                              hours: totalHours,
+                              taskDetails: '',
+                              aiTool: '',
+                              aiProductivity: '',
+                              hoursSaved: totalSaved
+                            }
+                          ];
+                          
+                          // Custom row status function for the summary row
+                          const getRowStatus = (row) => {
+                            if (row.isFooter) return 'summary';
+                            return null;
+                          };
+                          
+                          // Custom cell renderer to handle the footer row differently
+                          const cellRenderer = (value, row, columnId) => {
+                            if (row.isFooter) {
+                              if (columnId === 'sdlcStep') {
+                                return <strong>Total</strong>;
+                              }
+                              if (columnId === 'hours' || columnId === 'hoursSaved') {
+                                return <strong>{value}</strong>;
+                              }
+                              return null;
+                            }
+                            return value;
+                          };
+                          
+                          // Update column renderers
+                          const columnsWithRenderers = reportColumns.map(col => ({
+                            ...col,
+                            renderer: (value, row) => cellRenderer(value, row, col.id)
+                          }));
+                          
+                          // Return the ResponsiveTable component
+                          return (
+                            <ResponsiveTable
+                              columns={columnsWithRenderers}
+                              data={dataWithFooter}
+                              getRowStatus={getRowStatus}
+                              readonly={true}
+                              emptyState={{
+                                title: "No report entries",
+                                message: "This report doesn't contain any entries yet.",
+                                icon: (
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                )
                               }}
-                            >
-                              <MobileCardHeader
-                                style={{
-                                  backgroundColor: "#4e7fff",
-                                  color: "white",
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                Summary
-                              </MobileCardHeader>
-                              <MobileCardBody>
-                                <MobileCardField>
-                                  <MobileFieldLabel>
-                                    Total Hours
-                                  </MobileFieldLabel>
-                                  <MobileFieldValue
-                                    style={{ fontWeight: "bold" }}
-                                  >
-                                    {report.entries
-                                      .reduce(
-                                        (sum, entry) =>
-                                          sum + (parseFloat(entry.hours) || 0),
-                                        0,
-                                      )
-                                      .toFixed(1)}
-                                  </MobileFieldValue>
-                                </MobileCardField>
-
-                                <MobileCardField>
-                                  <MobileFieldLabel>
-                                    Total Saved
-                                  </MobileFieldLabel>
-                                  <MobileFieldValue
-                                    style={{ fontWeight: "bold" }}
-                                  >
-                                    {report.entries
-                                      .reduce(
-                                        (sum, entry) =>
-                                          sum +
-                                          (parseFloat(entry.hoursSaved) || 0),
-                                        0,
-                                      )
-                                      .toFixed(1)}
-                                  </MobileFieldValue>
-                                </MobileCardField>
-                              </MobileCardBody>
-                            </MobileCard>
-                          </TableMobile>
-                        </LegacyResponsiveTable>
+                            />
+                          );
+                        })()}
+                        
                       </ReportContent>
                     </ReportCard>
                   ))}
@@ -1178,7 +1115,404 @@ const ReportPage = () => {
                     </FormGroup>
                   </TeamFormSection>
 
-                  <LegacyResponsiveTable>
+                  {/* Input Form Table using ResponsiveTable */}
+                  {(() => {
+                    // Array to track expanded rows
+                    const rowsWithExpand = rows.map(row => ({
+                      ...row,
+                      isExpanded: expandedRows[row.id] || false
+                    }));
+                    
+                    // Calculate time saved
+                    const calculateTimeSaved = (row) => {
+                      if (row.estimatedTimeWithoutAI && row.actualTimeWithAI) {
+                        return (parseFloat(row.estimatedTimeWithoutAI) - parseFloat(row.actualTimeWithAI)).toFixed(1);
+                      }
+                      return "-";
+                    };
+                    
+                    // Column definitions for the input form
+                    const formColumns = [
+                      {
+                        id: 'expandControl',
+                        label: '',
+                        fixedWidth: '40px',
+                        align: 'center',
+                        renderer: (value, row) => (
+                          <div 
+                            className="expand-icon" 
+                            style={{
+                              cursor: 'pointer',
+                              color: '#4e7fff',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '1.5rem',
+                              height: '1.5rem',
+                              transition: 'transform 0.2s ease',
+                              transform: row.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleRowExpand(row.id);
+                            }}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                          </div>
+                        )
+                      },
+                      {
+                        id: 'platform',
+                        label: 'Platform',
+                        align: 'left',
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => handleRowChange(row.id, "platform", newValue)}
+                            options={[
+                              "Unete",
+                              "Revamp Somos Belcorp",
+                              "Digital Catalog",
+                              "Ecommerce Platform",
+                              "Foundation Tool",
+                              "Powder Tool",
+                              "Skin Advisor",
+                              "Newapp Somos Belcorp",
+                              "FFVV",
+                            ]}
+                            placeholder="Platform"
+                            storageKey="platformOptions"
+                          />
+                        )
+                      },
+                      {
+                        id: 'projectInitiative',
+                        label: 'Initiative',
+                        align: 'left',
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => 
+                              handleRowChange(row.id, "projectInitiative", newValue)
+                            }
+                            options={[]}
+                            placeholder="Initiative"
+                            storageKey="projectOptions"
+                          />
+                        )
+                      },
+                      {
+                        id: 'sdlcStep',
+                        label: 'SDLC Step',
+                        align: 'left',
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => handleSDLCStepChange(row.id, newValue)}
+                            options={sdlcSteps}
+                            placeholder="SDLC Step"
+                            storageKey="sdlcStepOptions"
+                          />
+                        )
+                      },
+                      {
+                        id: 'sdlcTask',
+                        label: 'SDLC Task',
+                        align: 'left',
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => handleRowChange(row.id, "sdlcTask", newValue)}
+                            options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+                            placeholder="SDLC Task"
+                            storageKey="sdlcTaskOptions"
+                            disabled={!row.sdlcStep}
+                          />
+                        )
+                      },
+                      {
+                        id: 'taskCategory',
+                        label: 'Task Category',
+                        align: 'left',
+                        hideOnMobile: true,
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => 
+                              handleRowChange(row.id, "taskCategory", newValue)
+                            }
+                            options={[
+                              "UI Development",
+                              "API Integration",
+                              "Code Refactoring",
+                              "Documentation",
+                              "Testing",
+                              "Code Review",
+                              "Bug Fixing",
+                              "Performance Optimization",
+                            ]}
+                            placeholder="Task Category"
+                            storageKey="taskCategoryOptions"
+                          />
+                        )
+                      },
+                      {
+                        id: 'estimatedTimeWithoutAI',
+                        label: 'Est (h)',
+                        fixedWidth: '100px',
+                        align: 'right',
+                        renderer: (value, row) => (
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={value}
+                            onChange={(e) => 
+                              handleRowChange(row.id, "estimatedTimeWithoutAI", e.target.value)
+                            }
+                            required
+                            placeholder="Est (Hrs)"
+                            style={{ width: "100px" }}
+                          />
+                        )
+                      },
+                      {
+                        id: 'actualTimeWithAI',
+                        label: 'Act (h)',
+                        fixedWidth: '100px',
+                        align: 'right',
+                        renderer: (value, row) => (
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={value}
+                            onChange={(e) => 
+                              handleRowChange(row.id, "actualTimeWithAI", e.target.value)
+                            }
+                            required
+                            placeholder="Act (Hrs)"
+                            style={{
+                              width: "100px",
+                              color:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? parseFloat(row.actualTimeWithAI) <
+                                    parseFloat(row.estimatedTimeWithoutAI)
+                                    ? "#16a34a"
+                                    : parseFloat(row.actualTimeWithAI) >
+                                        parseFloat(row.estimatedTimeWithoutAI)
+                                      ? "#dc2626"
+                                      : "inherit"
+                                  : "inherit",
+                              fontWeight:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? "500"
+                                  : "normal",
+                            }}
+                          />
+                        )
+                      },
+                      {
+                        id: 'timeSaved',
+                        label: 'Saved',
+                        fixedWidth: '80px',
+                        align: 'right',
+                        hideOnMobile: true,
+                        cellStyle: `
+                          color: #16a34a;
+                          font-weight: 500;
+                        `,
+                        renderer: (value, row) => (
+                          <span>
+                            {calculateTimeSaved(row)}
+                          </span>
+                        )
+                      },
+                      {
+                        id: 'complexity',
+                        label: 'Complexity',
+                        align: 'left',
+                        hideOnMobile: true,
+                        renderer: (value, row) => (
+                          <CustomSelect
+                            value={value}
+                            onChange={(newValue) => 
+                              handleRowChange(row.id, "complexity", newValue)
+                            }
+                            options={["Low", "Medium", "High"]}
+                            placeholder="Complexity"
+                          />
+                        )
+                      },
+                      {
+                        id: 'qualityImpact',
+                        label: 'Quality Impact',
+                        align: 'left',
+                        hideOnMobile: true,
+                        renderer: (value, row) => (
+                          <CreatableComboBox
+                            value={value}
+                            onChange={(newValue) => 
+                              handleRowChange(row.id, "qualityImpact", newValue)
+                            }
+                            options={[
+                              "Improved Readability",
+                              "Better Performance",
+                              "More Comprehensive",
+                              "More Accurate",
+                              "Higher Consistency",
+                              "More Secure",
+                              "Better UX",
+                              "More Scalable",
+                            ]}
+                            placeholder="Quality Impact"
+                            storageKey="qualityImpactOptions"
+                          />
+                        )
+                      },
+                      {
+                        id: 'actions',
+                        label: 'Action',
+                        fixedWidth: '60px',
+                        align: 'center',
+                        renderer: (value, row) => (
+                          rows.length > 1 ? (
+                            <DeleteButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeRow(row.id);
+                              }}
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <path d="M10 11v6"></path>
+                                <path d="M14 11v6"></path>
+                              </svg>
+                            </DeleteButton>
+                          ) : null
+                        )
+                      }
+                    ];
+                    
+                    // Custom header for the table
+                    const renderHeader = () => (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0' }}>
+                        <span style={{ fontWeight: 'bold' }}>Productivity Report Entries</span>
+                        <span style={{ color: '#16a34a', fontWeight: 'bold' }}>
+                          Total Time Saved: {
+                            rowsWithExpand
+                              .reduce((sum, row) => {
+                                const saved = calculateTimeSaved(row);
+                                return sum + (saved !== "-" ? parseFloat(saved) : 0);
+                              }, 0)
+                              .toFixed(1)
+                          } hrs
+                        </span>
+                      </div>
+                    );
+                    
+                    return (
+                      <>
+                        {renderHeader()}
+                        <ResponsiveTable
+                          columns={formColumns}
+                          data={rowsWithExpand}
+                          getRowStatus={(row) => row.isExpanded ? 'expanded' : null}
+                          emptyState={{
+                            title: "No report entries",
+                            message: "Click 'Add Entry' to add data to your report.",
+                            icon: (
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            )
+                          }}
+                        />
+
+                        {/* Expanded content - shown below each expanded row */}
+                        {rowsWithExpand.map(row => (
+                          row.isExpanded && (
+                            <div 
+                              key={`expanded-${row.id}`}
+                              style={{ 
+                                border: '1px solid #e5e7eb',
+                                borderTop: 'none',
+                                borderBottomLeftRadius: '0.5rem',
+                                borderBottomRightRadius: '0.5rem',
+                                marginBottom: '1rem',
+                                backgroundColor: '#f8fafc'
+                              }}
+                            >
+                              <div style={{ padding: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                  <div>
+                                    <InnerLabel>Task Details</InnerLabel>
+                                    <AutoResizeTextArea
+                                      value={row.taskDetails}
+                                      onChange={(value) => handleRowChange(row.id, "taskDetails", value)}
+                                      placeholder="Enter task details..."
+                                      minRows={3}
+                                    />
+                                  </div>
+                                  <div>
+                                    <InnerLabel>Notes on How AI Helped</InnerLabel>
+                                    <AutoResizeTextArea
+                                      value={row.notesHowAIHelped}
+                                      onChange={(value) => handleRowChange(row.id, "notesHowAIHelped", value)}
+                                      placeholder="Describe how AI helped with this task..."
+                                      minRows={3}
+                                    />
+                                  </div>
+                                  <div style={{ gridColumn: 'span 2', marginTop: '1rem' }}>
+                                    <InnerLabel>AI Tools Used</InnerLabel>
+                                    <CreatableMultiSelect
+                                      values={row.aiToolUsed}
+                                      onChange={(values) => handleRowChange(row.id, "aiToolUsed", values)}
+                                      options={[
+                                        "ChatGPT",
+                                        "GitHub Copilot",
+                                        "AWS CodeWhisperer",
+                                        "Anthropic Claude",
+                                        "Midjourney",
+                                        "DALL-E",
+                                        "Stable Diffusion",
+                                        "Bing AI",
+                                        "Google Bard",
+                                        "HuggingChat",
+                                      ]}
+                                      placeholder="Select AI tools used"
+                                      storageKey="aiToolOptions"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        ))}
+                      </>
+                    );
+                  })()}
                     {/* Desktop Table View */}
                     <TableDesktop>
                       <thead>
@@ -1908,8 +2242,13 @@ const ReportPage = () => {
                           .toFixed(1)}
                       </div>
                     </TableMobile>
-                  </LegacyResponsiveTable>
-
+                    
+                    {/* 
+                    NOTE: We're gradually migrating from the legacy table structure 
+                    to the new ResponsiveTable component. The commented section 
+                    below shows the old implementation for reference.
+                    */}
+                    
                   <ButtonRow>
                     <ActionButton type="button" onClick={addRow}>
                       <AddIcon>

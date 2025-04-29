@@ -125,6 +125,8 @@ const ReportViewer = ({
     filteredReports,
     tableData,
     stats,
+    isLoading: reportsLoading,
+    error,
     
     // Filter options
     filterOptions,
@@ -139,12 +141,10 @@ const ReportViewer = ({
     timeFrame,
     setTimeFrame,
   } = useReportData({
-    // The hook expects threadId and keyValue, but since we're
-    // getting reports directly as props in this component, we just pass 
-    // the reports data and ignore the fetch functionality
-    threadId: null,
-    keyValue: null,
-    // Override the fetched reports with the ones passed as props
+    // Pass threadId and keyValue if available for fetching, otherwise use provided reports
+    threadId,
+    keyValue,
+    // Use reports passed in props (if any)
     reports,
   });
 
@@ -168,15 +168,27 @@ const ReportViewer = ({
     },
   ];
 
-  if (isLoading) {
+  const combinedLoading = initialLoading || reportsLoading;
+  
+  if (combinedLoading) {
     return <div>Loading reports...</div>;
+  }
+  
+  if (error) {
+    return (
+      <ViewerContainer>
+        <div style={{ color: '#e11d48', background: '#fee2e2', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+          Error: {error}
+        </div>
+      </ViewerContainer>
+    );
   }
 
   return (
     <ViewerContainer>
       <h3>Team Reports for: {threadTitle}</h3>
 
-      {reports.length === 0 ? (
+      {filteredReports.length === 0 ? (
         <p>No productivity reports have been submitted yet.</p>
       ) : (
         <>

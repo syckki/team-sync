@@ -86,8 +86,8 @@ const ReportContainer = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   
-  // Check if we're in view-only mode
-  const isViewMode = router.pathname.includes("/view");
+  // Check if we're in view-only mode or if "view" is specified in the query
+  const isViewMode = router.pathname.includes("/view") || router.query.view === "true";
   
   // Extract the key from URL fragment on mount
   useEffect(() => {

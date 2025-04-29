@@ -1,78 +1,51 @@
-import { addMessageToThread } from '../../lib/thread';
+import { addMessageToThread } from "../../lib/thread";
 
-// Configure the API route to handle binary data
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+/**
+ * API endpoint for uploading encrypted messages to a thread
+ * 
+ * @param {object} req - The HTTP request object
+ * @param {object} res - The HTTP response object
+ */
+export default async function handler(req, res) {
+  // Only allow POST requests
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    // Read the raw request body as a Buffer
-    return new Promise((resolve) => {
-      let data = [];
-      req.on('data', (chunk) => {
-        data.push(chunk);
-      });
-      
-      req.on('end', async () => {
-        try {
-          // Combine all chunks
-          const buffer = Buffer.concat(data);
-          
-          if (!buffer || buffer.length === 0) {
-            res.status(400).json({ error: 'No data provided' });
-            return resolve();
-          }
-          
-          // Extract query parameters
-          const { threadId, threadTitle } = req.query;
-          
-          // Get author ID from headers if available
-          const authorId = req.headers['x-author-id'] || null;
-          
-          // Create metadata object with author ID
-          const metadata = { authorId };
-          
-          // Add the message to a thread (creates a new thread if threadId is null)
-          const threadInfo = await addMessageToThread(threadId, buffer, metadata, threadTitle);
-          
-          // Return the download URL
-          const downloadUrl = `/view/${threadInfo.threadId}`;
-          
-          res.status(200).json({ 
-            success: true, 
-            threadId: threadInfo.threadId,
-            messageIndex: threadInfo.messageIndex,
-            totalMessages: threadInfo.totalMessages,
-            url: downloadUrl 
-          });
-          resolve();
-        } catch (error) {
-          console.error('Upload processing error:', error);
-          
-          // Check if this is a duplicate thread title error
-          if (error.message && error.message.includes('Thread with title')) {
-            res.status(409).json({ 
-              error: error.message,
-              code: 'DUPLICATE_THREAD_TITLE'
-            });
-          } else {
-            res.status(500).json({ error: 'Error processing upload data' });
-          }
-          resolve();
-        }
-      });
+    const { threadId, data, metadata, threadTitle } = req.body;
+
+    if (!threadId) {
+      return res.status(400).json({ error: "Thread ID is required" });
+    }
+
+    if (!data) {
+      return res.status(400).json({ error: "Encrypted data is required" });
+    }
+    
+    // Convert base64 data to ArrayBuffer
+    const encryptedBytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+    
+    // Add message to thread
+    const result = await addMessageToThread(
+      threadId,
+      encryptedBytes,
+      metadata || {},
+      threadTitle
+    );
+
+    if (!result) {
+      return res.status(500).json({ error: "Failed to add message to thread" });
+    }
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      threadId: result.threadId,
+      messageIndex: result.messageIndex,
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return res.status(500).json({ error: 'Error uploading encrypted data' });
+    console.error("Error uploading message:", error);
+    return res.status(500).json({ error: "Failed to upload message" });
   }
 }
-
-export default handler;

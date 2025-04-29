@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { 
   ComboBoxDropdown, 
-  ComboBoxOption 
+  ComboBoxOption,
+  ReadonlyField
 } from "./CustomSelect";
 import { ComboBoxCreateOption } from "./CreatableComboBox";
 
@@ -72,6 +73,23 @@ const MultiSelectInput = styled.input`
   line-height: 1.25rem;
 `;
 
+// Styled component for readonly display of multiple items
+const ReadonlyMultiField = styled(ReadonlyField)`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  
+  span {
+    display: inline-block;
+    background-color: #e2e8f0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+`;
+
 // CreatableMultiSelect component for multi-select fields
 const CreatableMultiSelect = ({
   value = [],
@@ -79,12 +97,28 @@ const CreatableMultiSelect = ({
   options = [],
   placeholder,
   storageKey,
+  readonly = false,
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  
+  // If in readonly mode, render a simple display
+  if (readonly) {
+    return (
+      <ReadonlyMultiField className={value.length === 0 ? 'empty' : ''}>
+        {value.length > 0 ? (
+          value.map((item, index) => (
+            <span key={index}>{item}</span>
+          ))
+        ) : (
+          placeholder
+        )}
+      </ReadonlyMultiField>
+    );
+  }
 
   // Update filtered options when input changes
   useEffect(() => {

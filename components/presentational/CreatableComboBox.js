@@ -6,7 +6,8 @@ import {
   ComboBoxInput, 
   ClearButton, 
   ComboBoxDropdown, 
-  ComboBoxOption 
+  ComboBoxOption,
+  ReadonlyField
 } from "./CustomSelect";
 
 // Styled component specific to CreatableComboBox
@@ -32,11 +33,21 @@ const CreatableComboBox = ({
   placeholder,
   storageKey,
   disabled = false,
+  readonly = false,
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const inputRef = useRef(null);
+  
+  // If in readonly mode, render a simple display
+  if (readonly) {
+    return (
+      <ReadonlyField className={!value ? 'empty' : ''}>
+        {value || placeholder}
+      </ReadonlyField>
+    );
+  }
 
   // Update filtered options when input changes
   useEffect(() => {

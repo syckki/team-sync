@@ -79,3 +79,4 @@ const AutoResizeTextArea = ({ value, onChange, readonly = false, placeholder, ..
 };
 
 export default AutoResizeTextArea;
+export { ReadonlyField };

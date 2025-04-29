@@ -140,7 +140,7 @@ const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
+  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
   opacity: ${props => props.disabled ? 0.7 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
@@ -749,31 +749,40 @@ const CustomSelect = ({
   options = [],
   placeholder,
   disabled = false,
-  id
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
-  const uniqueId = useRef(`select-${id || Math.random().toString(36).substring(2, 9)}`).current;
-  
-  // Connect to global dropdown state
-  const { isDropdownOpen, toggleDropdown } = useGlobalDropdowns();
-  const isOpen = isDropdownOpen(uniqueId);
-  
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // Handle option select
   const handleOptionSelect = (option) => {
     onChange(option);
-    toggleDropdown(null);
+    setIsOpen(false);
   };
   
   // Handle key presses
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
-      toggleDropdown(null);
+      setIsOpen(false);
     } else if (e.key === "Tab") {
-      toggleDropdown(null);
+      setIsOpen(false);
     } else if (e.key === "ArrowDown") {
       if (!isOpen) {
         e.preventDefault();
-        toggleDropdown(uniqueId);
+        setIsOpen(true);
       }
     }
   };
@@ -786,12 +795,7 @@ const CustomSelect = ({
 
   return (
     <ComboBoxContainer ref={selectRef}>
-      <ComboBoxInputWrapper onClick={(e) => {
-        if (!disabled) {
-          e.stopPropagation();
-          toggleDropdown(uniqueId);
-        }
-      }}>
+      <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
         <ComboBoxInput
           type="text"
           value={value}
@@ -799,18 +803,11 @@ const CustomSelect = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          $hasValue={value.length > 0}
+          hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
         />
         {value.length > 0 && !disabled && (
-          <ClearButton 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClearValue(e);
-            }} 
-            type="button" 
-            title="Clear"
-          >
+          <ClearButton onClick={handleClearValue} type="button" title="Clear">
             ×
           </ClearButton>
         )}
@@ -840,14 +837,11 @@ const CustomSelect = ({
       </ComboBoxInputWrapper>
 
       {isOpen && !disabled && (
-        <ComboBoxDropdown onClick={(e) => e.stopPropagation()}>
+        <ComboBoxDropdown>
           {options.map((option, index) => (
             <ComboBoxOption
               key={index}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOptionSelect(option);
-              }}
+              onClick={() => handleOptionSelect(option)}
               $isSelected={option === value}
             >
               {option}
@@ -965,7 +959,7 @@ const CreatableComboBox = ({
           placeholder={placeholder}
           autoComplete="off"
           disabled={disabled}
-          $hasValue={inputValue.length > 0}
+          hasValue={inputValue.length > 0}
         />
         {inputValue.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">
@@ -1240,89 +1234,10 @@ const CreatableMultiSelect = ({
   );
 };
 
-// Global dropdown state manager
-// This is a singleton pattern - we keep one instance for the entire application
-const globalDropdownState = {
-  listeners: new Set(),
-  activeDropdownId: null,
-  
-  setActiveDropdown(id) {
-    this.activeDropdownId = id;
-    this.notifyListeners();
-  },
-  
-  closeAll() {
-    this.activeDropdownId = null;
-    this.notifyListeners();
-  },
-  
-  isActive(id) {
-    return this.activeDropdownId === id;
-  },
-  
-  subscribe(listener) {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  },
-  
-  notifyListeners() {
-    this.listeners.forEach(listener => listener());
-  }
-};
-
-// Hook to interact with the global dropdown state
-const useGlobalDropdowns = () => {
-  const [, setForceUpdate] = useState({});
-  
-  useEffect(() => {
-    // Subscribe to changes
-    const unsubscribe = globalDropdownState.subscribe(() => {
-      setForceUpdate({});
-    });
-    
-    return unsubscribe;
-  }, []);
-  
-  const closeAllDropdowns = useCallback(() => {
-    globalDropdownState.closeAll();
-  }, []);
-  
-  const toggleDropdown = useCallback((dropdownId) => {
-    if (globalDropdownState.activeDropdownId === dropdownId) {
-      globalDropdownState.setActiveDropdown(null);
-    } else {
-      globalDropdownState.setActiveDropdown(dropdownId);
-    }
-  }, []);
-  
-  const isDropdownOpen = useCallback((dropdownId) => {
-    return globalDropdownState.isActive(dropdownId);
-  }, []);
-  
-  return { closeAllDropdowns, toggleDropdown, isDropdownOpen };
-};
-
 const ReportPage = () => {
   const router = useRouter();
   const { id, view } = router.query;
   const isViewMode = view === "true";
-  
-  // Using the global dropdowns manager
-  const { closeAllDropdowns } = useGlobalDropdowns();
-  
-  // Effect to close dropdowns when clicking anywhere in the document
-  useEffect(() => {
-    const handleGlobalClick = () => {
-      closeAllDropdowns();
-    };
-    
-    document.addEventListener('click', handleGlobalClick);
-    return () => {
-      document.removeEventListener('click', handleGlobalClick);
-    };
-  }, [closeAllDropdowns]);
 
   const [key, setKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");

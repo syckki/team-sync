@@ -100,6 +100,24 @@ export const ComboBoxOption = styled.li`
   `}
 `;
 
+// Styled component for readonly display
+export const ReadonlyField = styled.div`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: calc(0.5rem - 2px);
+  background-color: #f9fafb;
+  min-height: 2.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #374151;
+  
+  &.empty {
+    font-style: italic;
+    color: #9ca3af;
+  }
+`;
+
 // Custom Select Component for dropdowns
 const CustomSelect = ({
   value,
@@ -107,9 +125,19 @@ const CustomSelect = ({
   options = [],
   placeholder,
   disabled = false,
+  readonly = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
+
+  // If in readonly mode, render a simple display
+  if (readonly) {
+    return (
+      <ReadonlyField className={!value ? 'empty' : ''}>
+        {value || placeholder}
+      </ReadonlyField>
+    );
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {

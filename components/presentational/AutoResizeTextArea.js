@@ -19,6 +19,25 @@ const TextareaBase = styled.textarea`
   }
 `;
 
+// Styled component for readonly display
+const ReadonlyField = styled.div`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: calc(0.5rem - 2px);
+  background-color: #f9fafb;
+  min-height: 2.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #374151;
+  white-space: pre-wrap;
+  
+  &.empty {
+    font-style: italic;
+    color: #9ca3af;
+  }
+`;
+
 // Custom hook for auto-resizing text areas
 const useAutoResizeTextArea = (value) => {
   const textAreaRef = useRef(null);
@@ -36,15 +55,24 @@ const useAutoResizeTextArea = (value) => {
   return textAreaRef;
 };
 
-// Auto-resizing textarea component
-const AutoResizeTextArea = ({ value, onChange, ...props }) => {
+// Auto-resizing textarea component with readonly support
+const AutoResizeTextArea = ({ value, onChange, readonly = false, placeholder, ...props }) => {
   const textAreaRef = useAutoResizeTextArea(value);
+
+  if (readonly) {
+    return (
+      <ReadonlyField className={!value ? 'empty' : ''}>
+        {value || placeholder}
+      </ReadonlyField>
+    );
+  }
 
   return (
     <TextareaBase
       ref={textAreaRef}
       value={value}
       onChange={onChange}
+      placeholder={placeholder}
       {...props}
     />
   );

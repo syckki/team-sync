@@ -13,6 +13,7 @@ import CustomSelect from "../../../components/presentational/CustomSelect";
 import CreatableComboBox from "../../../components/presentational/CreatableComboBox";
 import CreatableMultiSelect from "../../../components/presentational/CreatableMultiSelect";
 import AutoResizeTextArea from "../../../components/presentational/AutoResizeTextArea";
+import ResponsiveTable from "../../../components/presentational/ResponsiveTable";
 
 const Container = styled.div`
   width: 100%;
@@ -182,8 +183,8 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Styled components for the responsive table
-const ResponsiveTable = styled.div`
+// Styled components for the legacy responsive table (to be replaced)
+const LegacyResponsiveTable = styled.div`
   width: 100%;
   margin-bottom: 1rem;
   border-radius: calc(0.5rem - 2px);
@@ -943,7 +944,7 @@ const ReportPage = () => {
                       </ReportHeader>
 
                       <ReportContent>
-                        <ResponsiveTable>
+                        <LegacyResponsiveTable>
                           {/* Desktop Table View */}
                           <TableDesktop>
                             <thead>
@@ -1130,7 +1131,7 @@ const ReportPage = () => {
                               </MobileCardBody>
                             </MobileCard>
                           </TableMobile>
-                        </ResponsiveTable>
+                        </LegacyResponsiveTable>
                       </ReportContent>
                     </ReportCard>
                   ))}
@@ -1177,7 +1178,7 @@ const ReportPage = () => {
                     </FormGroup>
                   </TeamFormSection>
 
-                  <ResponsiveTable>
+                  <LegacyResponsiveTable>
                     {/* Desktop Table View */}
                     <TableDesktop>
                       <thead>
@@ -1907,7 +1908,7 @@ const ReportPage = () => {
                           .toFixed(1)}
                       </div>
                     </TableMobile>
-                  </ResponsiveTable>
+                  </LegacyResponsiveTable>
 
                   <ButtonRow>
                     <ActionButton type="button" onClick={addRow}>

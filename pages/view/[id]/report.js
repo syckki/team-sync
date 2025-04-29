@@ -140,7 +140,7 @@ const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.hasValue ? '#fff' : '#f8f9fa'};
+  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
   opacity: ${props => props.disabled ? 0.7 : 1};
   cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
 
@@ -779,7 +779,7 @@ const CustomSelect = ({
       setIsOpen(false);
     } else if (e.key === "Tab") {
       setIsOpen(false);
-    } else if (e.key === "ArrowDown") {
+    } else if (e.key === "ArrowDown" && !disabled) {
       if (!isOpen) {
         e.preventDefault();
         setIsOpen(true);
@@ -842,7 +842,7 @@ const CustomSelect = ({
             <ComboBoxOption
               key={index}
               onClick={() => handleOptionSelect(option)}
-              $isSelected={option === value}
+              isSelected={option === value}
             >
               {option}
             </ComboBoxOption>
@@ -883,7 +883,7 @@ const CreatableComboBox = ({
   // Handle input change
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    if (!isOpen) {
+    if (!isOpen && !disabled) {
       setIsOpen(true);
     }
   };
@@ -949,7 +949,14 @@ const CreatableComboBox = ({
 
   return (
     <ComboBoxContainer ref={inputRef}>
-      <ComboBoxInputWrapper>
+      <ComboBoxInputWrapper onClick={(e) => {
+          if (disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+          } else {
+            setIsOpen(true);
+          }
+        }}>
         <ComboBoxInput
           type="text"
           value={inputValue}
@@ -975,7 +982,7 @@ const CreatableComboBox = ({
               <ComboBoxOption
                 key={index}
                 onClick={() => handleOptionSelect(option)}
-                $isSelected={option === inputValue}
+                isSelected={option === inputValue}
               >
                 {option}
               </ComboBoxOption>

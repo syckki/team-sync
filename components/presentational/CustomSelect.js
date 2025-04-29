@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 
 // Styled components for the CustomSelect
-const ComboBoxContainer = styled.div`
+export const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
   z-index: 1000; // Higher z-index to ensure it stacks above all other elements
@@ -11,17 +11,17 @@ const ComboBoxContainer = styled.div`
   }
 `;
 
-const ComboBoxInputWrapper = styled.div`
+export const ComboBoxInputWrapper = styled.div`
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
 `;
 
-const ComboBoxInput = styled.input`
+export const ComboBoxInput = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
-  padding-right: ${props => props.hasValue ? '2rem' : '0.75rem'};
+  padding-right: 2rem;
   border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
@@ -37,7 +37,7 @@ const ComboBoxInput = styled.input`
   }
 `;
 
-const ClearButton = styled.button`
+export const ClearButton = styled.button`
   position: absolute;
   right: 0.5rem;
   top: 50%;
@@ -62,7 +62,7 @@ const ClearButton = styled.button`
   }
 `;
 
-const ComboBoxDropdown = styled.ul`
+export const ComboBoxDropdown = styled.ul`
   position: absolute;
   top: 100%;
   left: 0;
@@ -82,7 +82,7 @@ const ComboBoxDropdown = styled.ul`
   white-space: nowrap;
 `;
 
-const ComboBoxOption = styled.li`
+export const ComboBoxOption = styled.li`
   padding: 0.75rem;
   cursor: pointer;
   white-space: nowrap;
@@ -100,7 +100,7 @@ const ComboBoxOption = styled.li`
   `}
 `;
 
-// CustomSelect Component
+// Custom Select Component for dropdowns
 const CustomSelect = ({
   value,
   onChange,
@@ -212,13 +212,3 @@ const CustomSelect = ({
 };
 
 export default CustomSelect;
-
-// Export styled components so they can be reused
-export {
-  ComboBoxContainer,
-  ComboBoxInputWrapper,
-  ComboBoxInput,
-  ClearButton,
-  ComboBoxDropdown,
-  ComboBoxOption
-};

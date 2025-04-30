@@ -216,13 +216,10 @@ const useReportForm = ({
       // Encrypt the data
       const encryptedData = await encryptData(dataBuffer, cryptoKey);
 
-      // Convert ArrayBuffer to base64 for sending to server
+      // Convert ArrayBuffer to base64 for sending to server using a more reliable method
       const bytes = new Uint8Array(encryptedData);
-      let base64 = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        base64 += String.fromCharCode(bytes[i]);
-      }
-      const base64Data = btoa(base64);
+      // Use Buffer for reliable base64 encoding
+      const base64Data = Buffer.from(bytes).toString('base64');
 
       // Get author ID from localStorage or generate a new one
       let authorId = localStorage.getItem("encrypted-app-author-id");

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { importKeyFromBase64, decryptData } from "../lib/cryptoUtils";
+import { base64ToArrayBuffer } from "../lib/base64Utils";
 
 /**
  * Custom hook for fetching and managing report data
@@ -66,10 +67,15 @@ const useReportData = ({ threadId, keyValue, reports: initialReports = [] }) => 
         // Check if this message is marked as a report in metadata
         if (message.metadata && message.metadata.isReport) {
           try {
-            // Convert base64 data back to ArrayBuffer
-            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
-              c.charCodeAt(0)
-            );
+            // Convert base64 data back to ArrayBuffer using a more robust approach
+            // First, ensure we're dealing with a valid base64 string by replacing non-base64 chars
+            const base64Str = message.data.replace(/[^A-Za-z0-9+/=]/g, '');
+            const binaryStr = Buffer.from(base64Str, 'base64').toString('binary');
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+              bytes[i] = binaryStr.charCodeAt(i);
+            }
+            const encryptedBytes = bytes;
 
             // Extract IV and ciphertext
             const iv = encryptedBytes.slice(0, 12);

@@ -9,10 +9,8 @@ import {
   encryptData,
   decryptData,
 } from "../../../lib/cryptoUtils";
-import CustomSelect from "../../../components/presentational/CustomSelect";
-import CreatableComboBox from "../../../components/presentational/CreatableComboBox";
-import CreatableMultiSelect from "../../../components/presentational/CreatableMultiSelect";
-import AutoResizeTextArea from "../../../components/presentational/AutoResizeTextArea";
+import ReportFormComponent from "../../../components/containers/ReportForm";
+import ReportViewer from "../../../components/containers/ReportViewer";
 
 const Container = styled.div`
   width: 100%;

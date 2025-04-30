@@ -1,40 +1,86 @@
-import { getThreadMessages } from "../../lib/thread";
+import { getThreadMessages, getLatestThreadMessage, getMessagesByAuthor, getThreadCreatorId, getThreadMetadata } from '../../lib/thread';
 
-/**
- * API endpoint for downloading thread messages
- * 
- * @param {object} req - The HTTP request object
- * @param {object} res - The HTTP response object
- */
-export default async function handler(req, res) {
-  // Only allow GET requests
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { threadId, authorId } = req.query;
+    const { threadId, messageIndex, authorId, all } = req.query;
 
     if (!threadId) {
-      return res.status(400).json({ error: "Thread ID is required" });
+      return res.status(400).json({ error: 'No thread ID provided' });
     }
 
-    if (!authorId) {
-      return res.status(400).json({ error: "Author ID is required" });
-    }
-
-    // Get thread messages from storage
-    const messages = await getThreadMessages(threadId);
+    // Get the thread creator ID for permission checking
+    const creatorId = await getThreadCreatorId(threadId);
     
-    if (!messages || messages.length === 0) {
-      // Return empty messages array rather than error
-      return res.status(200).json({ messages: [] });
-    }
+    // Get thread metadata including title
+    const threadMetadata = await getThreadMetadata(threadId);
 
-    // Return the thread messages
-    return res.status(200).json({ messages });
+    if (!creatorId) {
+      return res.status(404).json({ error: 'No messages found in this thread' });
+    }
+    
+    // Check if the requesting user is the thread creator
+    const isCreator = creatorId && authorId === creatorId;
+
+    // If messageIndex is provided, get that specific message
+    if (messageIndex !== undefined) {
+      const allMessages = await getThreadMessages(threadId);
+      
+      if (!allMessages || allMessages.length === 0) {
+        return res.status(404).json({ error: 'Thread not found' });
+      }
+      
+      const message = allMessages.find(msg => msg.index === parseInt(messageIndex));
+      
+      if (!message) {
+        return res.status(404).json({ error: 'Message not found in thread' });
+      }
+
+      // Only allow access to the message if the user is the creator or the message author
+      if (!isCreator && message.metadata && message.metadata.authorId !== authorId) {
+        return res.status(403).json({ error: 'You do not have permission to view this message' });
+      }
+      
+      // Set appropriate headers for binary data
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Cache-Control', 'no-store');
+      
+      return res.status(200).send(message.data);
+    }
+    
+    // Get messages based on permissions and filter parameters
+    let messages;
+    
+    if (isCreator && all !== 'false') {
+      // Thread creator gets all messages by default unless they explicitly filter to their own
+      messages = await getThreadMessages(threadId);
+    } else if (isCreator && all === 'false') {
+      // Creator wants to see only their messages
+      messages = await getMessagesByAuthor(threadId, authorId);
+    } else {
+      // Non-creator users only see their own messages
+      messages = await getMessagesByAuthor(threadId, authorId);
+    }
+    
+    return res.status(200).json({
+      threadId,
+      threadTitle: threadMetadata.threadTitle || threadId,
+      messageCount: messages.length,
+      isCreator: isCreator,
+      messages: messages.map(msg => ({
+        index: msg.index,
+        data: msg.data.toString('base64'),
+        metadata: msg.metadata
+      }))
+    });
+    
   } catch (error) {
-    console.error("Error fetching thread messages:", error);
-    return res.status(500).json({ error: "Failed to fetch thread messages" });
+    console.error('Download error:', error);
+    return res.status(500).json({ error: 'Error downloading encrypted data' });
   }
 }
+
+export default handler;

@@ -53,17 +53,11 @@ const ContentContainer = styled.div`
   padding: 1rem;
 `;
 
-const BackLinkText = styled.button`
+const BackLinkText = styled.a`
   color: #4e7fff;
   text-decoration: none;
   margin-top: 2rem;
   display: inline-block;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: inherit;
-  cursor: pointer;
-  font-family: inherit;
 
   &:hover {
     text-decoration: underline;
@@ -580,10 +574,9 @@ const ReportPage = () => {
             </>
           )}
 
-          <BackLinkText href={`/view/${id}`} onClick={(e) => {
-            e.preventDefault();
-            router.push(`/view/${id}`);
-          }}>← Back to inbox</BackLinkText>
+          <Link href={`/view/${id}`}>
+            <BackLinkText>← Back to inbox</BackLinkText>
+          </Link>
         </ContentContainer>
       </Container>
     </>

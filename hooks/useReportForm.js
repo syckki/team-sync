@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { encryptData } from "../lib/cryptoUtils";
+import { arrayBufferToBase64 } from "../lib/base64Utils";
 
 /**
  * Custom hook for managing report form state and submission
@@ -216,10 +217,8 @@ const useReportForm = ({
       // Encrypt the data
       const encryptedData = await encryptData(dataBuffer, cryptoKey);
 
-      // Convert ArrayBuffer to base64 for sending to server using a more reliable method
-      const bytes = new Uint8Array(encryptedData);
-      // Use Buffer for reliable base64 encoding
-      const base64Data = Buffer.from(bytes).toString('base64');
+      // Convert ArrayBuffer to base64 for sending to server using our utility function
+      const base64Data = arrayBufferToBase64(encryptedData);
 
       // Get author ID from localStorage or generate a new one
       let authorId = localStorage.getItem("encrypted-app-author-id");

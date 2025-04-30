@@ -9,8 +9,10 @@ import {
   encryptData,
   decryptData,
 } from "../../../lib/cryptoUtils";
-import ReportFormComponent from "../../../components/containers/ReportForm";
-import ReportViewer from "../../../components/containers/ReportViewer";
+import CustomSelect from "../../../components/presentational/CustomSelect";
+import CreatableComboBox from "../../../components/presentational/CreatableComboBox";
+import CreatableMultiSelect from "../../../components/presentational/CreatableMultiSelect";
+import AutoResizeTextArea from "../../../components/presentational/AutoResizeTextArea";
 
 const Container = styled.div`
   width: 100%;
@@ -49,21 +51,113 @@ const LockIcon = styled.div`
   display: inline-flex;
 `;
 
-const ContentContainer = styled.div`
-  padding: 1rem;
+const PageSubtitle = styled.p`
+  margin: 0;
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(255 255 255 / 0.9);
 `;
 
-const BackLinkText = styled.button`
+const ContentContainer = styled.div`
+  padding: 0 2rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1rem 1.5rem;
+  }
+`;
+
+const ReportForm = styled.form`
+  margin-bottom: 1.5rem;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const TeamFormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (min-width: 992px) {
+    flex-direction: row;
+
+    & > div {
+      flex: 1;
+    }
+  }
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: hsl(20 14.3% 4.1%);
+  font-size: 0.875rem;
+  line-height: 1;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(20 5.9% 90%);
+  border-radius: calc(0.5rem - 2px);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background-color: #f8f9fa;
+
+  &:focus {
+    outline: none;
+    border-color: #4e7fff;
+    background-color: #fff;
+  }
+
+  &:read-only {
+    background-color: rgb(243 244 246);
+    cursor: not-allowed;
+  }
+`;
+
+const InnerLabel = styled.div`
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-transform: uppercase;
+  color: rgb(107 114 128);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: hsl(217 91% 60%);
+  color: hsl(217 100% 99%);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #3d6bf3;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
+const BackLinkText = styled.span`
+  display: inline-block;
+  margin-top: 1rem;
   color: #4e7fff;
   text-decoration: none;
-  margin-top: 2rem;
-  display: inline-block;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: inherit;
   cursor: pointer;
-  font-family: inherit;
 
   &:hover {
     text-decoration: underline;
@@ -88,7 +182,261 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Static data for SDLC steps and tasks
+// Styled components for the responsive table
+const ResponsiveTable = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: calc(0.5rem - 2px);
+  position: relative;
+  border: 1px solid rgb(229 231 235);
+`;
+
+const TableDesktop = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background-color: rgb(249 250 251);
+  }
+
+  tbody td:not(:first-of-type):not(:last-of-type) {
+    padding: 0.75rem 0.75rem 0.75rem 0;
+  }
+
+  th,
+  td {
+    border: 0px;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    text-transform: uppercase;
+    color: rgb(107 114 128);
+    letter-spacing: 0.05em;
+    padding: 0.75rem;
+  }
+
+  td {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding-top: 0.5rem 0.75rem;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  /* We're only making the arrow clickable for expansion */
+
+  tr.expanded {
+    background-color: rgba(78, 127, 255, 0.08);
+  }
+
+  tr.detail-row {
+    background-color: #f8fafc;
+    border-top: 1px dashed #e2e8f0;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+
+  tr.detail-row td {
+    padding: 0;
+  }
+
+  .expand-icon {
+    color: #4e7fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  .expanded .expand-icon {
+    transform: rotate(90deg);
+  }
+
+  @media (max-width: 992px) {
+    display: none;
+  }
+`;
+
+const TableMobile = styled.div`
+  display: none;
+
+  @media (max-width: 992px) {
+    display: block;
+  }
+`;
+
+const MobileCard = styled.div`
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
+
+const MobileCardHeader = styled.div`
+  background-color: #f8fafc;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const MobileCardBody = styled.div`
+  padding: 0;
+`;
+
+const MobileCardField = styled.div`
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+`;
+
+const MobileFieldLabel = styled.span`
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #444;
+  font-size: 0.85rem;
+`;
+
+const MobileFieldValue = styled.span`
+  color: #333;
+`;
+
+const MobileActions = styled.div`
+  padding: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
+const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: calc(0.5rem - 2px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  background-color: ${(props) =>
+    props.primary ? "#4e7fff" : "hsl(60 4.8% 95.9%)"};
+  color: hsl(24 9.8% 10%;);
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${(props) =>
+      props.primary ? "#3d6bf3" : "hsl(60 4.8% 95.9%)"};
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
+const AddIcon = styled.div`
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  color: rgb(239 68 68);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  justify-self: center;
+
+  &:hover {
+    background-color: rgb(239 68 68 / 0.15);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+`;
+
+const ReportList = styled.div`
+  margin-top: 2rem;
+`;
+
+const ReportCard = styled.div`
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+`;
+
+const ReportHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+`;
+
+const ReportTitle = styled.h3`
+  margin: 0;
+  color: #4e7fff;
+  font-size: 1.2rem;
+`;
+
+const ReportDate = styled.span`
+  color: #718096;
+  font-size: 0.9rem;
+`;
+
+const ReportContent = styled.div`
+  margin-top: 1rem;
+  line-height: 1.5;
+`;
+
 const sdlcSteps = [
   "Requirements",
   "Design",
@@ -143,17 +491,18 @@ const sdlcTasksMap = {
   ],
 };
 
-// Component to handle productivity report submissions
 const ReportPage = () => {
   const router = useRouter();
   const { id, view } = router.query;
   const isViewMode = view === "true";
 
-  // State for form fields
+  const [key, setKey] = useState(null);
+  const [threadTitle, setThreadTitle] = useState("");
   const [teamName, setTeamName] = useState("");
   const [teamMember, setTeamMember] = useState("");
   const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [teamRole, setTeamRole] = useState("");
+  const [expandedRows, setExpandedRows] = useState({});
   const [rows, setRows] = useState([
     {
       id: Date.now(),
@@ -161,362 +510,389 @@ const ReportPage = () => {
       projectInitiative: "",
       sdlcStep: "",
       sdlcTask: "",
+      taskCategory: "",
       taskDetails: "",
-      aiToolUsed: [],
       estimatedTimeWithoutAI: "",
       actualTimeWithAI: "",
+      // timeSaved is calculated
+      aiToolUsed: [],
       complexity: "",
       qualityImpact: "",
       notesHowAIHelped: "",
-      timeSaved: "",
     },
   ]);
-  const [expandedRows, setExpandedRows] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [cryptoKey, setCryptoKey] = useState(null);
-  const [reports, setReports] = useState([]);
-  const [threadTitle, setThreadTitle] = useState("");
 
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  // Extract the key from URL fragment on mount
   useEffect(() => {
-    // Only run when router is ready and id exists
-    if (router.isReady && id) {
-      // Extract the key from URL hash
-      const keyValue = window.location.hash.substring(1);
-      if (!keyValue) {
-        setError("No encryption key provided. Cannot view or submit reports.");
+    if (!router.isReady) return;
+
+    try {
+      // Extract key from URL fragment (#)
+      const fragment = window.location.hash.slice(1);
+
+      if (!fragment) {
+        setError(
+          "No encryption key found. Please return to the thread and use the link provided there.",
+        );
         return;
       }
 
-      const decryptThread = async () => {
-        try {
-          const cryptoKey = await importKeyFromBase64(keyValue);
-          setCryptoKey(cryptoKey);
+      setKey(fragment);
 
-          // Set the team name from the thread ID
-          const formattedName = id
-            .split("-")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
-          setTeamName(formattedName);
-
-          // If in view mode, fetch and decrypt all reports
-          if (isViewMode) {
-            await fetchReports(cryptoKey);
-          } else {
-            // For form mode, just load the team title
-            const response = await fetch(`/api/download?threadId=${id}`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.title) {
-                setThreadTitle(data.title);
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Error decrypting thread:", err);
-          setError(
-            "Could not decrypt the thread data. Make sure your encryption key is correct."
-          );
+      // Load team member options from localStorage if available
+      try {
+        const savedOptions = localStorage.getItem("teamMemberOptions");
+        if (savedOptions) {
+          setTeamMemberOptions(JSON.parse(savedOptions));
         }
-      };
+      } catch (localStorageErr) {
+        console.error("Error loading team member options:", localStorageErr);
+        // Non-critical error, continue without saved options
+      }
 
-      decryptThread();
+      // If in view mode, fetch the reports
+      if (isViewMode) {
+        fetchReports(fragment);
+      }
+    } catch (err) {
+      console.error("Error parsing key:", err);
+      setError("Could not retrieve encryption key from URL.");
+    } finally {
+      setIsLoading(false);
     }
   }, [router.isReady, isViewMode, id]);
 
-  // Function to fetch and decrypt reports
-  const fetchReports = async (key) => {
+  // Fetch thread title when key is available
+  useEffect(() => {
+    if (key && id) {
+      const authorId = localStorage.getItem("encrypted-app-author-id");
+      if (authorId) {
+        fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            setThreadTitle(data.threadTitle || id);
+            setTeamName(data.threadTitle || id);
+          })
+          .catch((err) => {
+            console.error("Error fetching thread data:", err);
+          });
+      }
+    }
+  }, [key, id]);
+
+  const fetchReports = async (keyValue) => {
     try {
-      // Get the author ID from localStorage or generate a new one
-      let authorId = localStorage.getItem(`author-${id}`);
+      setIsLoading(true);
+
+      // Get author ID from localStorage
+      const authorId = localStorage.getItem("encrypted-app-author-id");
       if (!authorId) {
-        authorId = `author-${Math.random().toString(36).substring(2, 15)}`;
-        localStorage.setItem(`author-${id}`, authorId);
+        throw new Error(
+          "Author ID not found. Please go back to the thread view.",
+        );
       }
 
-      // Fetch the thread data (this includes the reports)
+      // Fetch all messages from the thread
       const response = await fetch(
-        `/api/download?threadId=${id}&authorId=${authorId}`
+        `/api/download?threadId=${id}&authorId=${authorId}`,
       );
 
       if (!response.ok) {
         throw new Error("Failed to fetch thread data");
       }
 
-      const data = await response.json();
-      setThreadTitle(data.title || id);
+      const threadData = await response.json();
 
-      // Process each message to extract report data
-      const processedReports = [];
+      // Import the key from fragment
+      const cryptoKey = await importKeyFromBase64(keyValue);
 
-      for (const message of data.messages) {
-        const { iv, ciphertext } = message;
-        if (!iv || !ciphertext) continue;
+      // Filter and decrypt reports
+      const decryptedReports = [];
 
-        try {
-          // Convert base64 encoded data back to buffers
-          const ivBuffer = new Uint8Array(
-            atob(iv)
-              .split("")
-              .map((c) => c.charCodeAt(0))
-          );
-          const ciphertextBuffer = new Uint8Array(
-            atob(ciphertext)
-              .split("")
-              .map((c) => c.charCodeAt(0))
-          );
+      for (const message of threadData.messages) {
+        // Check if this message is marked as a report in metadata
+        if (message.metadata && message.metadata.isReport) {
+          try {
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
+              c.charCodeAt(0),
+            );
 
-          // Decrypt the message
-          const decryptedData = await decryptData(
-            ciphertextBuffer,
-            key,
-            ivBuffer
-          );
-          const messageContent = JSON.parse(decryptedData);
+            // Extract IV and ciphertext
+            const iv = encryptedBytes.slice(0, 12);
+            const ciphertext = encryptedBytes.slice(12);
 
-          // Check if this is a productivity report
-          if (
-            messageContent.type === "productivity-report" &&
-            messageContent.data
-          ) {
-            processedReports.push(messageContent.data);
+            // Decrypt the data
+            const decrypted = await decryptData(ciphertext, cryptoKey, iv);
+
+            // Parse the decrypted JSON
+            const content = JSON.parse(new TextDecoder().decode(decrypted));
+
+            decryptedReports.push({
+              id: message.index,
+              timestamp: message.metadata.timestamp || new Date().toISOString(),
+              authorId: message.metadata.authorId,
+              isCurrentUser: message.metadata.authorId === authorId,
+              ...content,
+            });
+          } catch (err) {
+            console.error("Error decrypting report:", err);
           }
-        } catch (err) {
-          console.error("Error decrypting message:", err);
-          // Skip messages that can't be decrypted
-          continue;
         }
       }
 
-      setReports(processedReports);
+      // Sort reports by timestamp, newest first
+      decryptedReports.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+      );
+
+      setReports(decryptedReports);
     } catch (err) {
       console.error("Error fetching reports:", err);
-      setError("Failed to fetch reports. Please try again later.");
+      setError(`Failed to load reports: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Create a new unique row
-  const addRow = () => {
-    const newRow = {
-      id: Date.now(),
-      platform: "",
-      projectInitiative: "",
-      sdlcStep: "",
-      sdlcTask: "",
-      taskDetails: "",
-      aiToolUsed: [],
-      estimatedTimeWithoutAI: "",
-      actualTimeWithAI: "",
-      complexity: "",
-      qualityImpact: "",
-      notesHowAIHelped: "",
-      timeSaved: "",
-    };
-    setRows([...rows, newRow]);
-  };
-
-  // Delete a row by id
-  const deleteRow = (id) => {
-    if (rows.length <= 1) {
-      return; // Don't delete the last row
-    }
-    setRows(rows.filter((row) => row.id !== id));
-  };
-
-  // Handle changes in form rows
-  const handleRowChange = (id, field, value) => {
-    const updatedRows = rows.map((row) => {
-      if (row.id === id) {
-        const updatedRow = { ...row, [field]: value };
-
-        // Auto-calculate time saved if both time fields are filled
-        if (
-          (field === "estimatedTimeWithoutAI" || field === "actualTimeWithAI") &&
-          updatedRow.estimatedTimeWithoutAI &&
-          updatedRow.actualTimeWithAI
-        ) {
-          const estimated = parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
-          const actual = parseFloat(updatedRow.actualTimeWithAI) || 0;
-          updatedRow.timeSaved = Math.max(0, estimated - actual).toFixed(2);
-        }
-
-        return updatedRow;
-      }
-      return row;
-    });
-
-    setRows(updatedRows);
-  };
-
-  // Special handler for SDLC step changes (to reset tasks)
   const handleSDLCStepChange = (id, value) => {
-    const updatedRows = rows.map((row) => {
-      if (row.id === id) {
-        // Reset the SDLC task when step changes
-        return {
-          ...row,
-          sdlcStep: value,
-          sdlcTask: "", // Reset the task
-        };
-      }
-      return row;
-    });
-
-    setRows(updatedRows);
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === id
+          ? { ...row, sdlcStep: value, sdlcTask: "" } // Reset task when step changes
+          : row,
+      ),
+    );
   };
 
-  // Toggle row expansion
-  const toggleRowExpand = (id) => {
-    setExpandedRows({
-      ...expandedRows,
-      [id]: !expandedRows[id],
-    });
+  // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
+  const roundToQuarterHour = (time) => {
+    const value = parseFloat(time) || 0;
+    return (Math.round(value * 4) / 4).toFixed(2);
   };
 
-  // Form submission handler
+  const handleRowChange = (id, field, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
+        if (row.id === id) {
+          const updatedRow = { ...row, [field]: value };
+
+          // If changing time fields, apply quarter-hour rounding
+          if (
+            field === "estimatedTimeWithoutAI" ||
+            field === "actualTimeWithAI"
+          ) {
+            // Round to nearest quarter hour
+            if (field === "estimatedTimeWithoutAI") {
+              updatedRow.estimatedTimeWithoutAI = roundToQuarterHour(value);
+            }
+            if (field === "actualTimeWithAI") {
+              updatedRow.actualTimeWithAI = roundToQuarterHour(value);
+            }
+          }
+
+          // Auto-calculate timeSaved if both time fields have values
+          if (
+            (field === "estimatedTimeWithoutAI" ||
+              field === "actualTimeWithAI") &&
+            updatedRow.estimatedTimeWithoutAI &&
+            updatedRow.actualTimeWithAI
+          ) {
+            const estimatedTime =
+              parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
+            const actualTime = parseFloat(updatedRow.actualTimeWithAI) || 0;
+            // We don't use Math.max here as we want to show negative savings too
+            const timeSaved = (estimatedTime - actualTime).toFixed(2);
+            updatedRow.timeSaved = timeSaved;
+          }
+
+          return updatedRow;
+        }
+        return row;
+      }),
+    );
+  };
+
+  const addRow = () => {
+    setRows((prevRows) => [
+      ...prevRows,
+      {
+        id: Date.now(),
+        platform: "",
+        projectInitiative: "",
+        sdlcStep: "",
+        sdlcTask: "",
+        taskCategory: "",
+        taskDetails: "",
+        estimatedTimeWithoutAI: "",
+        actualTimeWithAI: "",
+        // timeSaved is calculated
+        aiToolUsed: [],
+        complexity: "",
+        qualityImpact: "",
+        notesHowAIHelped: "",
+      },
+    ]);
+  };
+
+  const removeRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+
+  const toggleRowExpand = (rowId) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [rowId]: !prev[rowId],
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError("");
+    setError(null);
 
     try {
-      if (!cryptoKey) {
-        throw new Error("Encryption key not available");
+      if (!key) {
+        throw new Error("Encryption key not found");
       }
 
-      // Validate required fields
-      if (!teamName || !teamMember || !teamRole) {
+      if (!teamName.trim() || !teamMember.trim() || !teamRole.trim()) {
         throw new Error("Please fill in all team information fields");
       }
 
-      // Check if any rows are incomplete
-      const incompleteRows = rows.filter(
-        (row) =>
+      // Validate rows
+      for (const row of rows) {
+        if (
+          !row.platform ||
+          !row.projectInitiative ||
           !row.sdlcStep ||
+          !row.sdlcTask ||
+          !row.taskCategory ||
+          !row.taskDetails ||
+          !row.estimatedTimeWithoutAI ||
           !row.actualTimeWithAI ||
-          !row.estimatedTimeWithoutAI
-      );
-
-      if (incompleteRows.length > 0) {
-        throw new Error(
-          "Please complete all tasks with required fields (SDLC step, estimated and actual time)"
-        );
+          !row.timeSaved ||
+          !row.aiToolUsed ||
+          row.aiToolUsed.length === 0 ||
+          !row.complexity ||
+          !row.qualityImpact ||
+          !row.notesHowAIHelped
+        ) {
+          throw new Error(
+            "Please fill in all fields for each productivity entry",
+          );
+        }
       }
 
-      // Prepare report data
+      // Get author ID from localStorage
+      const authorId =
+        localStorage.getItem("encrypted-app-author-id") ||
+        `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+
+      // Ensure author ID is saved
+      localStorage.setItem("encrypted-app-author-id", authorId);
+
+      // Create report data object
       const reportData = {
+        type: "aiProductivityReport",
         teamName,
         teamMember,
         teamRole,
+        entries: rows,
         timestamp: new Date().toISOString(),
-        entries: rows.map((row) => ({
-          platform: row.platform,
-          projectInitiative: row.projectInitiative,
-          sdlcStep: row.sdlcStep,
-          sdlcTask: row.sdlcTask,
-          taskDetails: row.taskDetails,
-          aiTool: row.aiToolUsed,
-          complexity: row.complexity,
-          qualityImpact: row.qualityImpact,
-          notesHowAIHelped: row.notesHowAIHelped,
-          hours: row.actualTimeWithAI,
-          hoursSaved: row.timeSaved,
-        })),
       };
 
-      // Store previously used team member names
-      const previousMembers = JSON.parse(
-        localStorage.getItem("teamMemberOptions") || "[]"
-      );
-      if (!previousMembers.includes(teamMember)) {
-        const updatedMembers = [...previousMembers, teamMember];
-        localStorage.setItem(
-          "teamMemberOptions",
-          JSON.stringify(updatedMembers)
-        );
-      }
+      // Convert to JSON
+      const jsonData = JSON.stringify(reportData);
 
-      // Create the message content
-      const messageContent = {
-        type: "productivity-report",
-        data: reportData,
-      };
+      // Import the key
+      const cryptoKey = await importKeyFromBase64(key);
 
-      // Encrypt the message
-      const messageString = JSON.stringify(messageContent);
-      const messageBytes = new TextEncoder().encode(messageString);
-      const { encryptedData, iv } = await encryptData(messageBytes, cryptoKey);
+      // Encrypt the report data
+      const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
 
-      // Convert to base64 for transmission
-      const base64IV = btoa(
-        String.fromCharCode.apply(null, new Uint8Array(iv))
-      );
-      const base64EncryptedData = btoa(
-        String.fromCharCode.apply(null, new Uint8Array(encryptedData))
-      );
+      // Combine IV and ciphertext
+      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+      combinedData.set(iv, 0);
+      combinedData.set(new Uint8Array(ciphertext), iv.length);
 
-      // Get author ID from local storage or create a new one
-      let authorId = localStorage.getItem(`author-${id}`);
-      if (!authorId) {
-        authorId = `author-${Math.random().toString(36).substring(2, 15)}`;
-        localStorage.setItem(`author-${id}`, authorId);
-      }
-
-      // Submit the encrypted data
-      const response = await fetch("/api/upload", {
+      // Submit the encrypted report
+      const response = await fetch(`/api/reports?threadId=${id}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/octet-stream",
+          "X-Author-ID": authorId,
         },
-        body: JSON.stringify({
-          threadId: id,
-          authorId,
-          iv: base64IV,
-          encryptedData: base64EncryptedData,
-          metadata: {
-            type: "productivity-report",
-            timestamp: new Date().toISOString(),
-          },
-        }),
+        body: combinedData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit report");
+        throw new Error("Failed to submit AI productivity report");
       }
 
       setSuccess(true);
-      setIsSubmitting(false);
-      
-      // Load team member options
-      const storedOptions = JSON.parse(
-        localStorage.getItem("teamMemberOptions") || "[]"
-      );
-      setTeamMemberOptions(storedOptions);
-      
+
+      // Reset form after successful submission
+      setRows([
+        {
+          id: Date.now(),
+          platform: "",
+          projectInitiative: "",
+          sdlcStep: "",
+          sdlcTask: "",
+          taskCategory: "",
+          taskDetails: "",
+          estimatedTimeWithoutAI: "",
+          actualTimeWithAI: "",
+          // timeSaved is calculated
+          aiToolUsed: [],
+          complexity: "",
+          qualityImpact: "",
+          notesHowAIHelped: "",
+        },
+      ]);
     } catch (err) {
       console.error("Error submitting report:", err);
-      setError(err.message || "An error occurred while submitting your report");
+      setError(`Failed to submit report: ${err.message}`);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    // Load team member options
-    const storedOptions = JSON.parse(
-      localStorage.getItem("teamMemberOptions") || "[]"
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+
+  if (isLoading) {
+    return (
+      <Container>
+        <p>Loading...</p>
+      </Container>
     );
-    setTeamMemberOptions(storedOptions);
-  }, []);
+  }
 
   return (
     <>
       <Head>
         <title>
-          {isViewMode ? "View Productivity Reports" : "Submit Productivity Report"}
+          {isViewMode
+            ? "View AI Productivity Reports"
+            : "Submit AI Productivity Report"}
         </title>
+        <meta
+          name="description"
+          content="AI Productivity Reporting for Secure Teams"
+        />
+        <meta name="robots" content="noindex, nofollow" />
       </Head>
+
       <Container>
         <HeaderBanner>
           <PageTitle>
@@ -524,21 +900,20 @@ const ReportPage = () => {
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path
-                  d="M12 15V17M6 21H18C19.1046 21 20 20.1046 20 19V13C20 11.8954 19.1046 11 18 11H6C4.89543 11 4 11.8954 4 13V19C4 20.1046 4.89543 21 6 21ZM16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11H16Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </LockIcon>
-            {isViewMode
-              ? `View Productivity Reports: ${threadTitle}`
-              : `Submit Productivity Report: ${teamName}`}
+            AI Productivity Report
           </PageTitle>
+          <PageSubtitle>
+            Track and measure your productivity gains from using AI tools
+          </PageSubtitle>
         </HeaderBanner>
 
         <ContentContainer>
@@ -551,39 +926,1020 @@ const ReportPage = () => {
 
           {isViewMode ? (
             // Reports viewing mode
-            <ReportViewer 
-              threadTitle={threadTitle}
-              reports={reports}
-            />
+            <>
+              <h3>Team Reports for: {threadTitle}</h3>
+
+              {reports.length === 0 ? (
+                <p>No productivity reports have been submitted yet.</p>
+              ) : (
+                <ReportList>
+                  {reports.map((report, index) => (
+                    <ReportCard key={index}>
+                      <ReportHeader>
+                        <ReportTitle>
+                          Report from {report.teamMember} ({report.teamRole})
+                        </ReportTitle>
+                        <ReportDate>{formatDate(report.timestamp)}</ReportDate>
+                      </ReportHeader>
+
+                      <ReportContent>
+                        <ResponsiveTable>
+                          {/* Desktop Table View */}
+                          <TableDesktop>
+                            <thead>
+                              <tr>
+                                <th>SDLC Step</th>
+                                <th>SDLC Task</th>
+                                <th>Hours</th>
+                                <th>Task Details</th>
+                                <th>AI Tool</th>
+                                <th>AI Productivity</th>
+                                <th>Saved</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {report.entries.map((entry, i) => (
+                                <tr key={i}>
+                                  <td>{entry.sdlcStep}</td>
+                                  <td>{entry.sdlcTask}</td>
+                                  <td>{entry.hours}</td>
+                                  <td>{entry.taskDetails}</td>
+                                  <td>{entry.aiTool}</td>
+                                  <td>{entry.aiProductivity}</td>
+                                  <td>{entry.hoursSaved}</td>
+                                </tr>
+                              ))}
+                              {/* Summary row */}
+                              <tr
+                                className="summary-row"
+                                style={{
+                                  backgroundColor: "#f8fafc",
+                                  fontWeight: 600,
+                                  borderTop: "2px solid #e2e8f0",
+                                }}
+                              >
+                                <td colSpan={2}>Total</td>
+                                <td>
+                                  {report.entries
+                                    .reduce(
+                                      (sum, entry) =>
+                                        sum + (parseFloat(entry.hours) || 0),
+                                      0,
+                                    )
+                                    .toFixed(1)}
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                  {report.entries
+                                    .reduce(
+                                      (sum, entry) =>
+                                        sum +
+                                        (parseFloat(entry.hoursSaved) || 0),
+                                      0,
+                                    )
+                                    .toFixed(1)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </TableDesktop>
+
+                          {/* Mobile Card View */}
+                          <TableMobile>
+                            {report.entries.map((entry, i) => (
+                              <MobileCard key={i}>
+                                <MobileCardHeader>
+                                  Record #{i + 1}
+                                </MobileCardHeader>
+                                <MobileCardBody>
+                                  <MobileCardField>
+                                    <MobileFieldLabel>
+                                      SDLC Step
+                                    </MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.sdlcStep}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>
+                                      SDLC Task
+                                    </MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.sdlcTask}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>Hours</MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.hours}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>
+                                      Task Details
+                                    </MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.taskDetails}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>
+                                      AI Tool Used
+                                    </MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.aiTool}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>
+                                      AI Productivity
+                                    </MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.aiProductivity}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+
+                                  <MobileCardField>
+                                    <MobileFieldLabel>Saved</MobileFieldLabel>
+                                    <MobileFieldValue>
+                                      {entry.hoursSaved}
+                                    </MobileFieldValue>
+                                  </MobileCardField>
+                                </MobileCardBody>
+                              </MobileCard>
+                            ))}
+
+                            {/* Summary Card for Mobile */}
+                            <MobileCard
+                              style={{
+                                backgroundColor: "#f8fafc",
+                                borderColor: "#4e7fff",
+                                borderWidth: "2px",
+                              }}
+                            >
+                              <MobileCardHeader
+                                style={{
+                                  backgroundColor: "#4e7fff",
+                                  color: "white",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Summary
+                              </MobileCardHeader>
+                              <MobileCardBody>
+                                <MobileCardField>
+                                  <MobileFieldLabel>
+                                    Total Hours
+                                  </MobileFieldLabel>
+                                  <MobileFieldValue
+                                    style={{ fontWeight: "bold" }}
+                                  >
+                                    {report.entries
+                                      .reduce(
+                                        (sum, entry) =>
+                                          sum + (parseFloat(entry.hours) || 0),
+                                        0,
+                                      )
+                                      .toFixed(1)}
+                                  </MobileFieldValue>
+                                </MobileCardField>
+
+                                <MobileCardField>
+                                  <MobileFieldLabel>
+                                    Total Saved
+                                  </MobileFieldLabel>
+                                  <MobileFieldValue
+                                    style={{ fontWeight: "bold" }}
+                                  >
+                                    {report.entries
+                                      .reduce(
+                                        (sum, entry) =>
+                                          sum +
+                                          (parseFloat(entry.hoursSaved) || 0),
+                                        0,
+                                      )
+                                      .toFixed(1)}
+                                  </MobileFieldValue>
+                                </MobileCardField>
+                              </MobileCardBody>
+                            </MobileCard>
+                          </TableMobile>
+                        </ResponsiveTable>
+                      </ReportContent>
+                    </ReportCard>
+                  ))}
+                </ReportList>
+              )}
+            </>
           ) : (
             // Report submission form
             <>
               {!success && (
-                <ReportFormComponent
-                  teamName={teamName}
-                  teamMember={teamMember}
-                  teamMemberOptions={teamMemberOptions}
-                  teamRole={teamRole}
-                  rows={rows}
-                  onSubmit={handleSubmit}
-                  setTeamMember={setTeamMember}
-                  setTeamRole={setTeamRole}
-                  handleRowChange={handleRowChange}
-                  handleSDLCStepChange={handleSDLCStepChange}
-                  addRow={addRow}
-                  deleteRow={deleteRow}
-                  isSubmitting={isSubmitting}
-                  error={error}
-                  success={success}
-                />
+                <ReportForm onSubmit={handleSubmit}>
+                  <TeamFormSection>
+                    <FormGroup>
+                      <Label htmlFor="teamName">Team Name</Label>
+                      <Input
+                        type="text"
+                        id="teamName"
+                        value={teamName}
+                        readOnly
+                        required
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label htmlFor="teamMember">Team Member Name</Label>
+                      <CreatableComboBox
+                        value={teamMember}
+                        onChange={setTeamMember}
+                        options={teamMemberOptions}
+                        placeholder="Enter your name"
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label htmlFor="teamRole">Role on the Team</Label>
+                      <Input
+                        type="text"
+                        id="teamRole"
+                        value={teamRole}
+                        onChange={(e) => setTeamRole(e.target.value)}
+                        required
+                        placeholder="Your role (e.g., Developer, Designer, Project Manager)"
+                      />
+                    </FormGroup>
+                  </TeamFormSection>
+
+                  <ResponsiveTable>
+                    {/* Desktop Table View */}
+                    <TableDesktop>
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Platform</th>
+                          <th>Initiative</th>
+                          <th>SDLC Step</th>
+                          <th>SDLC Task</th>
+                          <th>Task Category</th>
+                          <th style={{ width: "100px" }}>Est (h)</th>
+                          <th style={{ width: "100px" }}>Act (h)</th>
+                          <th>Complexity</th>
+                          <th>Quality Impact</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row) => (
+                          <React.Fragment key={row.id}>
+                            <tr
+                              className={`${expandedRows[row.id] ? "expanded" : ""}`}
+                            >
+                              <td
+                                style={{ cursor: "pointer" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRowExpand(row.id);
+                                }}
+                              >
+                                <div className="expand-icon">
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                  </svg>
+                                </div>
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.platform}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "platform", value)
+                                  }
+                                  options={[
+                                    "Unete",
+                                    "Revamp Somos Belcorp",
+                                    "Digital Catalog",
+                                    "Ecommerce Platform",
+                                    "Foundation Tool",
+                                    "Powder Tool",
+                                    "Skin Advisor",
+                                    "Newapp Somos Belcorp",
+                                    "FFVV",
+                                  ]}
+                                  placeholder="Platform"
+                                  storageKey="platformOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.projectInitiative}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "projectInitiative",
+                                      value,
+                                    )
+                                  }
+                                  options={[]}
+                                  placeholder="Initiative"
+                                  storageKey="projectOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.sdlcStep}
+                                  onChange={(value) =>
+                                    handleSDLCStepChange(row.id, value)
+                                  }
+                                  options={sdlcSteps}
+                                  placeholder="SDLC Step"
+                                  storageKey="sdlcStepOptions"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.sdlcTask}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "sdlcTask", value)
+                                  }
+                                  options={
+                                    row.sdlcStep
+                                      ? sdlcTasksMap[row.sdlcStep] || []
+                                      : []
+                                  }
+                                  placeholder="SDLC Task"
+                                  storageKey="sdlcTaskOptions"
+                                  disabled={!row.sdlcStep}
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.taskCategory}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "taskCategory",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "UI Development",
+                                    "API Integration",
+                                    "Code Refactoring",
+                                    "Documentation",
+                                    "Testing",
+                                    "Code Review",
+                                    "Bug Fixing",
+                                    "Performance Optimization",
+                                  ]}
+                                  placeholder="Task Category"
+                                  storageKey="taskCategoryOptions"
+                                />
+                              </td>
+
+                              <td>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.estimatedTimeWithoutAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "estimatedTimeWithoutAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Est (Hrs)"
+                                  style={{ width: "100px" }}
+                                />
+                              </td>
+                              <td>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.actualTimeWithAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "actualTimeWithAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Act (Hrs)"
+                                  style={{
+                                    width: "100px",
+                                    color:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? parseFloat(row.actualTimeWithAI) <
+                                          parseFloat(row.estimatedTimeWithoutAI)
+                                          ? "#16a34a"
+                                          : parseFloat(row.actualTimeWithAI) >
+                                              parseFloat(
+                                                row.estimatedTimeWithoutAI,
+                                              )
+                                            ? "#dc2626"
+                                            : "inherit"
+                                        : "inherit",
+                                    fontWeight:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? "500"
+                                        : "normal",
+                                  }}
+                                />
+                              </td>
+
+                              <td>
+                                <CustomSelect
+                                  value={row.complexity}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "complexity",
+                                      value
+                                    )
+                                  }
+                                  options={["Low", "Medium", "High"]}
+                                  placeholder="Complexity"
+                                />
+                              </td>
+                              <td>
+                                <CreatableComboBox
+                                  value={row.qualityImpact}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "qualityImpact",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "Improved Readability",
+                                    "Better Performance",
+                                    "More Comprehensive",
+                                    "More Accurate",
+                                    "Higher Consistency",
+                                    "More Secure",
+                                    "Better UX",
+                                    "More Scalable",
+                                  ]}
+                                  placeholder="Quality Impact"
+                                  storageKey="qualityImpactOptions"
+                                />
+                              </td>
+
+                              <td>
+                                {rows.length > 1 && (
+                                  <DeleteButton
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent row expansion
+                                      removeRow(row.id);
+                                    }}
+                                  >
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d="M3 6h18"></path>
+                                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                      <line
+                                        x1="10"
+                                        x2="10"
+                                        y1="11"
+                                        y2="17"
+                                      ></line>
+                                      <line
+                                        x1="14"
+                                        x2="14"
+                                        y1="11"
+                                        y2="17"
+                                      ></line>
+                                    </svg>
+                                  </DeleteButton>
+                                )}
+                              </td>
+                            </tr>
+
+                            {expandedRows[row.id] && (
+                              <tr className="detail-row">
+                                <td colSpan="12">
+                                  <div style={{ padding: "1rem" }}>
+                                    <div style={{ marginBottom: "1rem" }}>
+                                      <InnerLabel>AI TOOLS USED</InnerLabel>
+                                      <CreatableMultiSelect
+                                        value={row.aiToolUsed}
+                                        onChange={(value) =>
+                                          handleRowChange(
+                                            row.id,
+                                            "aiToolUsed",
+                                            value,
+                                          )
+                                        }
+                                        options={[
+                                          "ChatGPT",
+                                          "GitHub Copilot",
+                                          "Claude",
+                                          "DALL-E",
+                                          "Midjourney",
+                                          "Jasper",
+                                          "Hugging Face",
+                                          "Leonardo AI",
+                                          "Bard",
+                                          "GPT-4",
+                                        ]}
+                                        placeholder="Select AI Tools"
+                                        storageKey="aiToolOptions"
+                                      />
+                                    </div>
+
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr",
+                                        gap: "1.5rem",
+                                      }}
+                                    >
+                                      <div>
+                                        <InnerLabel>TASK DETAILS</InnerLabel>
+                                        <AutoResizeTextArea
+                                          value={row.taskDetails}
+                                          onChange={(e) =>
+                                            handleRowChange(
+                                              row.id,
+                                              "taskDetails",
+                                              e.target.value,
+                                            )
+                                          }
+                                          required
+                                          placeholder="Enter task details..."
+                                          rows={3}
+                                          style={{
+                                            width: "100%",
+                                            border: "1px solid #e2e8f0",
+                                            borderRadius: "4px",
+                                            padding: "0.75rem",
+                                          }}
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <InnerLabel>NOTES</InnerLabel>
+                                        <AutoResizeTextArea
+                                          value={row.notesHowAIHelped}
+                                          onChange={(e) =>
+                                            handleRowChange(
+                                              row.id,
+                                              "notesHowAIHelped",
+                                              e.target.value,
+                                            )
+                                          }
+                                          required
+                                          placeholder="Describe how AI helped with this task"
+                                          rows={3}
+                                          style={{
+                                            width: "100%",
+                                            border: "1px solid #e2e8f0",
+                                            borderRadius: "4px",
+                                            padding: "0.75rem",
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </TableDesktop>
+
+                    {/* Summary text below the table to match the screenshot */}
+                    <div
+                      style={{
+                        textAlign: "right",
+                        padding: "12px 8px",
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {rows.length} {rows.length === 1 ? "entry" : "entries"} |
+                      Total Est (h):{" "}
+                      {rows
+                        .reduce(
+                          (sum, row) =>
+                            sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                          0,
+                        )
+                        .toFixed(1)}{" "}
+                      | Total Act (h):{" "}
+                      {rows
+                        .reduce(
+                          (sum, row) =>
+                            sum + (parseFloat(row.actualTimeWithAI) || 0),
+                          0,
+                        )
+                        .toFixed(1)}
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <TableMobile>
+                      {rows.map((row) => (
+                        <MobileCard key={row.id}>
+                          <MobileCardHeader>
+                            Record #{rows.indexOf(row) + 1}
+                          </MobileCardHeader>
+                          <MobileCardBody>
+                            <MobileCardField>
+                              <MobileFieldLabel>Platform</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.platform}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "platform", value)
+                                  }
+                                  options={[
+                                    "Web",
+                                    "Mobile",
+                                    "Desktop",
+                                    "Backend",
+                                    "Cloud",
+                                    "Data",
+                                    "Machine Learning",
+                                    "DevOps",
+                                    "Security",
+                                    "Other",
+                                  ]}
+                                  placeholder="Select Platform"
+                                  storageKey="platformOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Initiative</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.projectInitiative}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "projectInitiative",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "Product Development",
+                                    "Internal Tools",
+                                    "Research",
+                                    "Integration",
+                                    "Maintenance",
+                                    "Migration",
+                                    "Upgrade",
+                                  ]}
+                                  placeholder="Select Initiative"
+                                  storageKey="projectOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>SDLC Step</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.sdlcStep}
+                                  onChange={(value) =>
+                                    handleSDLCStepChange(row.id, value)
+                                  }
+                                  options={sdlcSteps}
+                                  placeholder="Select Step"
+                                  storageKey="sdlcStepOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>SDLC Task</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.sdlcTask}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "sdlcTask", value)
+                                  }
+                                  options={
+                                    row.sdlcStep
+                                      ? sdlcTasksMap[row.sdlcStep] || []
+                                      : []
+                                  }
+                                  placeholder={row.sdlcStep ? "Select Task" : "Select SDLC Step first"}
+                                  storageKey="sdlcTaskOptions"
+                                  disabled={!row.sdlcStep}
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Task Category</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.taskCategory}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "taskCategory",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "UI Development",
+                                    "API Integration",
+                                    "Code Refactoring",
+                                    "Documentation",
+                                    "Testing",
+                                    "Code Review",
+                                    "Bug Fixing",
+                                    "Performance Optimization",
+                                  ]}
+                                  placeholder="Select Category"
+                                  storageKey="taskCategoryOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Task Details</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <AutoResizeTextArea
+                                  value={row.taskDetails}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "taskDetails",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Describe the task in detail"
+                                  rows={2}
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableMultiSelect
+                                  value={row.aiToolUsed}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "aiToolUsed", value)
+                                  }
+                                  options={[
+                                    "ChatGPT",
+                                    "GitHub Copilot",
+                                    "Claude",
+                                    "DALL-E",
+                                    "Midjourney",
+                                    "Jasper",
+                                    "Hugging Face",
+                                    "Leonardo AI",
+                                    "Bard",
+                                    "GPT-4",
+                                  ]}
+                                  placeholder="Select AI Tools"
+                                  storageKey="aiToolOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Est (h)</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.estimatedTimeWithoutAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "estimatedTimeWithoutAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Act (h)</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.25"
+                                  value={row.actualTimeWithAI}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "actualTimeWithAI",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Hours"
+                                  style={{
+                                    color:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? parseFloat(row.actualTimeWithAI) <
+                                          parseFloat(row.estimatedTimeWithoutAI)
+                                          ? "#16a34a"
+                                          : parseFloat(row.actualTimeWithAI) >
+                                              parseFloat(
+                                                row.estimatedTimeWithoutAI,
+                                              )
+                                            ? "#dc2626"
+                                            : "inherit"
+                                        : "inherit",
+                                    fontWeight:
+                                      row.estimatedTimeWithoutAI &&
+                                      row.actualTimeWithAI
+                                        ? "500"
+                                        : "normal",
+                                  }}
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Complexity</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CustomSelect
+                                  value={row.complexity}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "complexity",
+                                      value
+                                    )
+                                  }
+                                  options={["Low", "Medium", "High"]}
+                                  placeholder="Select Complexity"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>
+                                Quality Impact
+                              </MobileFieldLabel>
+                              <MobileFieldValue>
+                                <CreatableComboBox
+                                  value={row.qualityImpact}
+                                  onChange={(value) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "qualityImpact",
+                                      value,
+                                    )
+                                  }
+                                  options={[
+                                    "Improved Readability",
+                                    "Better Performance",
+                                    "More Comprehensive",
+                                    "More Accurate",
+                                    "Higher Consistency",
+                                    "More Secure",
+                                    "Better UX",
+                                    "More Scalable",
+                                  ]}
+                                  placeholder="Select Impact"
+                                  storageKey="qualityImpactOptions"
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+
+                            <MobileCardField>
+                              <MobileFieldLabel>Notes</MobileFieldLabel>
+                              <MobileFieldValue>
+                                <AutoResizeTextArea
+                                  value={row.notesHowAIHelped}
+                                  onChange={(e) =>
+                                    handleRowChange(
+                                      row.id,
+                                      "notesHowAIHelped",
+                                      e.target.value,
+                                    )
+                                  }
+                                  required
+                                  placeholder="Describe how AI helped with this task"
+                                  rows={2}
+                                />
+                              </MobileFieldValue>
+                            </MobileCardField>
+                          </MobileCardBody>
+
+                          {rows.length > 1 && (
+                            <MobileActions>
+                              <DeleteButton onClick={() => removeRow(row.id)}>
+                                Remove
+                              </DeleteButton>
+                            </MobileActions>
+                          )}
+                        </MobileCard>
+                      ))}
+
+                      {/* Summary text for mobile to match the screenshot */}
+                      <div
+                        style={{
+                          textAlign: "right",
+                          padding: "12px 8px",
+                          fontSize: "0.875rem",
+                          color: "#6b7280",
+                          fontWeight: 500,
+                          marginTop: "8px",
+                        }}
+                      >
+                        {rows.length} {rows.length === 1 ? "entry" : "entries"}{" "}
+                        | Total Est (h):{" "}
+                        {rows
+                          .reduce(
+                            (sum, row) =>
+                              sum +
+                              (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                            0,
+                          )
+                          .toFixed(1)}{" "}
+                        | Total Act (h):{" "}
+                        {rows
+                          .reduce(
+                            (sum, row) =>
+                              sum + (parseFloat(row.actualTimeWithAI) || 0),
+                            0,
+                          )
+                          .toFixed(1)}
+                      </div>
+                    </TableMobile>
+                  </ResponsiveTable>
+
+                  <ButtonRow>
+                    <ActionButton type="button" onClick={addRow}>
+                      <AddIcon>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M8 12h8"></path>
+                          <path d="M12 8v8"></path>
+                        </svg>
+                      </AddIcon>
+                      Add Entry
+                    </ActionButton>
+
+                    <SubmitButton type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? "Submitting..." : "Submit Report"}
+                    </SubmitButton>
+                  </ButtonRow>
+                </ReportForm>
               )}
             </>
           )}
 
-          <BackLinkText href={`/view/${id}`} onClick={(e) => {
-            e.preventDefault();
-            router.push(`/view/${id}`);
-          }}>← Back to inbox</BackLinkText>
+          <Link href={`/view/${id}`}>
+            <BackLinkText>← Back to inbox</BackLinkText>
+          </Link>
         </ContentContainer>
       </Container>
     </>

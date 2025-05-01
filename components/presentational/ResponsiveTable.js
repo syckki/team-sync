@@ -5,17 +5,11 @@ import styled from "styled-components";
 const TableContainer = styled.div`
   width: 100%;
   margin-bottom: 1rem;
+  overflow-x: auto;
   background-color: white;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  /* Make sure dropdowns can overflow the container while still allowing horizontal scrolling */
-  overflow: visible;
-  
-  /* For horizontal scrolling on mobile */
-  @media (max-width: 768px) {
-    overflow-x: auto;
-  }
 `;
 
 const Table = styled.table`
@@ -27,8 +21,6 @@ const Table = styled.table`
   th, td {
     text-align: left;
     padding: 0.75rem;
-    position: relative; /* Allow absolute positioning within cells */
-    overflow: visible;  /* Allow content to overflow */
   }
   
   th {

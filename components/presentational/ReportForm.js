@@ -5,6 +5,7 @@ import CustomSelect from "./CustomSelect";
 import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
+import ResponsiveTable from "./ResponsiveTable";
 
 const Form = styled.form`
   margin-bottom: 1.5rem;
@@ -109,8 +110,8 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Styled components for the responsive table
-const ResponsiveTable = styled.div`
+// Styled components for the old responsive table (will be replaced)
+const OldResponsiveTableContainer = styled.div`
   width: 100%;
   margin-bottom: 1rem;
   border-radius: calc(0.5rem - 2px);
@@ -450,7 +451,7 @@ const ReportForm = ({
               </FormGroup>
             </TeamFormSection>
 
-            <ResponsiveTable>
+            <OldResponsiveTableContainer>
               {/* Desktop Table View */}
               <TableDesktop>
                 <thead>
@@ -1138,7 +1139,7 @@ const ReportForm = ({
                     .toFixed(1)}
                 </div>
               </TableMobile>
-            </ResponsiveTable>
+            </OldResponsiveTableContainer>
 
             <ButtonRow>
               <ActionButton type="button" onClick={addRow}>

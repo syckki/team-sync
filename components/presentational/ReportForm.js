@@ -715,29 +715,6 @@ const ReportForm = ({
                   onRowToggle={toggleRowExpand}
                   emptyMessage="No entries. Click 'Add Entry' to start your report."
                 />
-                
-                {/* Time Saved summary */}
-                <div
-                  style={{
-                    marginTop: "1rem",
-                    fontWeight: "500",
-                    textAlign: "center",
-                    color: "#4e7fff",
-                  }}
-                >
-                  Time Saved:{" "}
-                  {rows
-                    .reduce(
-                      (total, row) =>
-                        total +
-                        (row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                          ? parseFloat(row.estimatedTimeWithoutAI) -
-                            parseFloat(row.actualTimeWithAI)
-                          : 0),
-                      0,
-                    )
-                    .toFixed(1)}
-                </div>
               </div>
             ) : (
               // Old table implementation

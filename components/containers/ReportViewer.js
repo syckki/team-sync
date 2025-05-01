@@ -7,6 +7,7 @@ import ReportViewerPresentation from "../presentational/ReportViewerPresentation
 
 // Report container components
 import AiImpactSummaryContainer from "./reports/AiImpactSummaryContainer";
+import ToolEffectivenessContainer from "./reports/ToolEffectivenessContainer";
 
 /**
  * Container component for the Report Viewer

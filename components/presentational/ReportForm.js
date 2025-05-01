@@ -5,7 +5,6 @@ import CustomSelect from "./CustomSelect";
 import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
-import ResponsiveTable from "./ResponsiveTable";
 
 const Form = styled.form`
   margin-bottom: 1.5rem;
@@ -110,24 +109,150 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Additional styled components for the form
-const DetailRowContent = styled.div`
-  padding: 1rem;
-  background-color: #f8fafc;
+// Styled components for the responsive table
+const ResponsiveTable = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: calc(0.5rem - 2px);
+  position: relative;
+  border: 1px solid rgb(229 231 235);
 `;
 
-const ExpandIcon = styled.div`
-  color: #4e7fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  transition: transform 0.2s ease;
-  
-  &.expanded {
+const TableDesktop = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background-color: rgb(249 250 251);
+  }
+
+  tbody td:not(:first-of-type):not(:last-of-type) {
+    padding: 0.75rem 0.75rem 0.75rem 0;
+  }
+
+  th,
+  td {
+    border: 0px;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    text-transform: uppercase;
+    color: rgb(107 114 128);
+    letter-spacing: 0.05em;
+    padding: 0.75rem;
+  }
+
+  td {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding-top: 0.5rem 0.75rem;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  /* We're only making the arrow clickable for expansion */
+
+  tr.expanded {
+    background-color: rgba(78, 127, 255, 0.08);
+  }
+
+  tr.detail-row {
+    background-color: #f8fafc;
+    border-top: 1px dashed #e2e8f0;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+
+  tr.detail-row td {
+    padding: 0;
+  }
+
+  .expand-icon {
+    color: #4e7fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  .expanded .expand-icon {
     transform: rotate(90deg);
   }
+
+  @media (max-width: 992px) {
+    display: none;
+  }
+`;
+
+const TableMobile = styled.div`
+  display: none;
+
+  @media (max-width: 992px) {
+    display: block;
+  }
+`;
+
+const MobileCard = styled.div`
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
+
+const MobileCardHeader = styled.div`
+  background-color: #f8fafc;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const MobileCardBody = styled.div`
+  padding: 0;
+`;
+
+const MobileCardField = styled.div`
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+`;
+
+const MobileFieldLabel = styled.span`
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #444;
+  font-size: 0.85rem;
+`;
+
+const MobileFieldValue = styled.span`
+  color: #333;
+`;
+
+const MobileActions = styled.div`
+  padding: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
 `;
 
 const ButtonRow = styled.div`
@@ -153,7 +278,7 @@ const ActionButton = styled.button`
   font-weight: 500;
   background-color: ${(props) =>
     props.primary ? "#4e7fff" : "hsl(60 4.8% 95.9%)"};
-  color: hsl(24 9.8% 10%);
+  color: hsl(24 9.8% 10%;);
   transition: background-color 0.2s;
 
   &:hover {
@@ -325,353 +450,695 @@ const ReportForm = ({
               </FormGroup>
             </TeamFormSection>
 
-            {/* Use the generic ResponsiveTable component */}
-            <ResponsiveTable
-              data={rows}
-              columns={[
-                {
-                  key: "expand",
-                  header: "",
-                  render: (row) => (
-                    <div 
-                      style={{ cursor: "pointer" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleRowExpand(row.id);
-                      }}
-                    >
-                      <ExpandIcon className={expandedRows[row.id] ? "expanded" : ""}>
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                      </ExpandIcon>
-                    </div>
-                  )
-                },
-                {
-                  key: "platform",
-                  header: "Platform",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.platform}
-                      onChange={(value) =>
-                        handleRowChange(row.id, "platform", value)
-                      }
-                      options={[
-                        "Unete",
-                        "Revamp Somos Belcorp",
-                        "Digital Catalog",
-                        "Ecommerce Platform",
-                        "Foundation Tool",
-                        "Powder Tool",
-                        "Skin Advisor",
-                        "Newapp Somos Belcorp",
-                        "FFVV",
-                      ]}
-                      placeholder="Platform"
-                      storageKey="platformOptions"
-                    />
-                  )
-                },
-                {
-                  key: "initiative",
-                  header: "Initiative",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.projectInitiative}
-                      onChange={(value) =>
-                        handleRowChange(
-                          row.id,
-                          "projectInitiative",
-                          value,
-                        )
-                      }
-                      options={[]}
-                      placeholder="Initiative"
-                      storageKey="projectOptions"
-                    />
-                  )
-                },
-                {
-                  key: "sdlcStep",
-                  header: "SDLC Step",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.sdlcStep}
-                      onChange={(value) =>
-                        handleSDLCStepChange(row.id, value)
-                      }
-                      options={sdlcSteps}
-                      placeholder="SDLC Step"
-                      storageKey="sdlcStepOptions"
-                    />
-                  )
-                },
-                {
-                  key: "sdlcTask",
-                  header: "SDLC Task",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.sdlcTask}
-                      onChange={(value) =>
-                        handleRowChange(row.id, "sdlcTask", value)
-                      }
-                      options={
-                        row.sdlcStep
-                          ? sdlcTasksMap[row.sdlcStep] || []
-                          : []
-                      }
-                      placeholder="SDLC Task"
-                      storageKey="sdlcTaskOptions"
-                      disabled={!row.sdlcStep}
-                    />
-                  )
-                },
-                {
-                  key: "taskCategory",
-                  header: "Task Category",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.taskCategory}
-                      onChange={(value) =>
-                        handleRowChange(row.id, "taskCategory", value)
-                      }
-                      options={[
-                        "UI Development",
-                        "API Integration",
-                        "Code Refactoring",
-                        "Documentation",
-                        "Testing",
-                        "Code Review",
-                        "Bug Fixing",
-                        "Performance Optimization",
-                      ]}
-                      placeholder="Task Category"
-                      storageKey="taskCategoryOptions"
-                    />
-                  )
-                },
-                {
-                  key: "estHours",
-                  header: "Est (h)",
-                  width: "100px",
-                  render: (row) => (
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.25"
-                      value={row.estimatedTimeWithoutAI}
-                      onChange={(e) =>
-                        handleRowChange(
-                          row.id,
-                          "estimatedTimeWithoutAI",
-                          e.target.value,
-                        )
-                      }
-                      required
-                      placeholder="Est (Hrs)"
-                      style={{ width: "100px" }}
-                    />
-                  )
-                },
-                {
-                  key: "actHours",
-                  header: "Act (h)",
-                  width: "100px",
-                  render: (row) => (
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.25"
-                      value={row.actualTimeWithAI}
-                      onChange={(e) =>
-                        handleRowChange(
-                          row.id,
-                          "actualTimeWithAI",
-                          e.target.value,
-                        )
-                      }
-                      required
-                      placeholder="Act (Hrs)"
-                      style={{
-                        width: "100px",
-                        color:
-                          row.estimatedTimeWithoutAI &&
-                          row.actualTimeWithAI
-                            ? parseFloat(row.actualTimeWithAI) <
-                              parseFloat(row.estimatedTimeWithoutAI)
-                              ? "#16a34a"
-                              : parseFloat(row.actualTimeWithAI) >
-                                  parseFloat(row.estimatedTimeWithoutAI)
-                                ? "#dc2626"
-                                : "inherit"
-                            : "inherit",
-                        fontWeight:
-                          row.estimatedTimeWithoutAI &&
-                          row.actualTimeWithAI
-                            ? "500"
-                            : "normal",
-                      }}
-                    />
-                  )
-                },
-                {
-                  key: "complexity",
-                  header: "Complexity",
-                  render: (row) => (
-                    <CustomSelect
-                      value={row.complexity}
-                      onChange={(value) =>
-                        handleRowChange(row.id, "complexity", value)
-                      }
-                      options={["Low", "Medium", "High"]}
-                      placeholder="Complexity"
-                    />
-                  )
-                },
-                {
-                  key: "qualityImpact",
-                  header: "Quality Impact",
-                  render: (row) => (
-                    <CreatableComboBox
-                      value={row.qualityImpact}
-                      onChange={(value) =>
-                        handleRowChange(row.id, "qualityImpact", value)
-                      }
-                      options={[
-                        "Improved Readability",
-                        "Better Performance",
-                        "More Comprehensive",
-                        "More Accurate",
-                        "Higher Consistency",
-                        "More Secure",
-                        "Better UX",
-                        "More Scalable",
-                      ]}
-                      placeholder="Quality Impact"
-                      storageKey="qualityImpactOptions"
-                    />
-                  )
-                },
-                {
-                  key: "action",
-                  header: "Action",
-                  render: (row) => (
-                    rows.length > 1 && (
-                      <DeleteButton
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent row expansion
-                          removeRow(row.id);
-                        }}
+            <ResponsiveTable>
+              {/* Desktop Table View */}
+              <TableDesktop>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Platform</th>
+                    <th>Initiative</th>
+                    <th>SDLC Step</th>
+                    <th>SDLC Task</th>
+                    <th>Task Category</th>
+                    <th style={{ width: "100px" }}>Est (h)</th>
+                    <th style={{ width: "100px" }}>Act (h)</th>
+                    <th>Complexity</th>
+                    <th>Quality Impact</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <React.Fragment key={row.id}>
+                      <tr
+                        className={`${expandedRows[row.id] ? "expanded" : ""}`}
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                        <td
+                          style={{ cursor: "pointer" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRowExpand(row.id);
+                          }}
                         >
-                          <path d="M3 6h18"></path>
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                          <line x1="10" y1="11" x2="10" y2="17"></line>
-                          <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>
-                      </DeleteButton>
-                    )
+                          <div className="expand-icon">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                          </div>
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.platform}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "platform", value)
+                            }
+                            options={[
+                              "Unete",
+                              "Revamp Somos Belcorp",
+                              "Digital Catalog",
+                              "Ecommerce Platform",
+                              "Foundation Tool",
+                              "Powder Tool",
+                              "Skin Advisor",
+                              "Newapp Somos Belcorp",
+                              "FFVV",
+                            ]}
+                            placeholder="Platform"
+                            storageKey="platformOptions"
+                          />
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.projectInitiative}
+                            onChange={(value) =>
+                              handleRowChange(
+                                row.id,
+                                "projectInitiative",
+                                value,
+                              )
+                            }
+                            options={[]}
+                            placeholder="Initiative"
+                            storageKey="projectOptions"
+                          />
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.sdlcStep}
+                            onChange={(value) =>
+                              handleSDLCStepChange(row.id, value)
+                            }
+                            options={sdlcSteps}
+                            placeholder="SDLC Step"
+                            storageKey="sdlcStepOptions"
+                          />
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.sdlcTask}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "sdlcTask", value)
+                            }
+                            options={
+                              row.sdlcStep
+                                ? sdlcTasksMap[row.sdlcStep] || []
+                                : []
+                            }
+                            placeholder="SDLC Task"
+                            storageKey="sdlcTaskOptions"
+                            disabled={!row.sdlcStep}
+                          />
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.taskCategory}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "taskCategory", value)
+                            }
+                            options={[
+                              "UI Development",
+                              "API Integration",
+                              "Code Refactoring",
+                              "Documentation",
+                              "Testing",
+                              "Code Review",
+                              "Bug Fixing",
+                              "Performance Optimization",
+                            ]}
+                            placeholder="Task Category"
+                            storageKey="taskCategoryOptions"
+                          />
+                        </td>
+
+                        <td>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={row.estimatedTimeWithoutAI}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "estimatedTimeWithoutAI",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Est (Hrs)"
+                            style={{ width: "100px" }}
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={row.actualTimeWithAI}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "actualTimeWithAI",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Act (Hrs)"
+                            style={{
+                              width: "100px",
+                              color:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? parseFloat(row.actualTimeWithAI) <
+                                    parseFloat(row.estimatedTimeWithoutAI)
+                                    ? "#16a34a"
+                                    : parseFloat(row.actualTimeWithAI) >
+                                        parseFloat(row.estimatedTimeWithoutAI)
+                                      ? "#dc2626"
+                                      : "inherit"
+                                  : "inherit",
+                              fontWeight:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? "500"
+                                  : "normal",
+                            }}
+                          />
+                        </td>
+
+                        <td>
+                          <CustomSelect
+                            value={row.complexity}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "complexity", value)
+                            }
+                            options={["Low", "Medium", "High"]}
+                            placeholder="Complexity"
+                          />
+                        </td>
+                        <td>
+                          <CreatableComboBox
+                            value={row.qualityImpact}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "qualityImpact", value)
+                            }
+                            options={[
+                              "Improved Readability",
+                              "Better Performance",
+                              "More Comprehensive",
+                              "More Accurate",
+                              "Higher Consistency",
+                              "More Secure",
+                              "Better UX",
+                              "More Scalable",
+                            ]}
+                            placeholder="Quality Impact"
+                            storageKey="qualityImpactOptions"
+                          />
+                        </td>
+
+                        <td>
+                          {rows.length > 1 && (
+                            <DeleteButton
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent row expansion
+                                removeRow(row.id);
+                              }}
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                <line x1="10" x2="10" y1="11" y2="17"></line>
+                                <line x1="14" x2="14" y1="11" y2="17"></line>
+                              </svg>
+                            </DeleteButton>
+                          )}
+                        </td>
+                      </tr>
+
+                      {expandedRows[row.id] && (
+                        <tr className="detail-row">
+                          <td colSpan="12">
+                            <div style={{ padding: "1rem" }}>
+                              <div style={{ marginBottom: "1rem" }}>
+                                <InnerLabel>AI TOOLS USED</InnerLabel>
+                                <CreatableMultiSelect
+                                  value={row.aiToolUsed}
+                                  onChange={(value) =>
+                                    handleRowChange(row.id, "aiToolUsed", value)
+                                  }
+                                  options={[
+                                    "ChatGPT",
+                                    "GitHub Copilot",
+                                    "Claude",
+                                    "DALL-E",
+                                    "Midjourney",
+                                    "Jasper",
+                                    "Hugging Face",
+                                    "Leonardo AI",
+                                    "Bard",
+                                    "GPT-4",
+                                  ]}
+                                  placeholder="Select AI Tools"
+                                  storageKey="aiToolOptions"
+                                />
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 1fr",
+                                  gap: "1.5rem",
+                                }}
+                              >
+                                <div>
+                                  <InnerLabel>TASK DETAILS</InnerLabel>
+                                  <AutoResizeTextArea
+                                    value={row.taskDetails}
+                                    onChange={(e) =>
+                                      handleRowChange(
+                                        row.id,
+                                        "taskDetails",
+                                        e.target.value,
+                                      )
+                                    }
+                                    required
+                                    placeholder="Enter task details..."
+                                    rows={3}
+                                    style={{
+                                      width: "100%",
+                                      border: "1px solid #e2e8f0",
+                                      borderRadius: "4px",
+                                      padding: "0.75rem",
+                                    }}
+                                  />
+                                </div>
+
+                                <div>
+                                  <InnerLabel>NOTES</InnerLabel>
+                                  <AutoResizeTextArea
+                                    value={row.notesHowAIHelped}
+                                    onChange={(e) =>
+                                      handleRowChange(
+                                        row.id,
+                                        "notesHowAIHelped",
+                                        e.target.value,
+                                      )
+                                    }
+                                    required
+                                    placeholder="Describe how AI helped with this task"
+                                    rows={3}
+                                    style={{
+                                      width: "100%",
+                                      border: "1px solid #e2e8f0",
+                                      borderRadius: "4px",
+                                      padding: "0.75rem",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </TableDesktop>
+
+              {/* Summary text below the table to match the screenshot */}
+              <div
+                style={{
+                  textAlign: "right",
+                  padding: "12px 8px",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                  fontWeight: 500,
+                }}
+              >
+                {rows.length} {rows.length === 1 ? "entry" : "entries"} | Total
+                Est (h):{" "}
+                {rows
+                  .reduce(
+                    (sum, row) =>
+                      sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                    0,
                   )
-                }
-              ]}
-              keyField="id"
-              emptyMessage="No productivity entries yet. Click 'Add Entry' to get started."
-              headerTitle="Productivity Entry"
-              renderCustomCell={(row) => {
-                // Render expanded detail row
-                if (expandedRows[row.id]) {
-                  return (
-                    <DetailRowContent>
-                      <div style={{ marginBottom: "1rem" }}>
-                        <InnerLabel>Task Details</InnerLabel>
-                        <Input
-                          type="text"
-                          value={row.taskDetails}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "taskDetails",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="Short description of the task"
-                          required
-                        />
-                      </div>
+                  .toFixed(1)}{" "}
+                | Total Act (h):{" "}
+                {rows
+                  .reduce(
+                    (sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0),
+                    0,
+                  )
+                  .toFixed(1)}
+              </div>
 
-                      <div style={{ marginBottom: "1rem" }}>
-                        <InnerLabel>AI Tools Used</InnerLabel>
-                        <CreatableMultiSelect
-                          value={row.aiToolUsed}
-                          onChange={(value) =>
-                            handleRowChange(row.id, "aiToolUsed", value)
-                          }
-                          options={[
-                            "GitHub Copilot",
-                            "ChatGPT",
-                            "Claude",
-                            "Midjourney",
-                            "DALL-E",
-                            "Jasper",
-                            "Bard",
-                            "Bing Chat",
-                            "Replit",
-                            "Tabnine",
-                            "Sourcegraph Cody",
-                            "CodeWhisperer",
-                          ]}
-                          placeholder="Select AI tools used"
-                          required
-                          storageKey="aiToolsOptions"
-                        />
-                      </div>
+              {/* Mobile Card View */}
+              <TableMobile>
+                {rows.map((row) => (
+                  <MobileCard key={row.id}>
+                    <MobileCardHeader>
+                      Record #{rows.indexOf(row) + 1}
+                    </MobileCardHeader>
+                    <MobileCardBody>
+                      <MobileCardField>
+                        <MobileFieldLabel>Platform</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.platform}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "platform", value)
+                            }
+                            options={[
+                              "Web",
+                              "Mobile",
+                              "Desktop",
+                              "Backend",
+                              "Cloud",
+                              "Data",
+                              "Machine Learning",
+                              "DevOps",
+                              "Security",
+                              "Other",
+                            ]}
+                            placeholder="Select Platform"
+                            storageKey="platformOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
 
-                      <div>
-                        <InnerLabel>
-                          How AI Helped (Detailed Notes)
-                        </InnerLabel>
-                        <AutoResizeTextArea
-                          value={row.notesHowAIHelped}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "notesHowAIHelped",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="Describe how AI tools contributed to your work..."
-                          required
-                        />
-                      </div>
-                    </DetailRowContent>
-                  );
-                }
-                return null;
-              }}
-              summaryRow={{
-                content: `${rows.length} ${rows.length === 1 ? "entry" : "entries"} | 
-                Total Est (h): ${rows.reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0).toFixed(1)} | 
-                Total Act (h): ${rows.reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0).toFixed(1)}`
-              }}
-            />
+                      <MobileCardField>
+                        <MobileFieldLabel>Initiative</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.projectInitiative}
+                            onChange={(value) =>
+                              handleRowChange(
+                                row.id,
+                                "projectInitiative",
+                                value,
+                              )
+                            }
+                            options={[
+                              "Product Development",
+                              "Internal Tools",
+                              "Research",
+                              "Integration",
+                              "Maintenance",
+                              "Migration",
+                              "Upgrade",
+                            ]}
+                            placeholder="Select Initiative"
+                            storageKey="projectOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>SDLC Step</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.sdlcStep}
+                            onChange={(value) =>
+                              handleSDLCStepChange(row.id, value)
+                            }
+                            options={sdlcSteps}
+                            placeholder="Select Step"
+                            storageKey="sdlcStepOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>SDLC Task</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.sdlcTask}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "sdlcTask", value)
+                            }
+                            options={
+                              row.sdlcStep
+                                ? sdlcTasksMap[row.sdlcStep] || []
+                                : []
+                            }
+                            placeholder={
+                              row.sdlcStep
+                                ? "Select Task"
+                                : "Select SDLC Step first"
+                            }
+                            storageKey="sdlcTaskOptions"
+                            disabled={!row.sdlcStep}
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Task Category</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.taskCategory}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "taskCategory", value)
+                            }
+                            options={[
+                              "UI Development",
+                              "API Integration",
+                              "Code Refactoring",
+                              "Documentation",
+                              "Testing",
+                              "Code Review",
+                              "Bug Fixing",
+                              "Performance Optimization",
+                            ]}
+                            placeholder="Select Category"
+                            storageKey="taskCategoryOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Task Details</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <AutoResizeTextArea
+                            value={row.taskDetails}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "taskDetails",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Describe the task in detail"
+                            rows={2}
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableMultiSelect
+                            value={row.aiToolUsed}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "aiToolUsed", value)
+                            }
+                            options={[
+                              "ChatGPT",
+                              "GitHub Copilot",
+                              "Claude",
+                              "DALL-E",
+                              "Midjourney",
+                              "Jasper",
+                              "Hugging Face",
+                              "Leonardo AI",
+                              "Bard",
+                              "GPT-4",
+                            ]}
+                            placeholder="Select AI Tools"
+                            storageKey="aiToolOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Est (h)</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={row.estimatedTimeWithoutAI}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "estimatedTimeWithoutAI",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Hours"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Act (h)</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={row.actualTimeWithAI}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "actualTimeWithAI",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Hours"
+                            style={{
+                              color:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? parseFloat(row.actualTimeWithAI) <
+                                    parseFloat(row.estimatedTimeWithoutAI)
+                                    ? "#16a34a"
+                                    : parseFloat(row.actualTimeWithAI) >
+                                        parseFloat(row.estimatedTimeWithoutAI)
+                                      ? "#dc2626"
+                                      : "inherit"
+                                  : "inherit",
+                              fontWeight:
+                                row.estimatedTimeWithoutAI &&
+                                row.actualTimeWithAI
+                                  ? "500"
+                                  : "normal",
+                            }}
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Complexity</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CustomSelect
+                            value={row.complexity}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "complexity", value)
+                            }
+                            options={["Low", "Medium", "High"]}
+                            placeholder="Select Complexity"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Quality Impact</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableComboBox
+                            value={row.qualityImpact}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "qualityImpact", value)
+                            }
+                            options={[
+                              "Improved Readability",
+                              "Better Performance",
+                              "More Comprehensive",
+                              "More Accurate",
+                              "Higher Consistency",
+                              "More Secure",
+                              "Better UX",
+                              "More Scalable",
+                            ]}
+                            placeholder="Select Impact"
+                            storageKey="qualityImpactOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Notes</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <AutoResizeTextArea
+                            value={row.notesHowAIHelped}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "notesHowAIHelped",
+                                e.target.value,
+                              )
+                            }
+                            required
+                            placeholder="Describe how AI helped with this task"
+                            rows={2}
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+                    </MobileCardBody>
+
+                    {rows.length > 1 && (
+                      <MobileActions>
+                        <DeleteButton onClick={() => removeRow(row.id)}>
+                          Remove
+                        </DeleteButton>
+                      </MobileActions>
+                    )}
+                  </MobileCard>
+                ))}
+
+                {/* Summary text for mobile to match the screenshot */}
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: "12px 8px",
+                    fontSize: "0.875rem",
+                    color: "#6b7280",
+                    fontWeight: 500,
+                    marginTop: "8px",
+                  }}
+                >
+                  {rows.length} {rows.length === 1 ? "entry" : "entries"} |
+                  Total Est (h):{" "}
+                  {rows
+                    .reduce(
+                      (sum, row) =>
+                        sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                      0,
+                    )
+                    .toFixed(1)}{" "}
+                  | Total Act (h):{" "}
+                  {rows
+                    .reduce(
+                      (sum, row) =>
+                        sum + (parseFloat(row.actualTimeWithAI) || 0),
+                      0,
+                    )
+                    .toFixed(1)}
+                </div>
+              </TableMobile>
+            </ResponsiveTable>
 
             <ButtonRow>
               <ActionButton type="button" onClick={addRow}>

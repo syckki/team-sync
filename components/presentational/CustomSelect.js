@@ -77,9 +77,12 @@ export const ComboBoxDropdown = styled.ul`
   overflow-y: auto;
   z-index: 1001; // Match the higher z-index from container
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: max-content;
+  width: auto;
   min-width: 100%;
   white-space: nowrap;
+  /* Ensure dropdown width adjusts to content */
+  max-width: max-content;
+  width: auto;
 `;
 
 export const ComboBoxOption = styled.li`

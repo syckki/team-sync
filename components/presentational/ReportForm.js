@@ -404,6 +404,210 @@ const ReportForm = ({
   const toggleRowExpand = (rowId) => {
     toggleRowExpansion(rowId);
   };
+  
+  // Define column structure for the new ResponsiveTable
+  const tableColumns = [
+    { 
+      header: "Platform", 
+      field: "platform",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "platform", newValue)}
+          options={[
+            "Unete",
+            "Revamp Somos Belcorp",
+            "Digital Catalog",
+            "Ecommerce Platform",
+            "Foundation Tool",
+            "Powder Tool",
+            "Skin Advisor",
+            "Newapp Somos Belcorp",
+            "FFVV",
+          ]}
+          placeholder="Platform"
+          storageKey="platformOptions"
+        />
+      )
+    },
+    { 
+      header: "Initiative", 
+      field: "projectInitiative",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "projectInitiative", newValue)}
+          options={[]}
+          placeholder="Initiative"
+          storageKey="projectOptions"
+        />
+      )
+    },
+    { 
+      header: "SDLC Step", 
+      field: "sdlcStep",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleSDLCStepChange(row.id, newValue)}
+          options={sdlcSteps}
+          placeholder="SDLC Step"
+          storageKey="sdlcStepOptions"
+        />
+      )
+    },
+    { 
+      header: "SDLC Task", 
+      field: "sdlcTask",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "sdlcTask", newValue)}
+          options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+          placeholder="SDLC Task"
+          storageKey="sdlcTaskOptions"
+          disabled={!row.sdlcStep}
+        />
+      )
+    },
+    { 
+      header: "Task Category", 
+      field: "taskCategory",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "taskCategory", newValue)}
+          options={[
+            "UI Development",
+            "API Integration",
+            "Code Refactoring",
+            "Documentation",
+            "Testing",
+            "Code Review",
+            "Bug Fixing",
+            "Performance Optimization",
+          ]}
+          placeholder="Task Category"
+          storageKey="taskCategoryOptions"
+        />
+      )
+    },
+    { 
+      header: "Est (h)", 
+      field: "estimatedTimeWithoutAI",
+      width: "100px",
+      render: (value, row) => (
+        <Input
+          type="number"
+          min="0"
+          step="0.25"
+          value={value}
+          onChange={(e) => handleRowChange(row.id, "estimatedTimeWithoutAI", e.target.value)}
+          required
+          placeholder="Est (Hrs)"
+          style={{ width: "100px" }}
+        />
+      )
+    },
+    { 
+      header: "Act (h)", 
+      field: "actualTimeWithAI",
+      width: "100px",
+      render: (value, row) => (
+        <Input
+          type="number"
+          min="0"
+          step="0.25"
+          value={value}
+          onChange={(e) => handleRowChange(row.id, "actualTimeWithAI", e.target.value)}
+          required
+          placeholder="Act (Hrs)"
+          style={{
+            width: "100px",
+            color:
+              row.estimatedTimeWithoutAI &&
+              row.actualTimeWithAI
+                ? parseFloat(row.actualTimeWithAI) <
+                  parseFloat(row.estimatedTimeWithoutAI)
+                  ? "#16a34a"
+                  : parseFloat(row.actualTimeWithAI) >
+                      parseFloat(row.estimatedTimeWithoutAI)
+                    ? "#dc2626"
+                    : "inherit"
+                : "inherit",
+            fontWeight:
+              row.estimatedTimeWithoutAI &&
+              row.actualTimeWithAI
+                ? "500"
+                : "normal",
+          }}
+        />
+      )
+    },
+    { 
+      header: "Complexity", 
+      field: "complexity",
+      render: (value, row) => (
+        <CustomSelect
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "complexity", newValue)}
+          options={["Low", "Medium", "High"]}
+          placeholder="Complexity"
+        />
+      )
+    },
+    { 
+      header: "Quality Impact", 
+      field: "qualityImpact",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) => handleRowChange(row.id, "qualityImpact", newValue)}
+          options={[
+            "Improved Readability",
+            "Better Performance",
+            "More Comprehensive",
+            "More Accurate",
+            "Higher Consistency",
+            "More Secure",
+            "Better UX",
+            "More Scalable",
+          ]}
+          placeholder="Quality Impact"
+          storageKey="qualityImpactOptions"
+        />
+      )
+    },
+    { 
+      header: "Action", 
+      field: "action",
+      render: (value, row) => (
+        rows.length > 1 ? (
+          <DeleteButton
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row expansion
+              removeRow(row.id);
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              <line x1="10" x2="10" y1="11" y2="17"></line>
+              <line x1="14" x2="14" y1="11" y2="17"></line>
+            </svg>
+          </DeleteButton>
+        ) : null
+      )
+    }
+  ];
 
   return (
     <>
@@ -1140,6 +1344,103 @@ const ReportForm = ({
                 </div>
               </TableMobile>
             </OldResponsiveTableContainer>
+            
+            {/* New ResponsiveTable implementation */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <ResponsiveTable 
+                data={rows}
+                columns={tableColumns}
+                keyField="id"
+                expandableRowRender={(row) => (
+                  <div style={{ padding: "1rem" }}>
+                    <div style={{ marginBottom: "1rem" }}>
+                      <InnerLabel>AI TOOLS USED</InnerLabel>
+                      <CreatableMultiSelect
+                        value={row.aiToolUsed}
+                        onChange={(value) =>
+                          handleRowChange(row.id, "aiToolUsed", value)
+                        }
+                        options={[
+                          "ChatGPT",
+                          "GitHub Copilot",
+                          "Claude",
+                          "DALL-E",
+                          "Midjourney",
+                          "Jasper",
+                          "Hugging Face",
+                          "Leonardo AI",
+                          "Bard",
+                          "GPT-4",
+                        ]}
+                        placeholder="Select AI tools used"
+                        storageKey="aiToolOptions"
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "1rem" }}>
+                      <InnerLabel>TASK DETAILS</InnerLabel>
+                      <AutoResizeTextArea
+                        value={row.taskDetails}
+                        onChange={(e) =>
+                          handleRowChange(
+                            row.id,
+                            "taskDetails",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Describe the task in detail"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: "1rem" }}>
+                      <InnerLabel>AI PRODUCTIVITY</InnerLabel>
+                      <CreatableComboBox
+                        value={row.aiProductivity}
+                        onChange={(value) =>
+                          handleRowChange(row.id, "aiProductivity", value)
+                        }
+                        options={[
+                          "Reduced Development Time",
+                          "Automated Testing",
+                          "Simplified Debugging",
+                          "Enhanced Design Process",
+                          "Improved Code Quality",
+                          "Accelerated Research",
+                          "Streamlined Documentation",
+                          "Optimized Performance",
+                        ]}
+                        placeholder="How did AI improve productivity?"
+                        storageKey="aiProductivityOptions"
+                      />
+                    </div>
+
+                    <div>
+                      <InnerLabel>HOURS SAVED</InnerLabel>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.25"
+                        value={row.hoursSaved}
+                        onChange={(e) =>
+                          handleRowChange(
+                            row.id,
+                            "hoursSaved",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Hours saved by AI"
+                        required
+                        style={{ width: "150px" }}
+                      />
+                    </div>
+                  </div>
+                )}
+                expandedRows={expandedRows}
+                onRowToggle={toggleRowExpand}
+                emptyMessage="No entries. Click 'Add Entry' to start your report."
+              />
+            </div>
 
             <ButtonRow>
               <ActionButton type="button" onClick={addRow}>

@@ -181,6 +181,8 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
     switch (selectedReport) {
       case "aiImpactSummary":
         return <AiImpactSummaryContainer reports={reports} filters={filters} />;
+      case "toolEffectiveness":
+        return <ToolEffectivenessContainer reports={reports} filters={filters} />;
       case "raw":
       default:
         // The raw reports will be handled in the presentation component

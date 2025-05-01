@@ -385,6 +385,13 @@ const ReportViewerPresentation = ({
           >
             AI Impact Summary
           </ReportTypeButton>
+          
+          <ReportTypeButton 
+            $active={selectedReport === 'toolEffectiveness'} 
+            onClick={() => onReportChange('toolEffectiveness')}
+          >
+            Tool Effectiveness
+          </ReportTypeButton>
         </ReportTypesContainer>
       </ViewerHeader>
       

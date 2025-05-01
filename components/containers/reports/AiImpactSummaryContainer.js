@@ -3,18 +3,23 @@ import AiImpactSummaryPresentation from "../../presentational/reports/AiImpactSu
 
 /**
  * Container component for the AI Impact Summary report
- * Processes the raw report data and prepares it for presentation
+ * Processes data related to the overall impact of AI on productivity
  */
 const AiImpactSummaryContainer = ({ reports, filters = {} }) => {
-  // State for storing processed data
-  const [summary, setSummary] = useState({
-    totalTimeSaved: 0,
-    averageTimeSavedPerTask: 0,
-    totalTasks: 0,
-    averagePercentTimeSaved: 0,
-    timeByPeriod: [],
+  // State to store processed AI impact data
+  const [reportData, setReportData] = useState({
+    summary: {
+      totalHours: 0,
+      totalHoursSaved: 0,
+      averageProductivity: 0,
+      totalEntries: 0,
+      productivityRatio: 0
+    },
+    periodData: [],
+    platformData: [],
+    sdlcData: []
   });
-
+  
   // Filter reports based on selected criteria
   const filteredReports = useMemo(() => {
     if (!reports || !reports.length) return [];
@@ -30,139 +35,258 @@ const AiImpactSummaryContainer = ({ reports, filters = {} }) => {
         return false;
       }
 
-      // Filter by platform if specified (this would need to look at entries)
-      if (filters.platform) {
-        // Only keep reports that have at least one entry matching the platform
-        const hasMatchingPlatform = report.entries.some(entry => 
-          entry.platform === filters.platform
-        );
-        if (!hasMatchingPlatform) return false;
-      }
-
       // Additional filters can be added here
       return true;
     });
   }, [reports, filters]);
 
-  // Process data for the summary whenever filtered reports change
+  // Process data for the AI impact summary report
   useEffect(() => {
     if (!filteredReports || !filteredReports.length) {
-      setSummary({
-        totalTimeSaved: 0,
-        averageTimeSavedPerTask: 0,
-        totalTasks: 0,
-        averagePercentTimeSaved: 0,
-        timeByPeriod: [],
+      setReportData({
+        summary: {
+          totalHours: 0,
+          totalHoursSaved: 0,
+          averageProductivity: 0,
+          totalEntries: 0,
+          productivityRatio: 0
+        },
+        periodData: [],
+        platformData: [],
+        sdlcData: []
       });
       return;
     }
 
-    // Extract and flatten all report entries
+    // Extract all entries from all reports
     const allEntries = filteredReports.flatMap(report => 
       report.entries.map(entry => ({
         ...entry,
-        timestamp: report.timestamp,
         teamMember: report.teamMember,
-        teamRole: report.teamRole
+        teamRole: report.teamRole,
+        timestamp: report.timestamp
       }))
     );
 
-    // Calculate total time saved
-    const totalTimeSaved = allEntries.reduce(
-      (sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0),
-      0
-    );
-
-    // Calculate total tasks
-    const totalTasks = allEntries.length;
-
-    // Calculate average time saved per task
-    const averageTimeSavedPerTask = totalTasks > 0 
-      ? totalTimeSaved / totalTasks 
-      : 0;
-
-    // Calculate average percentage of time saved
-    // (hoursSaved / estimatedTimeWithoutAI) * 100
-    const percentages = allEntries.map(entry => {
-      const estimated = parseFloat(entry.estimatedTimeWithoutAI) || 0;
-      const saved = parseFloat(entry.hoursSaved) || 0;
-      return estimated > 0 ? (saved / estimated) * 100 : 0;
+    // Filter entries based on additional criteria in filters
+    const filteredEntries = allEntries.filter(entry => {
+      if (filters.sdlcStep && entry.sdlcStep !== filters.sdlcStep) {
+        return false;
+      }
+      if (filters.sdlcTask && entry.sdlcTask !== filters.sdlcTask) {
+        return false;
+      }
+      if (filters.platform && entry.platform !== filters.platform) {
+        return false;
+      }
+      return true;
     });
 
-    const averagePercentTimeSaved = percentages.length > 0
-      ? percentages.reduce((sum, percent) => sum + percent, 0) / percentages.length
+    // Calculate overall summary metrics
+    const summary = {
+      totalHours: 0,
+      totalHoursSaved: 0,
+      averageProductivity: 0,
+      totalEntries: filteredEntries.length,
+      productivityRatio: 0
+    };
+
+    filteredEntries.forEach(entry => {
+      const hours = parseFloat(entry.hours) || 0;
+      const hoursSaved = parseFloat(entry.hoursSaved) || 0;
+      
+      summary.totalHours += hours;
+      summary.totalHoursSaved += hoursSaved;
+    });
+
+    // Calculate derived metrics
+    summary.averageProductivity = summary.totalEntries > 0 
+      ? summary.totalHoursSaved / summary.totalEntries 
+      : 0;
+    
+    summary.productivityRatio = summary.totalHours > 0 
+      ? (summary.totalHoursSaved / summary.totalHours) * 100 
       : 0;
 
-    // Group entries by week or period for trend analysis
-    const timeByPeriod = groupEntriesByPeriod(allEntries, filters.periodType || 'week');
-
-    setSummary({
-      totalTimeSaved,
-      averageTimeSavedPerTask,
-      totalTasks,
-      averagePercentTimeSaved,
-      timeByPeriod,
+    // Group data by time periods (week, month, quarter)
+    const periodType = filters.periodType || 'week';
+    const periodData = processPeriodData(filteredEntries, periodType);
+    
+    // Group data by platform
+    const platformData = processPlatformData(filteredEntries);
+    
+    // Group data by SDLC step
+    const sdlcData = processSdlcData(filteredEntries);
+    
+    // Update state with processed data
+    setReportData({
+      summary,
+      periodData,
+      platformData,
+      sdlcData
     });
-  }, [filteredReports, filters.periodType]);
+  }, [filteredReports, filters]);
 
-  /**
-   * Group entries by period (week, month, quarter) for trend analysis
-   */
-  const groupEntriesByPeriod = (entries, periodType) => {
-    const periods = {};
-
+  // Process data by time periods (week, month, quarter)
+  const processPeriodData = (entries, periodType) => {
+    const periodMap = {};
+    
     entries.forEach(entry => {
       const date = new Date(entry.timestamp);
       let periodKey;
-
-      switch (periodType) {
-        case 'month':
-          // Format: YYYY-MM
-          periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-          break;
-        case 'quarter':
-          // Calculate quarter (0-based months: 0,1,2=Q1; 3,4,5=Q2; etc.)
-          const quarter = Math.floor(date.getMonth() / 3) + 1;
-          periodKey = `${date.getFullYear()}-Q${quarter}`;
-          break;
-        case 'week':
-        default:
-          // Get ISO week number
-          const startOfYear = new Date(date.getFullYear(), 0, 1);
-          const days = Math.floor((date - startOfYear) / (24 * 60 * 60 * 1000));
-          const weekNumber = Math.ceil((date.getDay() + 1 + days) / 7);
-          periodKey = `${date.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
-          break;
+      
+      if (periodType === 'week') {
+        // Get ISO week number (1-52)
+        const weekNumber = getISOWeek(date);
+        periodKey = `Week ${weekNumber}, ${date.getFullYear()}`;
+      } else if (periodType === 'month') {
+        // Get month name and year
+        periodKey = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+      } else if (periodType === 'quarter') {
+        // Get quarter and year
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        periodKey = `Q${quarter} ${date.getFullYear()}`;
       }
-
-      if (!periods[periodKey]) {
-        periods[periodKey] = {
+      
+      if (!periodMap[periodKey]) {
+        periodMap[periodKey] = {
           period: periodKey,
-          totalTimeSaved: 0,
-          taskCount: 0,
-          averageTimeSaved: 0
+          totalHours: 0,
+          totalHoursSaved: 0,
+          entryCount: 0
         };
       }
-
-      periods[periodKey].totalTimeSaved += parseFloat(entry.hoursSaved) || 0;
-      periods[periodKey].taskCount += 1;
+      
+      const hours = parseFloat(entry.hours) || 0;
+      const hoursSaved = parseFloat(entry.hoursSaved) || 0;
+      
+      periodMap[periodKey].totalHours += hours;
+      periodMap[periodKey].totalHoursSaved += hoursSaved;
+      periodMap[periodKey].entryCount += 1;
     });
-
-    // Calculate averages and convert to array sorted by period
-    return Object.values(periods)
+    
+    // Convert to array and sort by time period
+    return Object.values(periodMap)
       .map(period => ({
         ...period,
-        averageTimeSaved: period.taskCount > 0 
-          ? period.totalTimeSaved / period.taskCount 
+        productivityRatio: period.totalHours > 0 
+          ? (period.totalHoursSaved / period.totalHours) * 100 
           : 0
       }))
-      .sort((a, b) => a.period.localeCompare(b.period));
+      .sort((a, b) => {
+        // Sort by period (assuming format that allows string comparison)
+        return a.period.localeCompare(b.period);
+      });
+  };
+  
+  // Process data by platform
+  const processPlatformData = (entries) => {
+    const platformMap = {};
+    
+    entries.forEach(entry => {
+      const platform = entry.platform || 'Not Specified';
+      
+      if (!platformMap[platform]) {
+        platformMap[platform] = {
+          platform,
+          totalHours: 0,
+          totalHoursSaved: 0,
+          entryCount: 0
+        };
+      }
+      
+      const hours = parseFloat(entry.hours) || 0;
+      const hoursSaved = parseFloat(entry.hoursSaved) || 0;
+      
+      platformMap[platform].totalHours += hours;
+      platformMap[platform].totalHoursSaved += hoursSaved;
+      platformMap[platform].entryCount += 1;
+    });
+    
+    // Convert to array and sort by total hours saved (descending)
+    return Object.values(platformMap)
+      .map(platform => ({
+        ...platform,
+        productivityRatio: platform.totalHours > 0 
+          ? (platform.totalHoursSaved / platform.totalHours) * 100 
+          : 0
+      }))
+      .sort((a, b) => b.totalHoursSaved - a.totalHoursSaved);
+  };
+  
+  // Process data by SDLC step
+  const processSdlcData = (entries) => {
+    const sdlcMap = {};
+    
+    entries.forEach(entry => {
+      const sdlcStep = entry.sdlcStep || 'Not Specified';
+      
+      if (!sdlcMap[sdlcStep]) {
+        sdlcMap[sdlcStep] = {
+          sdlcStep,
+          totalHours: 0,
+          totalHoursSaved: 0,
+          entryCount: 0,
+          tasks: {}
+        };
+      }
+      
+      const hours = parseFloat(entry.hours) || 0;
+      const hoursSaved = parseFloat(entry.hoursSaved) || 0;
+      
+      sdlcMap[sdlcStep].totalHours += hours;
+      sdlcMap[sdlcStep].totalHoursSaved += hoursSaved;
+      sdlcMap[sdlcStep].entryCount += 1;
+      
+      // Track task-level metrics within this SDLC step
+      const task = entry.sdlcTask || 'Not Specified';
+      if (!sdlcMap[sdlcStep].tasks[task]) {
+        sdlcMap[sdlcStep].tasks[task] = {
+          task,
+          totalHours: 0,
+          totalHoursSaved: 0,
+          entryCount: 0
+        };
+      }
+      
+      sdlcMap[sdlcStep].tasks[task].totalHours += hours;
+      sdlcMap[sdlcStep].tasks[task].totalHoursSaved += hoursSaved;
+      sdlcMap[sdlcStep].tasks[task].entryCount += 1;
+    });
+    
+    // Convert to array and sort by total hours saved (descending)
+    return Object.values(sdlcMap)
+      .map(sdlc => ({
+        ...sdlc,
+        productivityRatio: sdlc.totalHours > 0 
+          ? (sdlc.totalHoursSaved / sdlc.totalHours) * 100 
+          : 0,
+        // Convert tasks object to array
+        tasks: Object.values(sdlc.tasks)
+          .map(task => ({
+            ...task,
+            productivityRatio: task.totalHours > 0 
+              ? (task.totalHoursSaved / task.totalHours) * 100 
+              : 0
+          }))
+          .sort((a, b) => b.totalHoursSaved - a.totalHoursSaved)
+      }))
+      .sort((a, b) => b.totalHoursSaved - a.totalHoursSaved);
+  };
+  
+  // Helper function to get ISO week number
+  const getISOWeek = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   };
 
   return (
     <AiImpactSummaryPresentation 
-      summary={summary}
-      filters={filters}
+      reportData={reportData}
+      periodType={filters.periodType || 'week'}
     />
   );
 };

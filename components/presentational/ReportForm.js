@@ -1,10 +1,6 @@
 import React from "react";
-import { useRouter } from "next/router";
-import { useState } from "react";
-
 import styled from "styled-components";
 
-import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 import CustomSelect from "./CustomSelect";
 import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
@@ -380,234 +376,32 @@ const sdlcTasksMap = {
   ],
 };
 
-const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
-  const router = useRouter();
-  const { id } = router.query;
-
-  const [teamMember, setTeamMember] = useState("");
-  const [teamRole, setTeamRole] = useState("");
-  const [expandedRows, setExpandedRows] = useState({});
-  const [rows, setRows] = useState([
-    {
-      id: Date.now(),
-      platform: "",
-      projectInitiative: "",
-      sdlcStep: "",
-      sdlcTask: "",
-      taskCategory: "",
-      taskDetails: "",
-      estimatedTimeWithoutAI: "",
-      actualTimeWithAI: "",
-      // timeSaved is calculated
-      aiToolUsed: [],
-      complexity: "",
-      qualityImpact: "",
-      notesHowAIHelped: "",
-    },
-  ]);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
-  const handleSDLCStepChange = (id, value) => {
-    setRows((prevRows) =>
-      prevRows.map((row) =>
-        row.id === id
-          ? { ...row, sdlcStep: value, sdlcTask: "" } // Reset task when step changes
-          : row,
-      ),
-    );
-  };
-
-  // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
-  const roundToQuarterHour = (time) => {
-    const value = parseFloat(time) || 0;
-    return (Math.round(value * 4) / 4).toFixed(2);
-  };
-
-  const handleRowChange = (id, field, value) => {
-    setRows((prevRows) =>
-      prevRows.map((row) => {
-        if (row.id === id) {
-          const updatedRow = { ...row, [field]: value };
-
-          // If changing time fields, apply quarter-hour rounding
-          if (
-            field === "estimatedTimeWithoutAI" ||
-            field === "actualTimeWithAI"
-          ) {
-            // Round to nearest quarter hour
-            if (field === "estimatedTimeWithoutAI") {
-              updatedRow.estimatedTimeWithoutAI = roundToQuarterHour(value);
-            }
-            if (field === "actualTimeWithAI") {
-              updatedRow.actualTimeWithAI = roundToQuarterHour(value);
-            }
-          }
-
-          // Auto-calculate timeSaved if both time fields have values
-          if (
-            (field === "estimatedTimeWithoutAI" ||
-              field === "actualTimeWithAI") &&
-            updatedRow.estimatedTimeWithoutAI &&
-            updatedRow.actualTimeWithAI
-          ) {
-            const estimatedTime =
-              parseFloat(updatedRow.estimatedTimeWithoutAI) || 0;
-            const actualTime = parseFloat(updatedRow.actualTimeWithAI) || 0;
-            // We don't use Math.max here as we want to show negative savings too
-            const timeSaved = (estimatedTime - actualTime).toFixed(2);
-            updatedRow.timeSaved = timeSaved;
-          }
-
-          return updatedRow;
-        }
-        return row;
-      }),
-    );
-  };
-
-  const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: Date.now(),
-        platform: "",
-        projectInitiative: "",
-        sdlcStep: "",
-        sdlcTask: "",
-        taskCategory: "",
-        taskDetails: "",
-        estimatedTimeWithoutAI: "",
-        actualTimeWithAI: "",
-        // timeSaved is calculated
-        aiToolUsed: [],
-        complexity: "",
-        qualityImpact: "",
-        notesHowAIHelped: "",
-      },
-    ]);
-  };
-
-  const removeRow = (id) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  };
-
+/**
+ * Presentation component for the Report Form
+ * Pure presentation component that receives all props from the container
+ */
+const ReportForm = ({
+  teamName,
+  teamMember,
+  setTeamMember,
+  teamRole,
+  setTeamRole,
+  rows,
+  expandedRows,
+  toggleRowExpansion,
+  handleRowChange,
+  handleSDLCStepChange,
+  addRow,
+  removeRow,
+  handleSubmit,
+  isSubmitting,
+  error,
+  success,
+  teamMemberOptions = [],
+}) => {
+  // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [rowId]: !prev[rowId],
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      if (!teamName.trim() || !teamMember.trim() || !teamRole.trim()) {
-        throw new Error("Please fill in all team information fields");
-      }
-
-      // Validate rows
-      for (const row of rows) {
-        if (
-          !row.platform ||
-          !row.projectInitiative ||
-          !row.sdlcStep ||
-          !row.sdlcTask ||
-          !row.taskCategory ||
-          !row.taskDetails ||
-          !row.estimatedTimeWithoutAI ||
-          !row.actualTimeWithAI ||
-          !row.timeSaved ||
-          !row.aiToolUsed ||
-          row.aiToolUsed.length === 0 ||
-          !row.complexity ||
-          !row.qualityImpact ||
-          !row.notesHowAIHelped
-        ) {
-          throw new Error(
-            "Please fill in all fields for each productivity entry",
-          );
-        }
-      }
-
-      // Get author ID from localStorage
-      const authorId =
-        localStorage.getItem("encrypted-app-author-id") ||
-        `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-
-      // Ensure author ID is saved
-      localStorage.setItem("encrypted-app-author-id", authorId);
-
-      // Create report data object
-      const reportData = {
-        type: "aiProductivityReport",
-        teamName,
-        teamMember,
-        teamRole,
-        entries: rows,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Convert to JSON
-      const jsonData = JSON.stringify(reportData);
-
-      // Import the key
-      const cryptoKey = await importKeyFromBase64(keyFragment);
-
-      // Encrypt the report data
-      const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
-
-      // Combine IV and ciphertext
-      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
-      combinedData.set(iv, 0);
-      combinedData.set(new Uint8Array(ciphertext), iv.length);
-
-      // Submit the encrypted report
-      const response = await fetch(`/api/reports?threadId=${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "X-Author-ID": authorId,
-        },
-        body: combinedData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit AI productivity report");
-      }
-
-      setSuccess(true);
-
-      // Reset form after successful submission
-      setRows([
-        {
-          id: Date.now(),
-          platform: "",
-          projectInitiative: "",
-          sdlcStep: "",
-          sdlcTask: "",
-          taskCategory: "",
-          taskDetails: "",
-          estimatedTimeWithoutAI: "",
-          actualTimeWithAI: "",
-          // timeSaved is calculated
-          aiToolUsed: [],
-          complexity: "",
-          qualityImpact: "",
-          notesHowAIHelped: "",
-        },
-      ]);
-    } catch (err) {
-      console.error("Error submitting report:", err);
-      setError(`Failed to submit report: ${err.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
+    toggleRowExpansion(rowId);
   };
 
   return (

@@ -406,6 +406,13 @@ const ReportViewerPresentation = ({
           >
             SDLC Analysis
           </ReportTypeButton>
+          
+          <ReportTypeButton 
+            $active={selectedReport === 'complexityQuality'} 
+            onClick={() => onReportChange('complexityQuality')}
+          >
+            Complexity & Quality
+          </ReportTypeButton>
         </ReportTypesContainer>
       </ViewerHeader>
       

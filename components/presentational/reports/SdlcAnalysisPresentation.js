@@ -458,7 +458,6 @@ const SdlcAnalysisPresentation = ({ analysisData, filters }) => {
                 columns={phaseColumns}
                 keyField="phase"
                 emptyMessage="No SDLC phase data available"
-                headerTitle="SDLC Phase"
               />
             ) : (
               <NoDataMessage>No SDLC phase data available.</NoDataMessage>
@@ -498,7 +497,6 @@ const SdlcAnalysisPresentation = ({ analysisData, filters }) => {
                 columns={taskColumns}
                 keyField="task"
                 emptyMessage="No SDLC task data available"
-                headerTitle="SDLC Task"
               />
             ) : (
               <NoDataMessage>No SDLC task data available.</NoDataMessage>
@@ -538,7 +536,6 @@ const SdlcAnalysisPresentation = ({ analysisData, filters }) => {
                 columns={categoryColumns}
                 keyField="category"
                 emptyMessage="No task category data available"
-                headerTitle="Task Category"
               />
             ) : (
               <NoDataMessage>No task category data available.</NoDataMessage>

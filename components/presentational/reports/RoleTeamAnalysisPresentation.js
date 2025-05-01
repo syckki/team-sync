@@ -498,7 +498,6 @@ const RoleTeamAnalysisPresentation = ({ analysisData, filters }) => {
               columns={teamMemberColumns}
               keyField="teamMember"
               emptyMessage="No team member data available"
-              headerTitle="Team Member"
             />
           ) : (
             <NoDataMessage>No team member productivity data available.</NoDataMessage>
@@ -517,7 +516,6 @@ const RoleTeamAnalysisPresentation = ({ analysisData, filters }) => {
                 columns={teamColumns}
                 keyField="team"
                 emptyMessage="No team data available"
-                headerTitle="Team"
               />
             ) : (
               <NoDataMessage>No team productivity data available.</NoDataMessage>

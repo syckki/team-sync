@@ -11,6 +11,7 @@ import ToolEffectivenessContainer from "./reports/ToolEffectivenessContainer";
 import RoleTeamAnalysisContainer from "./reports/RoleTeamAnalysisContainer";
 import SdlcAnalysisContainer from "./reports/SdlcAnalysisContainer";
 import ComplexityQualityContainer from "./reports/ComplexityQualityContainer";
+import QualitativeInsightsContainer from "./reports/QualitativeInsightsContainer";
 
 /**
  * Container component for the Report Viewer
@@ -192,6 +193,8 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
         return <SdlcAnalysisContainer reports={reports} filters={filters} />;
       case "complexityQuality":
         return <ComplexityQualityContainer reports={reports} filters={filters} />;
+      case "qualitativeInsights":
+        return <QualitativeInsightsContainer reports={reports} filters={filters} />;
       case "raw":
       default:
         // The raw reports will be handled in the presentation component

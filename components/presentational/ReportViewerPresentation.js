@@ -413,6 +413,13 @@ const ReportViewerPresentation = ({
           >
             Complexity & Quality
           </ReportTypeButton>
+          
+          <ReportTypeButton 
+            $active={selectedReport === 'qualitativeInsights'} 
+            onClick={() => onReportChange('qualitativeInsights')}
+          >
+            Qualitative Insights
+          </ReportTypeButton>
         </ReportTypesContainer>
       </ViewerHeader>
       

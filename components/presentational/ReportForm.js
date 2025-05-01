@@ -46,8 +46,12 @@ const InnerLabel = styled.div`
 `;
 
 const Input = styled.input.attrs({
-  autoComplete: "off",
-  "aria-autocomplete": "none"
+  autoComplete: "new-password",
+  autoCorrect: "off",
+  autoCapitalize: "none",
+  spellCheck: "false",
+  "aria-autocomplete": "none",
+  "data-form-type": "other"
 })`
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -612,7 +616,15 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form onSubmit={handleSubmit} autoComplete="off" noValidate>
+          <Form 
+            onSubmit={handleSubmit} 
+            autoComplete="off" 
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck="false"
+            data-form-type="other"
+            noValidate
+          >
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">Team Name</Label>

@@ -77,12 +77,11 @@ export const ComboBoxDropdown = styled.ul`
   overflow-y: auto;
   z-index: 1001; // Match the higher z-index from container
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: auto;
-  min-width: 100%;
-  white-space: nowrap;
   /* Ensure dropdown width adjusts to content */
-  max-width: max-content;
-  width: auto;
+  min-width: 100%;
+  width: max-content !important;
+  max-width: 300px; /* Reasonable maximum width */
+  white-space: nowrap;
 `;
 
 export const ComboBoxOption = styled.li`
@@ -194,8 +193,13 @@ const CustomSelect = ({
           disabled={disabled}
           $hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
-          autoComplete="off"
+          autoComplete="new-password"
+          autoCorrect="off"
+          autoCapitalize="none" 
+          spellCheck="false"
           aria-autocomplete="none"
+          data-form-type="other"
+          name={`custom-select-${Math.random().toString(36).substr(2, 9)}`}
         />
         {value.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

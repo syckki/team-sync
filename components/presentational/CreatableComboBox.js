@@ -138,9 +138,13 @@ const CreatableComboBox = ({
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
-          autoComplete="off"
+          autoComplete="new-password" 
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck="false"
           aria-autocomplete="none"
-          name={`combobox-${Math.random().toString(36).substr(2, 9)}`}
+          data-form-type="other"
+          name={`custom-combobox-${Math.random().toString(36).substr(2, 9)}`}
           disabled={disabled}
           $hasValue={inputValue.length > 0}
         />

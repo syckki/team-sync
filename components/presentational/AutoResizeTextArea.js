@@ -2,7 +2,14 @@ import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
 // Styled component for the textarea
-const TextareaBase = styled.textarea`
+const TextareaBase = styled.textarea.attrs({
+  autoComplete: "new-password",
+  autoCorrect: "off",
+  autoCapitalize: "none",
+  spellCheck: "false",
+  "aria-autocomplete": "none",
+  "data-form-type": "other"
+})`
   width: 100%;
   background-color: #f8f9fa;
   resize: vertical;

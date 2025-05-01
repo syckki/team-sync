@@ -411,7 +411,6 @@ const ReportViewerPresentation = ({
                     <ResponsiveTable
                       data={report.entries}
                       keyField="id"
-                      headerTitle="Record"
                       emptyMessage="No entries available"
                       columns={[
                         { field: "sdlcStep", header: "SDLC Step" },

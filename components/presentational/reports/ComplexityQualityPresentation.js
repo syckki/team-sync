@@ -529,7 +529,6 @@ const ComplexityQualityPresentation = ({ analysisData, filters }) => {
               columns={complexityColumns}
               keyField="level"
               emptyMessage="No complexity data available"
-              headerTitle="Complexity Level"
             />
             
             <ResponsiveTable 
@@ -537,7 +536,6 @@ const ComplexityQualityPresentation = ({ analysisData, filters }) => {
               columns={qualityColumns}
               keyField="impact"
               emptyMessage="No quality impact data available"
-              headerTitle="Quality Impact"
               style={{ marginTop: '1.5rem' }}
             />
           </Section>

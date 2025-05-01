@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportForm from "../../../components/presentational/ReportForm";
-import ReportViewer from "../../../components/presentational/ReportViewer";
+import ReportForm from "../../../components/containers/ReportForm";
+import ReportViewer from "../../../components/containers/ReportViewer";
 
 const Container = styled.div`
   width: 100%;

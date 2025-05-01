@@ -407,6 +407,29 @@ const ReportForm = ({
   
   // Define column structure for the new ResponsiveTable
   const tableColumns = [
+    {
+      header: "", // Empty header for expand/collapse column
+      field: "expand",
+      width: "40px",
+      render: (value, row) => (
+        <div style={{ cursor: "pointer", display: "flex", justifyContent: "center" }}>
+          <div className="expand-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      )
+    },
     { 
       header: "Platform", 
       field: "platform",
@@ -1353,92 +1376,97 @@ const ReportForm = ({
                 keyField="id"
                 expandableRowRender={(row) => (
                   <div style={{ padding: "1rem" }}>
-                    <div style={{ marginBottom: "1rem" }}>
-                      <InnerLabel>AI TOOLS USED</InnerLabel>
-                      <CreatableMultiSelect
-                        value={row.aiToolUsed}
-                        onChange={(value) =>
-                          handleRowChange(row.id, "aiToolUsed", value)
-                        }
-                        options={[
-                          "ChatGPT",
-                          "GitHub Copilot",
-                          "Claude",
-                          "DALL-E",
-                          "Midjourney",
-                          "Jasper",
-                          "Hugging Face",
-                          "Leonardo AI",
-                          "Bard",
-                          "GPT-4",
-                        ]}
-                        placeholder="Select AI tools used"
-                        storageKey="aiToolOptions"
-                      />
-                    </div>
-
-                    <div style={{ marginBottom: "1rem" }}>
-                      <InnerLabel>TASK DETAILS</InnerLabel>
-                      <AutoResizeTextArea
-                        value={row.taskDetails}
-                        onChange={(e) =>
-                          handleRowChange(
-                            row.id,
-                            "taskDetails",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Describe the task in detail"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div style={{ marginBottom: "1rem" }}>
-                      <InnerLabel>AI PRODUCTIVITY</InnerLabel>
-                      <CreatableComboBox
-                        value={row.aiProductivity}
-                        onChange={(value) =>
-                          handleRowChange(row.id, "aiProductivity", value)
-                        }
-                        options={[
-                          "Reduced Development Time",
-                          "Automated Testing",
-                          "Simplified Debugging",
-                          "Enhanced Design Process",
-                          "Improved Code Quality",
-                          "Accelerated Research",
-                          "Streamlined Documentation",
-                          "Optimized Performance",
-                        ]}
-                        placeholder="How did AI improve productivity?"
-                        storageKey="aiProductivityOptions"
-                      />
-                    </div>
-
-                    <div>
-                      <InnerLabel>HOURS SAVED</InnerLabel>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.25"
-                        value={row.hoursSaved}
-                        onChange={(e) =>
-                          handleRowChange(
-                            row.id,
-                            "hoursSaved",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Hours saved by AI"
-                        required
-                        style={{ width: "150px" }}
-                      />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                      <div>
+                        <InnerLabel>AI TOOLS USED</InnerLabel>
+                        <CreatableMultiSelect
+                          value={row.aiToolUsed}
+                          onChange={(value) =>
+                            handleRowChange(row.id, "aiToolUsed", value)
+                          }
+                          options={[
+                            "ChatGPT",
+                            "GitHub Copilot",
+                            "Claude",
+                            "DALL-E",
+                            "Midjourney",
+                            "Jasper",
+                            "Hugging Face",
+                            "Leonardo AI",
+                            "Bard",
+                            "GPT-4",
+                          ]}
+                          placeholder="Select AI tools used"
+                          storageKey="aiToolOptions"
+                        />
+                      </div>
+                      
+                      <div style={{ display: "flex", gap: "1.5rem" }}>
+                        <div style={{ flex: 1 }}>
+                          <InnerLabel>TASK DETAILS</InnerLabel>
+                          <AutoResizeTextArea
+                            value={row.taskDetails}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "taskDetails",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Describe the task in detail"
+                            rows={2}
+                          />
+                        </div>
+                        
+                        <div style={{ flex: 1 }}>
+                          <InnerLabel>NOTES</InnerLabel>
+                          <AutoResizeTextArea
+                            value={row.aiProductivity}
+                            onChange={(e) =>
+                              handleRowChange(
+                                row.id,
+                                "aiProductivity",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Describe how AI helped with this task"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <InnerLabel>HOURS SAVED</InnerLabel>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.25"
+                          value={row.hoursSaved}
+                          onChange={(e) =>
+                            handleRowChange(
+                              row.id,
+                              "hoursSaved",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Hours saved by AI"
+                          required
+                          style={{ width: "150px" }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
                 expandedRows={expandedRows}
                 onRowToggle={toggleRowExpand}
                 emptyMessage="No entries. Click 'Add Entry' to start your report."
+                summaryRow={{
+                  platform: `${rows.length} entry${rows.length !== 1 ? 'ies' : 'y'} | Total Est (H): ${rows
+                    .reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0)
+                    .toFixed(1)} | Total Act (H): ${rows
+                    .reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0)
+                    .toFixed(1)}`
+                }}
               />
             </div>
 

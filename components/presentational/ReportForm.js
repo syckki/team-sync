@@ -45,7 +45,10 @@ const InnerLabel = styled.div`
   color: #666;
 `;
 
-const Input = styled.input`
+const Input = styled.input.attrs({
+  autoComplete: "off",
+  "aria-autocomplete": "none"
+})`
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid rgb(209 213 219);
@@ -609,7 +612,7 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit} autoComplete="off" noValidate>
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">Team Name</Label>

@@ -139,6 +139,8 @@ const CreatableComboBox = ({
           onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
+          aria-autocomplete="none"
+          name={`combobox-${Math.random().toString(36).substr(2, 9)}`}
           disabled={disabled}
           $hasValue={inputValue.length > 0}
         />

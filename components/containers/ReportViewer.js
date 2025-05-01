@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import styled from "styled-components";
 
 import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
-import ReportViewerPresentation from "../presentational/ReportViewerPresentation";
+import ReportViewerPresentation from "../presentational/ReportViewer";
 
 // Report container components
 import AiImpactSummaryContainer from "./reports/AiImpactSummaryContainer";

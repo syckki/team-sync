@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportForm from "../../../components/presentational/ReportForm";
+import ReportFormContainer from "../../../components/containers/ReportFormContainer";
 import ReportViewer from "../../../components/containers/ReportViewer";
 
 const Container = styled.div`
@@ -187,7 +187,7 @@ const ReportPage = () => {
           {isViewMode && threadTitle ? (
             <ReportViewer keyFragment={key} threadTitle={threadTitle} />
           ) : (
-            <ReportForm
+            <ReportFormContainer
               keyFragment={key}
               teamName={teamName}
               teamMemberOptions={teamMemberOptions}

@@ -9,8 +9,6 @@ import CustomSelect from "./CustomSelect";
 import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
-// Remove ResponsiveTable import until we've fixed the file
-// import ResponsiveTable from "./ResponsiveTable";
 
 const Form = styled.form`
   margin-bottom: 1.5rem;
@@ -115,8 +113,8 @@ const SuccessMessage = styled.div`
   margin-bottom: 1rem;
 `;
 
-// Styled components for the responsive table container
-const TableContainer = styled.div`
+// Styled components for the responsive table
+const ResponsiveTable = styled.div`
   width: 100%;
   margin-bottom: 1rem;
   border-radius: calc(0.5rem - 2px);
@@ -284,7 +282,7 @@ const ActionButton = styled.button`
   font-weight: 500;
   background-color: ${(props) =>
     props.primary ? "#4e7fff" : "hsl(60 4.8% 95.9%)"};
-  color: hsl(24 9.8% 10%);
+  color: hsl(24 9.8% 10%;);
   transition: background-color 0.2s;
 
   &:hover {
@@ -658,7 +656,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
               </FormGroup>
             </TeamFormSection>
 
-            <TableContainer>
+            <ResponsiveTable>
               {/* Desktop Table View */}
               <TableDesktop>
                 <thead>
@@ -924,44 +922,63 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                                     "Bard",
                                     "GPT-4",
                                   ]}
-                                  storageKey="aiToolsOptions"
-                                  label="AI Tools Used"
-                                  placeholder="Select or add AI tools used"
+                                  placeholder="Select AI Tools"
+                                  storageKey="aiToolOptions"
                                 />
                               </div>
 
-                              <div style={{ marginBottom: "1rem" }}>
-                                <InnerLabel>TASK DETAILS</InnerLabel>
-                                <AutoResizeTextArea
-                                  value={row.taskDetails}
-                                  onChange={(e) =>
-                                    handleRowChange(
-                                      row.id,
-                                      "taskDetails",
-                                      e.target.value,
-                                    )
-                                  }
-                                  placeholder="Describe the details of the task"
-                                  minHeight={80}
-                                  maxHeight={150}
-                                />
-                              </div>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 1fr",
+                                  gap: "1.5rem",
+                                }}
+                              >
+                                <div>
+                                  <InnerLabel>TASK DETAILS</InnerLabel>
+                                  <AutoResizeTextArea
+                                    value={row.taskDetails}
+                                    onChange={(e) =>
+                                      handleRowChange(
+                                        row.id,
+                                        "taskDetails",
+                                        e.target.value,
+                                      )
+                                    }
+                                    required
+                                    placeholder="Enter task details..."
+                                    rows={3}
+                                    style={{
+                                      width: "100%",
+                                      border: "1px solid #e2e8f0",
+                                      borderRadius: "4px",
+                                      padding: "0.75rem",
+                                    }}
+                                  />
+                                </div>
 
-                              <div>
-                                <InnerLabel>HOW AI HELPED</InnerLabel>
-                                <AutoResizeTextArea
-                                  value={row.notesHowAIHelped}
-                                  onChange={(e) =>
-                                    handleRowChange(
-                                      row.id,
-                                      "notesHowAIHelped",
-                                      e.target.value,
-                                    )
-                                  }
-                                  placeholder="Provide specific details on how AI assisted with this task"
-                                  minHeight={80}
-                                  maxHeight={150}
-                                />
+                                <div>
+                                  <InnerLabel>NOTES</InnerLabel>
+                                  <AutoResizeTextArea
+                                    value={row.notesHowAIHelped}
+                                    onChange={(e) =>
+                                      handleRowChange(
+                                        row.id,
+                                        "notesHowAIHelped",
+                                        e.target.value,
+                                      )
+                                    }
+                                    required
+                                    placeholder="Describe how AI helped with this task"
+                                    rows={3}
+                                    style={{
+                                      width: "100%",
+                                      border: "1px solid #e2e8f0",
+                                      borderRadius: "4px",
+                                      padding: "0.75rem",
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -972,41 +989,40 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                 </tbody>
               </TableDesktop>
 
-              {/* Mobile View */}
+              {/* Summary text below the table to match the screenshot */}
+              <div
+                style={{
+                  textAlign: "right",
+                  padding: "12px 8px",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                  fontWeight: 500,
+                }}
+              >
+                {rows.length} {rows.length === 1 ? "entry" : "entries"} | Total
+                Est (h):{" "}
+                {rows
+                  .reduce(
+                    (sum, row) =>
+                      sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
+                    0,
+                  )
+                  .toFixed(1)}{" "}
+                | Total Act (h):{" "}
+                {rows
+                  .reduce(
+                    (sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0),
+                    0,
+                  )
+                  .toFixed(1)}
+              </div>
+
+              {/* Mobile Card View */}
               <TableMobile>
-                {rows.map((row, index) => (
+                {rows.map((row) => (
                   <MobileCard key={row.id}>
                     <MobileCardHeader>
-                      Entry #{index + 1}
-                      {rows.length > 1 && (
-                        <DeleteButton
-                          style={{
-                            float: "right",
-                            margin: "-5px -5px 0 0",
-                            padding: "5px",
-                            width: "auto",
-                            height: "auto",
-                          }}
-                          onClick={() => removeRow(row.id)}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M3 6h18"></path>
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                            <line x1="10" x2="10" y1="11" y2="17"></line>
-                            <line x1="14" x2="14" y1="11" y2="17"></line>
-                          </svg>
-                        </DeleteButton>
-                      )}
+                      Record #{rows.indexOf(row) + 1}
                     </MobileCardHeader>
                     <MobileCardBody>
                       <MobileCardField>
@@ -1018,17 +1034,18 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               handleRowChange(row.id, "platform", value)
                             }
                             options={[
-                              "Unete",
-                              "Revamp Somos Belcorp",
-                              "Digital Catalog",
-                              "Ecommerce Platform",
-                              "Foundation Tool",
-                              "Powder Tool",
-                              "Skin Advisor",
-                              "Newapp Somos Belcorp",
-                              "FFVV",
+                              "Web",
+                              "Mobile",
+                              "Desktop",
+                              "Backend",
+                              "Cloud",
+                              "Data",
+                              "Machine Learning",
+                              "DevOps",
+                              "Security",
+                              "Other",
                             ]}
-                            placeholder="Platform"
+                            placeholder="Select Platform"
                             storageKey="platformOptions"
                           />
                         </MobileFieldValue>
@@ -1046,8 +1063,16 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                                 value,
                               )
                             }
-                            options={[]}
-                            placeholder="Initiative"
+                            options={[
+                              "Product Development",
+                              "Internal Tools",
+                              "Research",
+                              "Integration",
+                              "Maintenance",
+                              "Migration",
+                              "Upgrade",
+                            ]}
+                            placeholder="Select Initiative"
                             storageKey="projectOptions"
                           />
                         </MobileFieldValue>
@@ -1062,7 +1087,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               handleSDLCStepChange(row.id, value)
                             }
                             options={sdlcSteps}
-                            placeholder="SDLC Step"
+                            placeholder="Select Step"
                             storageKey="sdlcStepOptions"
                           />
                         </MobileFieldValue>
@@ -1081,7 +1106,11 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                                 ? sdlcTasksMap[row.sdlcStep] || []
                                 : []
                             }
-                            placeholder="SDLC Task"
+                            placeholder={
+                              row.sdlcStep
+                                ? "Select Task"
+                                : "Select SDLC Step first"
+                            }
                             storageKey="sdlcTaskOptions"
                             disabled={!row.sdlcStep}
                           />
@@ -1106,7 +1135,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               "Bug Fixing",
                               "Performance Optimization",
                             ]}
-                            placeholder="Task Category"
+                            placeholder="Select Category"
                             storageKey="taskCategoryOptions"
                           />
                         </MobileFieldValue>
@@ -1124,17 +1153,41 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                                 e.target.value,
                               )
                             }
-                            placeholder="Describe the details of the task"
-                            minHeight={80}
-                            maxHeight={150}
+                            required
+                            placeholder="Describe the task in detail"
+                            rows={2}
                           />
                         </MobileFieldValue>
                       </MobileCardField>
 
                       <MobileCardField>
-                        <MobileFieldLabel>
-                          Estimated Time without AI (Hours)
-                        </MobileFieldLabel>
+                        <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
+                        <MobileFieldValue>
+                          <CreatableMultiSelect
+                            value={row.aiToolUsed}
+                            onChange={(value) =>
+                              handleRowChange(row.id, "aiToolUsed", value)
+                            }
+                            options={[
+                              "ChatGPT",
+                              "GitHub Copilot",
+                              "Claude",
+                              "DALL-E",
+                              "Midjourney",
+                              "Jasper",
+                              "Hugging Face",
+                              "Leonardo AI",
+                              "Bard",
+                              "GPT-4",
+                            ]}
+                            placeholder="Select AI Tools"
+                            storageKey="aiToolOptions"
+                          />
+                        </MobileFieldValue>
+                      </MobileCardField>
+
+                      <MobileCardField>
+                        <MobileFieldLabel>Est (h)</MobileFieldLabel>
                         <MobileFieldValue>
                           <Input
                             type="number"
@@ -1149,15 +1202,13 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               )
                             }
                             required
-                            placeholder="Est (Hrs)"
+                            placeholder="Hours"
                           />
                         </MobileFieldValue>
                       </MobileCardField>
 
                       <MobileCardField>
-                        <MobileFieldLabel>
-                          Actual Time with AI (Hours)
-                        </MobileFieldLabel>
+                        <MobileFieldLabel>Act (h)</MobileFieldLabel>
                         <MobileFieldValue>
                           <Input
                             type="number"
@@ -1172,7 +1223,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               )
                             }
                             required
-                            placeholder="Act (Hrs)"
+                            placeholder="Hours"
                             style={{
                               color:
                                 row.estimatedTimeWithoutAI &&
@@ -1196,34 +1247,6 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                       </MobileCardField>
 
                       <MobileCardField>
-                        <MobileFieldLabel>
-                          Time Saved (Hours)
-                        </MobileFieldLabel>
-                        <MobileFieldValue
-                          style={{
-                            fontWeight: "bold",
-                            color:
-                              row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                                ? parseFloat(row.actualTimeWithAI) <
-                                  parseFloat(row.estimatedTimeWithoutAI)
-                                  ? "#16a34a"
-                                  : parseFloat(row.actualTimeWithAI) >
-                                      parseFloat(row.estimatedTimeWithoutAI)
-                                    ? "#dc2626"
-                                    : "inherit"
-                                : "inherit",
-                          }}
-                        >
-                          {row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                            ? (
-                                parseFloat(row.estimatedTimeWithoutAI) -
-                                parseFloat(row.actualTimeWithAI)
-                              ).toFixed(2)
-                            : "-"}
-                        </MobileFieldValue>
-                      </MobileCardField>
-
-                      <MobileCardField>
                         <MobileFieldLabel>Complexity</MobileFieldLabel>
                         <MobileFieldValue>
                           <CustomSelect
@@ -1232,7 +1255,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               handleRowChange(row.id, "complexity", value)
                             }
                             options={["Low", "Medium", "High"]}
-                            placeholder="Complexity"
+                            placeholder="Select Complexity"
                           />
                         </MobileFieldValue>
                       </MobileCardField>
@@ -1255,41 +1278,14 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                               "Better UX",
                               "More Scalable",
                             ]}
-                            placeholder="Quality Impact"
+                            placeholder="Select Impact"
                             storageKey="qualityImpactOptions"
                           />
                         </MobileFieldValue>
                       </MobileCardField>
 
                       <MobileCardField>
-                        <MobileFieldLabel>AI Tools Used</MobileFieldLabel>
-                        <MobileFieldValue>
-                          <CreatableMultiSelect
-                            value={row.aiToolUsed}
-                            onChange={(value) =>
-                              handleRowChange(row.id, "aiToolUsed", value)
-                            }
-                            options={[
-                              "ChatGPT",
-                              "GitHub Copilot",
-                              "Claude",
-                              "DALL-E",
-                              "Midjourney",
-                              "Jasper",
-                              "Hugging Face",
-                              "Leonardo AI",
-                              "Bard",
-                              "GPT-4",
-                            ]}
-                            storageKey="aiToolsOptions"
-                            label="AI Tools Used"
-                            placeholder="Select or add AI tools used"
-                          />
-                        </MobileFieldValue>
-                      </MobileCardField>
-
-                      <MobileCardField>
-                        <MobileFieldLabel>How AI Helped</MobileFieldLabel>
+                        <MobileFieldLabel>Notes</MobileFieldLabel>
                         <MobileFieldValue>
                           <AutoResizeTextArea
                             value={row.notesHowAIHelped}
@@ -1300,18 +1296,37 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                                 e.target.value,
                               )
                             }
-                            placeholder="Provide specific details on how AI assisted with this task"
-                            minHeight={80}
-                            maxHeight={150}
+                            required
+                            placeholder="Describe how AI helped with this task"
+                            rows={2}
                           />
                         </MobileFieldValue>
                       </MobileCardField>
                     </MobileCardBody>
+
+                    {rows.length > 1 && (
+                      <MobileActions>
+                        <DeleteButton onClick={() => removeRow(row.id)}>
+                          Remove
+                        </DeleteButton>
+                      </MobileActions>
+                    )}
                   </MobileCard>
                 ))}
 
-                <div style={{ marginTop: "1rem", fontSize: "0.875rem" }}>
-                  <strong>Total Estimated Time: </strong>
+                {/* Summary text for mobile to match the screenshot */}
+                <div
+                  style={{
+                    textAlign: "right",
+                    padding: "12px 8px",
+                    fontSize: "0.875rem",
+                    color: "#6b7280",
+                    fontWeight: 500,
+                    marginTop: "8px",
+                  }}
+                >
+                  {rows.length} {rows.length === 1 ? "entry" : "entries"} |
+                  Total Est (h):{" "}
                   {rows
                     .reduce(
                       (sum, row) =>
@@ -1319,10 +1334,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                       0,
                     )
                     .toFixed(1)}{" "}
-                  hours
-                </div>
-                <div style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>
-                  <strong>Total Actual Time: </strong>
+                  | Total Act (h):{" "}
                   {rows
                     .reduce(
                       (sum, row) =>
@@ -1332,7 +1344,7 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
                     .toFixed(1)}
                 </div>
               </TableMobile>
-            </TableContainer>
+            </ResponsiveTable>
 
             <ButtonRow>
               <ActionButton type="button" onClick={addRow}>

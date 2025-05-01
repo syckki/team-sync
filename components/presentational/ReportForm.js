@@ -1352,8 +1352,8 @@ const ReportForm = ({
                 columns={tableColumns}
                 keyField="id"
                 expandableRowRender={(row) => (
-                  <div style={{ padding: "0.75rem 1rem" }}>
-                    <div>
+                  <div style={{ padding: "1rem" }}>
+                    <div style={{ marginBottom: "1rem" }}>
                       <InnerLabel>AI TOOLS USED</InnerLabel>
                       <CreatableMultiSelect
                         value={row.aiToolUsed}
@@ -1372,46 +1372,50 @@ const ReportForm = ({
                           "Bard",
                           "GPT-4",
                         ]}
-                        placeholder="Select AI Tools"
+                        placeholder="Select AI tools used"
                         storageKey="aiToolOptions"
                       />
                     </div>
-                    
-                    <div style={{ display: "flex", gap: "1.5rem", marginTop: "1rem" }}>
-                      <div style={{ flex: 1 }}>
-                        <InnerLabel>TASK DETAILS</InnerLabel>
-                        <AutoResizeTextArea
-                          value={row.taskDetails}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "taskDetails",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="Enter task details..."
-                          rows={2}
-                        />
-                      </div>
-                      
-                      <div style={{ flex: 1 }}>
-                        <InnerLabel>NOTES</InnerLabel>
-                        <AutoResizeTextArea
-                          value={row.aiProductivity}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "aiProductivity",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="Describe how AI helped with this task"
-                          rows={2}
-                        />
-                      </div>
+
+                    <div style={{ marginBottom: "1rem" }}>
+                      <InnerLabel>TASK DETAILS</InnerLabel>
+                      <AutoResizeTextArea
+                        value={row.taskDetails}
+                        onChange={(e) =>
+                          handleRowChange(
+                            row.id,
+                            "taskDetails",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Describe the task in detail"
+                        rows={3}
+                      />
                     </div>
-                    
-                    <div style={{ marginTop: "1rem" }}>
+
+                    <div style={{ marginBottom: "1rem" }}>
+                      <InnerLabel>AI PRODUCTIVITY</InnerLabel>
+                      <CreatableComboBox
+                        value={row.aiProductivity}
+                        onChange={(value) =>
+                          handleRowChange(row.id, "aiProductivity", value)
+                        }
+                        options={[
+                          "Reduced Development Time",
+                          "Automated Testing",
+                          "Simplified Debugging",
+                          "Enhanced Design Process",
+                          "Improved Code Quality",
+                          "Accelerated Research",
+                          "Streamlined Documentation",
+                          "Optimized Performance",
+                        ]}
+                        placeholder="How did AI improve productivity?"
+                        storageKey="aiProductivityOptions"
+                      />
+                    </div>
+
+                    <div>
                       <InnerLabel>HOURS SAVED</InnerLabel>
                       <Input
                         type="number"
@@ -1425,7 +1429,7 @@ const ReportForm = ({
                             e.target.value,
                           )
                         }
-                        placeholder="0"
+                        placeholder="Hours saved by AI"
                         required
                         style={{ width: "150px" }}
                       />
@@ -1435,13 +1439,6 @@ const ReportForm = ({
                 expandedRows={expandedRows}
                 onRowToggle={toggleRowExpand}
                 emptyMessage="No entries. Click 'Add Entry' to start your report."
-                summaryRow={{
-                  platform: `${rows.length} entry${rows.length !== 1 ? 'ies' : 'y'} | Total Est (H): ${rows
-                    .reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0)
-                    .toFixed(1)} | Total Act (H): ${rows
-                    .reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0)
-                    .toFixed(1)}`
-                }}
               />
             </div>
 

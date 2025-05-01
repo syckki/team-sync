@@ -399,6 +399,13 @@ const ReportViewerPresentation = ({
           >
             Role & Team Analysis
           </ReportTypeButton>
+          
+          <ReportTypeButton 
+            $active={selectedReport === 'sdlcAnalysis'} 
+            onClick={() => onReportChange('sdlcAnalysis')}
+          >
+            SDLC Analysis
+          </ReportTypeButton>
         </ReportTypesContainer>
       </ViewerHeader>
       

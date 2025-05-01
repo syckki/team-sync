@@ -9,6 +9,7 @@ import ReportViewerPresentation from "../presentational/ReportViewerPresentation
 import AiImpactSummaryContainer from "./reports/AiImpactSummaryContainer";
 import ToolEffectivenessContainer from "./reports/ToolEffectivenessContainer";
 import RoleTeamAnalysisContainer from "./reports/RoleTeamAnalysisContainer";
+import SdlcAnalysisContainer from "./reports/SdlcAnalysisContainer";
 
 /**
  * Container component for the Report Viewer
@@ -186,6 +187,8 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
         return <ToolEffectivenessContainer reports={reports} filters={filters} />;
       case "roleTeamAnalysis":
         return <RoleTeamAnalysisContainer reports={reports} filters={filters} />;
+      case "sdlcAnalysis":
+        return <SdlcAnalysisContainer reports={reports} filters={filters} />;
       case "raw":
       default:
         // The raw reports will be handled in the presentation component

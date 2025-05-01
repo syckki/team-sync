@@ -162,110 +162,7 @@ const ReportContent = styled.div`
   line-height: 1.5;
 `;
 
-// Table Styles - Using an optimized version
-const TableDesktop = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  thead {
-    background-color: rgb(249 250 251);
-  }
-
-  tbody td:not(:first-of-type):not(:last-of-type) {
-    padding: 0.75rem 0.75rem 0.75rem 0;
-  }
-
-  th, td {
-    border: 0px;
-    padding: 0.75rem;
-    text-align: left;
-  }
-
-  th {
-    font-weight: 500;
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-    color: rgb(107 114 128);
-    letter-spacing: 0.05em;
-    padding: 0.75rem;
-  }
-
-  td {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    padding: 0.5rem 0.75rem;
-  }
-
-  tr:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-
-  tr.summary-row {
-    background-color: #f8fafc;
-    font-weight: 600;
-    border-top: 2px solid #e2e8f0;
-  }
-
-  @media (max-width: 992px) {
-    display: none;
-  }
-`;
-
-const TableMobile = styled.div`
-  display: none;
-
-  @media (max-width: 992px) {
-    display: block;
-  }
-`;
-
-const MobileCard = styled.div`
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  background-color: #fff;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-`;
-
-const MobileCardHeader = styled.div`
-  background-color: #f8fafc;
-  padding: 0.75rem;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 1px solid #e2e8f0;
-`;
-
-const MobileCardBody = styled.div`
-  padding: 0;
-`;
-
-const MobileCardField = styled.div`
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #e2e8f0;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-`;
-
-const MobileFieldLabel = styled.span`
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #444;
-  font-size: 0.85rem;
-`;
-
-const MobileFieldValue = styled.span`
-  color: #333;
-`;
+// Removed duplicate table styles as we're using ResponsiveTable component
 
 const EmptyState = styled.div`
   text-align: center;
@@ -511,165 +408,40 @@ const ReportViewerPresentation = ({
                   </ReportHeader>
 
                   <ReportContent>
-                    <div className="responsive-table">
-                      {/* Desktop Table View */}
-                      <TableDesktop>
-                        <thead>
-                          <tr>
-                            <th>SDLC Step</th>
-                            <th>SDLC Task</th>
-                            <th>Hours</th>
-                            <th>Task Details</th>
-                            <th>AI Tool</th>
-                            <th>AI Productivity</th>
-                            <th>Saved</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {report.entries.map((entry, i) => (
-                            <tr key={i}>
-                              <td>{entry.sdlcStep}</td>
-                              <td>{entry.sdlcTask}</td>
-                              <td>{entry.hours}</td>
-                              <td>{entry.taskDetails}</td>
-                              <td>{entry.aiTool}</td>
-                              <td>{entry.aiProductivity}</td>
-                              <td>{entry.hoursSaved}</td>
-                            </tr>
-                          ))}
-                          {/* Summary row */}
-                          <tr className="summary-row">
-                            <td colSpan={2}>Total</td>
-                            <td>
-                              {report.entries
-                                .reduce(
-                                  (sum, entry) =>
-                                    sum + (parseFloat(entry.hours) || 0),
-                                  0
-                                )
-                                .toFixed(1)}
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                              {report.entries
-                                .reduce(
-                                  (sum, entry) =>
-                                    sum + (parseFloat(entry.hoursSaved) || 0),
-                                  0
-                                )
-                                .toFixed(1)}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </TableDesktop>
-
-                      {/* Mobile Card View */}
-                      <TableMobile>
-                        {report.entries.map((entry, i) => (
-                          <MobileCard key={i}>
-                            <MobileCardHeader>Record #{i + 1}</MobileCardHeader>
-                            <MobileCardBody>
-                              <MobileCardField>
-                                <MobileFieldLabel>SDLC Step</MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.sdlcStep}
-                                </MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>SDLC Task</MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.sdlcTask}
-                                </MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>Hours</MobileFieldLabel>
-                                <MobileFieldValue>{entry.hours}</MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>Task Details</MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.taskDetails}
-                                </MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>AI Tool Used</MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.aiTool}
-                                </MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>
-                                  AI Productivity
-                                </MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.aiProductivity}
-                                </MobileFieldValue>
-                              </MobileCardField>
-
-                              <MobileCardField>
-                                <MobileFieldLabel>Saved</MobileFieldLabel>
-                                <MobileFieldValue>
-                                  {entry.hoursSaved}
-                                </MobileFieldValue>
-                              </MobileCardField>
-                            </MobileCardBody>
-                          </MobileCard>
-                        ))}
-
-                        {/* Summary Card for Mobile */}
-                        <MobileCard
-                          style={{
-                            backgroundColor: "#f8fafc",
-                            borderColor: "#4e7fff",
-                            borderWidth: "2px",
-                          }}
-                        >
-                          <MobileCardHeader
-                            style={{
-                              backgroundColor: "#4e7fff",
-                              color: "white",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            Summary
-                          </MobileCardHeader>
-                          <MobileCardBody>
-                            <MobileCardField>
-                              <MobileFieldLabel>Total Hours</MobileFieldLabel>
-                              <MobileFieldValue style={{ fontWeight: "bold" }}>
-                                {report.entries
-                                  .reduce(
-                                    (sum, entry) =>
-                                      sum + (parseFloat(entry.hours) || 0),
-                                    0
-                                  )
-                                  .toFixed(1)}
-                              </MobileFieldValue>
-                            </MobileCardField>
-
-                            <MobileCardField>
-                              <MobileFieldLabel>Total Saved</MobileFieldLabel>
-                              <MobileFieldValue style={{ fontWeight: "bold" }}>
-                                {report.entries
-                                  .reduce(
-                                    (sum, entry) =>
-                                      sum + (parseFloat(entry.hoursSaved) || 0),
-                                    0
-                                  )
-                                  .toFixed(1)}
-                              </MobileFieldValue>
-                            </MobileCardField>
-                          </MobileCardBody>
-                        </MobileCard>
-                      </TableMobile>
-                    </div>
+                    <ResponsiveTable
+                      data={report.entries}
+                      keyField="id"
+                      headerTitle="Record"
+                      emptyMessage="No entries available"
+                      columns={[
+                        { field: "sdlcStep", header: "SDLC Step" },
+                        { field: "sdlcTask", header: "SDLC Task" },
+                        { field: "hours", header: "Hours", width: "80px" },
+                        { field: "taskDetails", header: "Task Details" },
+                        { field: "aiTool", header: "AI Tool" },
+                        { field: "aiProductivity", header: "AI Productivity" },
+                        { field: "hoursSaved", header: "Saved", width: "80px" }
+                      ]}
+                      summaryRow={{
+                        sdlcStep: "Total",
+                        sdlcTask: "",
+                        hours: report.entries
+                          .reduce(
+                            (sum, entry) => sum + (parseFloat(entry.hours) || 0),
+                            0
+                          )
+                          .toFixed(1),
+                        taskDetails: "",
+                        aiTool: "",
+                        aiProductivity: "",
+                        hoursSaved: report.entries
+                          .reduce(
+                            (sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0),
+                            0
+                          )
+                          .toFixed(1)
+                      }}
+                    />
                   </ReportContent>
                 </ReportCard>
               ))}

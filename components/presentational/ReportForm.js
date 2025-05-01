@@ -658,8 +658,6 @@ const ReportForm = ({ keyFragment, teamName, teamMemberOptions }) => {
             </TeamFormSection>
 
             <TableContainer>
-              {/* Desktop Table View */}
-              <TableDesktop>
                 <thead>
                   <tr>
                     <th></th>

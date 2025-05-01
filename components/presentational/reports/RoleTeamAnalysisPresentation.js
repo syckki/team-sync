@@ -443,7 +443,6 @@ const RoleTeamAnalysisPresentation = ({ analysisData, filters }) => {
                 columns={roleColumns}
                 keyField="role"
                 emptyMessage="No role data available"
-                headerTitle="Role"
               />
             ) : (
               <NoDataMessage>No role productivity data available.</NoDataMessage>

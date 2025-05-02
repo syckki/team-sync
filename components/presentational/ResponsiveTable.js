@@ -33,6 +33,10 @@ const Table = styled.table`
     background-color: rgb(249 250 251);
     position: relative;
   }
+
+  tbody td:not(:first-of-type):not(:last-of-type) {
+    padding: 0.75rem 0.75rem 0.75rem 0;
+  }
   
   tbody tr:nth-child(even) {
     background-color: #f8f9fa;
@@ -63,6 +67,10 @@ const Table = styled.table`
     background-color: #f8fafc;
     border-top: 1px dashed #e2e8f0;
     border-bottom: 1px dashed #e2e8f0;
+  }
+
+  tr.detail-row td {
+    padding: 0;
   }
   
   .expand-icon {
@@ -165,6 +173,7 @@ const ResponsiveTable = ({
   expandableRowRender = null,
   expandedRows = {},
   onRowToggle = null,
+  customSummaryRow = null
 }) => {
   // Return empty state if no data
   if (!data || data.length === 0) {
@@ -269,6 +278,8 @@ const ResponsiveTable = ({
           )}
         </tbody>
       </Table>
+      {/* Custom summary row if provided */}
+      {customSummaryRow && customSummaryRow()}
     </TableContainer>
   );
 };

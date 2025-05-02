@@ -193,8 +193,27 @@ const CustomSelect = ({
     onChange("");
   };
 
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Hide dropdown when mouse leaves the component
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    // Only close if we're not currently focused on the component
+    if (!selectRef.current?.contains(document.activeElement)) {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <ComboBoxContainer ref={selectRef}>
+    <ComboBoxContainer 
+      ref={selectRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
         <ComboBoxInput
           type="text"

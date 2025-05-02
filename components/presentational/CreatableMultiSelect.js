@@ -224,8 +224,27 @@ const CreatableMultiSelect = ({
     }
   };
 
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Hide dropdown when mouse leaves the component
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    // Only close if we're not currently focused on the component
+    if (!containerRef.current?.contains(document.activeElement)) {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <MultiSelectContainer ref={containerRef}>
+    <MultiSelectContainer 
+      ref={containerRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <SelectedItemsContainer
         onClick={() => inputRef.current && inputRef.current.focus()}
       >

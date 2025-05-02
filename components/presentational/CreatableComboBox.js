@@ -102,6 +102,14 @@ const CreatableComboBox = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  // Handle blur event - close dropdown immediately when focus moves outside component
+  const handleBlur = (event) => {
+    // Only close if we're not clicking within our own component
+    if (inputRef.current && !inputRef.current.contains(event.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
 
   // Handle key navigation
   const handleKeyDown = (e) => {
@@ -137,7 +145,7 @@ const CreatableComboBox = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Close dropdown on blur with slight delay
+          onBlur={handleBlur}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"

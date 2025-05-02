@@ -157,6 +157,14 @@ const CustomSelect = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
+  // Handle blur event - close dropdown immediately
+  const handleBlur = (event) => {
+    // Only close if we're not clicking within our own component
+    if (selectRef.current && !selectRef.current.contains(event.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
 
   // Handle option select
   const handleOptionSelect = (option) => {
@@ -192,7 +200,7 @@ const CustomSelect = ({
           value={value}
           readOnly
           onKeyDown={handleKeyDown}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Close dropdown on blur with slight delay to allow for clicks
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled}
           $hasValue={value.length > 0}

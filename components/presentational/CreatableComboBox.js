@@ -92,14 +92,28 @@ const CreatableComboBox = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (inputRef.current && !inputRef.current.contains(event.target)) {
+      // Close when clicking outside or clicking on disabled elements
+      if (
+        (inputRef.current && !inputRef.current.contains(event.target)) ||
+        (event.target.getAttribute && event.target.getAttribute('disabled'))
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    // Add additional event to close when focusing on any other input field
+    const handleFocusChange = () => {
+      if (document.activeElement !== inputRef.current && !inputRef.current?.contains(document.activeElement)) {
         setIsOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("focusin", handleFocusChange);
+    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleFocusChange);
     };
   }, []);
 

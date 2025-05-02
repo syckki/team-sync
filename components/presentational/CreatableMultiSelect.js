@@ -177,17 +177,29 @@ const CreatableMultiSelect = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Close when clicking outside or clicking on disabled elements
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
+        (containerRef.current && !containerRef.current.contains(event.target)) ||
+        (event.target.getAttribute && event.target.getAttribute('disabled'))
       ) {
         setIsOpen(false);
       }
     };
 
+    // Add additional event to close when focusing on any other input field
+    const handleFocusChange = () => {
+      if (document.activeElement !== inputRef.current && 
+          !containerRef.current?.contains(document.activeElement)) {
+        setIsOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("focusin", handleFocusChange);
+    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleFocusChange);
     };
   }, []);
 

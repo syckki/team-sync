@@ -212,6 +212,17 @@ const CreatableMultiSelect = ({
     }
   };
 
+  // Handle blur events on the input
+  const handleBlur = (e) => {
+    // This timeout allows the click event on options to fire before closing the dropdown
+    setTimeout(() => {
+      // Don't close if the related target is within the same component
+      if (containerRef.current && !containerRef.current.contains(e.relatedTarget)) {
+        setIsOpen(false);
+      }
+    }, 100);
+  };
+
   return (
     <MultiSelectContainer ref={containerRef}>
       <SelectedItemsContainer
@@ -238,6 +249,7 @@ const CreatableMultiSelect = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
+          onBlur={handleBlur}
           placeholder={value.length === 0 ? placeholder : ""}
           autoComplete="new-password"
           data-lpignore="true"

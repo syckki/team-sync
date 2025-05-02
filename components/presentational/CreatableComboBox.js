@@ -89,26 +89,17 @@ const CreatableComboBox = ({
     }
   };
 
-  // Close dropdown when clicking outside or when focus moves to another component
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (inputRef.current && !inputRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-    
-    const handleFocusChange = (event) => {
-      // Check if the newly focused element is outside this component
-      if (inputRef.current && !inputRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
 
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("focusin", handleFocusChange);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("focusin", handleFocusChange);
     };
   }, []);
 
@@ -137,27 +128,8 @@ const CreatableComboBox = ({
     onChange("");
   };
 
-  const [isHovering, setIsHovering] = useState(false);
-
-  // Hide dropdown when mouse leaves the component
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-    // Only close if we're not currently focused on the component
-    if (!inputRef.current?.contains(document.activeElement)) {
-      setIsOpen(false);
-    }
-  };
-
   return (
-    <ComboBoxContainer 
-      ref={inputRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <ComboBoxContainer ref={inputRef}>
       <ComboBoxInputWrapper>
         <ComboBoxInput
           type="text"

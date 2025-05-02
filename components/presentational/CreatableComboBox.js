@@ -130,14 +130,13 @@ const CreatableComboBox = ({
 
   return (
     <ComboBoxContainer ref={inputRef}>
-      <ComboBoxInputWrapper onClick={(e) => disabled && e.preventDefault()}>
+      <ComboBoxInputWrapper>
         <ComboBoxInput
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
-          onClick={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"

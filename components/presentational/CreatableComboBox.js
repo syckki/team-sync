@@ -19,6 +19,8 @@ const ComboBoxCreateOption = styled.li`
   font-weight: 600;
   white-space: nowrap;
   overflow: visible;
+  width: 100%;
+  text-overflow: ellipsis;
 
   &:hover {
     background-color: #f1f5f9;

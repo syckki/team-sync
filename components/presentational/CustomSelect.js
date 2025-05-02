@@ -20,10 +20,16 @@ export const ComboBoxInputWrapper = styled.div`
 
 export const ComboBoxInput = styled.input.attrs(props => ({
   // Apply additional browser-specific attributes to prevent autocomplete
-  autoComplete: "new-password", // This is a common trick to prevent autocomplete
+  autoComplete: "chrome-off", // Even stronger than new-password
   autoCorrect: "off",
   autoCapitalize: "none",
   spellCheck: "false",
+  // Use unique name/id to prevent Chrome from associating with saved values
+  name: props.name || `input-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+  id: props.id || `field-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+  // LastPass and other password managers should ignore
+  "data-lpignore": "true",
+  "data-form-type": "other",
   // Still pass all other props
   ...props
 }))`

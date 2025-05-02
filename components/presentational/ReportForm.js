@@ -501,11 +501,12 @@ const ReportForm = ({
         {!success && (
           <Form 
             onSubmit={handleSubmit} 
-            autoComplete="off" 
+            autoComplete="chrome-off" 
             autoCorrect="off"
             spellCheck="false"
             aria-autocomplete="none"
             data-form-type="other"
+            data-lpignore="true"
           >
             <TeamFormSection>
               <FormGroup>
@@ -526,12 +527,14 @@ const ReportForm = ({
                   onChange={setTeamMember}
                   options={teamMemberOptions}
                   placeholder="Enter your name"
-                  autoComplete="off"
+                  autoComplete="chrome-off"
                   autoCorrect="off"
                   spellCheck="false"
                   aria-autocomplete="none"
                   data-form-type="other"
-                  name={`team-member-${Math.random()}`}
+                  name={`team-member-${Date.now()}`}
+                  id={`team-member-${Date.now()}`}
+                  data-lpignore="true"
                 />
               </FormGroup>
 

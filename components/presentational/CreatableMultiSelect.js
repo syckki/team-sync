@@ -238,6 +238,7 @@ const CreatableMultiSelect = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Close dropdown on blur with slight delay
           placeholder={value.length === 0 ? placeholder : ""}
           autoComplete="new-password"
           data-lpignore="true"

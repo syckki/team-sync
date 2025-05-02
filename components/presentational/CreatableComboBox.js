@@ -137,6 +137,7 @@ const CreatableComboBox = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Close dropdown on blur with slight delay
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"

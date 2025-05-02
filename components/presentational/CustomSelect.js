@@ -192,6 +192,7 @@ const CustomSelect = ({
           value={value}
           readOnly
           onKeyDown={handleKeyDown}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Close dropdown on blur with slight delay to allow for clicks
           placeholder={placeholder}
           disabled={disabled}
           $hasValue={value.length > 0}

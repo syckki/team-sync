@@ -611,6 +611,7 @@ const ReportForm = ({
                           spellCheck="false"
                           autoCorrect="off"
                           autoCapitalize="off"
+                          aria-autocomplete="none"
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -639,6 +640,7 @@ const ReportForm = ({
                           spellCheck="false"
                           autoCorrect="off"
                           autoCapitalize="off"
+                          aria-autocomplete="none"
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",

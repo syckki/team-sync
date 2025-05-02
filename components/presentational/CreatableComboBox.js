@@ -143,6 +143,7 @@ const CreatableComboBox = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
           disabled={disabled}
           $hasValue={inputValue.length > 0}
         />

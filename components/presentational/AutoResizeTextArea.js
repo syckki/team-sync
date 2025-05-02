@@ -2,7 +2,21 @@ import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
 // Styled component for the textarea
-const TextareaBase = styled.textarea`
+const TextareaBase = styled.textarea.attrs(props => ({
+  // Apply additional browser-specific attributes to prevent autocomplete
+  autoComplete: "chrome-off", // Even stronger than new-password
+  autoCorrect: "off",
+  autoCapitalize: "none",
+  spellCheck: "false",
+  // Use unique name/id to prevent Chrome from associating with saved values
+  name: props.name || `textarea-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+  id: props.id || `field-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+  // LastPass and other password managers should ignore
+  "data-lpignore": "true",
+  "data-form-type": "other",
+  // Still pass all other props
+  ...props
+}))`
   width: 100%;
   background-color: #f8f9fa;
   resize: vertical;

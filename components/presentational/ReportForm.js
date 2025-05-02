@@ -542,12 +542,18 @@ const ReportForm = ({
                 <Label htmlFor="teamRole">Role on the Team</Label>
                 <Input
                   type="text"
-                  id="teamRole"
+                  id={`teamRole-${Date.now()}`}
+                  name={`teamRole-${Date.now()}`}
                   value={teamRole}
                   onChange={(e) => setTeamRole(e.target.value)}
                   required
                   placeholder="Your role (e.g., Developer, Designer, Project Manager)"
-                  autoComplete="off"
+                  autoComplete="chrome-off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  aria-autocomplete="none"
+                  data-form-type="other"
+                  data-lpignore="true"
                 />
               </FormGroup>
             </TeamFormSection>
@@ -612,7 +618,11 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          autoComplete="off"
+                          name={`task-details-${row.id}-${Date.now()}`}
+                          id={`task-details-${row.id}-${Date.now()}`}
+                          autoComplete="chrome-off"
+                          autoCorrect="off"
+                          data-lpignore="true"
                         />
                       </div>
 
@@ -636,7 +646,11 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          autoComplete="off"
+                          name={`notes-${row.id}-${Date.now()}`}
+                          id={`notes-${row.id}-${Date.now()}`}
+                          autoComplete="chrome-off"
+                          autoCorrect="off"
+                          data-lpignore="true"
                         />
                       </div>
                     </div>

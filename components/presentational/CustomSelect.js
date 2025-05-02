@@ -77,8 +77,11 @@ export const ComboBoxDropdown = styled.ul`
   overflow-y: auto;
   z-index: 1001; // Match the higher z-index from container
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* These width settings ensure dropdown is at least as wide as the input,
+     but can expand if needed to accommodate longer option text */
   width: max-content;
   min-width: 100%;
+  max-width: max-content;
   white-space: nowrap;
 `;
 
@@ -87,6 +90,8 @@ export const ComboBoxOption = styled.li`
   cursor: pointer;
   white-space: nowrap;
   overflow: visible;
+  width: 100%;
+  min-width: max-content;
 
   &:hover {
     background-color: #f1f5f9;

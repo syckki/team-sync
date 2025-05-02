@@ -2,21 +2,7 @@ import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
 // Styled component for the textarea
-const TextareaBase = styled.textarea.attrs(props => ({
-  // Apply additional browser-specific attributes to prevent autocomplete
-  autoComplete: "chrome-off", // Even stronger than new-password
-  autoCorrect: "off",
-  autoCapitalize: "none",
-  spellCheck: "false",
-  // Use name/id from props
-  name: props.name,
-  id: props.id,
-  // LastPass and other password managers should ignore
-  "data-lpignore": "true",
-  "data-form-type": "other",
-  // Still pass all other props
-  ...props
-}))`
+const TextareaBase = styled.textarea`
   width: 100%;
   background-color: #f8f9fa;
   resize: vertical;
@@ -72,9 +58,7 @@ const useAutoResizeTextArea = (value) => {
 // Auto-resizing textarea component with readonly support
 const AutoResizeTextArea = ({ value, onChange, readonly = false, placeholder, ...props }) => {
   const textAreaRef = useAutoResizeTextArea(value);
-  // Generate unique ID/name on client-side only
-  const [uniqueId] = React.useState(() => `textarea-${Math.random().toString(36).substr(2, 9)}`);
-  
+
   if (readonly) {
     return (
       <ReadonlyField className={!value ? 'empty' : ''}>
@@ -89,8 +73,6 @@ const AutoResizeTextArea = ({ value, onChange, readonly = false, placeholder, ..
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      id={props.id || uniqueId}
-      name={props.name || uniqueId}
       {...props}
     />
   );

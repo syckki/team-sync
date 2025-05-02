@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 
 import CustomSelect from "./CustomSelect";
@@ -39,15 +39,7 @@ const Label = styled.label`
   line-height: 1;
 `;
 
-const Input = styled.input.attrs(props => ({
-  // Apply additional browser-specific attributes to prevent autocomplete
-  autoComplete: "new-password", // This is a common trick to prevent autocomplete
-  autoCorrect: "off",
-  autoCapitalize: "none",
-  spellCheck: "false",
-  // Still pass all other props
-  ...props
-}))`
+const Input = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid hsl(20 5.9% 90%);
@@ -262,8 +254,6 @@ const ReportForm = ({
   success,
   teamMemberOptions = [],
 }) => {
-  // Create a stable unique ID reference for form fields
-  const inputKeyRef = useRef(Math.random().toString(36).substring(2, 9));
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
     toggleRowExpansion(rowId);
@@ -417,7 +407,6 @@ const ReportForm = ({
                 ? "500"
                 : "normal",
           }}
-          autoComplete="off"
         />
       ),
     },
@@ -432,7 +421,6 @@ const ReportForm = ({
           }
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
-          autoComplete="off"
         />
       ),
     },
@@ -501,15 +489,7 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form 
-            onSubmit={handleSubmit} 
-            autoComplete="chrome-off" 
-            autoCorrect="off"
-            spellCheck="false"
-            aria-autocomplete="none"
-            data-form-type="other"
-            data-lpignore="true"
-          >
+          <Form onSubmit={handleSubmit} autoComplete="off">
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">Team Name</Label>
@@ -529,14 +509,7 @@ const ReportForm = ({
                   onChange={setTeamMember}
                   options={teamMemberOptions}
                   placeholder="Enter your name"
-                  autoComplete="chrome-off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  aria-autocomplete="none"
-                  data-form-type="other"
-                  name="team-member"
-                  id="team-member"
-                  data-lpignore="true"
+                  autoComplete="off"
                 />
               </FormGroup>
 
@@ -545,17 +518,11 @@ const ReportForm = ({
                 <Input
                   type="text"
                   id="teamRole"
-                  name="teamRole"
                   value={teamRole}
                   onChange={(e) => setTeamRole(e.target.value)}
                   required
                   placeholder="Your role (e.g., Developer, Designer, Project Manager)"
-                  autoComplete="chrome-off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  aria-autocomplete="none"
-                  data-form-type="other"
-                  data-lpignore="true"
+                  autoComplete="off"
                 />
               </FormGroup>
             </TeamFormSection>
@@ -589,7 +556,6 @@ const ReportForm = ({
                         ]}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
-                        autoComplete="off"
                       />
                     </div>
 
@@ -620,11 +586,6 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          name={`task-details-${row.id}`}
-                          id={`task-details-${row.id}`}
-                          autoComplete="chrome-off"
-                          autoCorrect="off"
-                          data-lpignore="true"
                         />
                       </div>
 
@@ -648,11 +609,6 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          name={`notes-${row.id}`}
-                          id={`notes-${row.id}`}
-                          autoComplete="chrome-off"
-                          autoCorrect="off"
-                          data-lpignore="true"
                         />
                       </div>
                     </div>

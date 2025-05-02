@@ -90,17 +90,16 @@ const CreatableComboBox = ({
     }
   };
 
-  // Close dropdown when clicking outside
+  // Register with the dropdown manager to coordinate dropdowns
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (inputRef.current && !inputRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
+    // Register a close function with the dropdown manager
+    const unregister = registerDropdown(() => {
+      setIsOpen(false);
+    });
+    
+    // Cleanup on unmount
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      unregister();
     };
   }, []);
 
@@ -137,7 +136,12 @@ const CreatableComboBox = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => !disabled && setIsOpen(true)}
+          onFocus={(e) => {
+            if (disabled) return;
+            e.stopPropagation();
+            closeAllDropdowns(() => setIsOpen(false));
+            setIsOpen(true);
+          }}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"
@@ -161,14 +165,20 @@ const CreatableComboBox = ({
             filteredOptions.map((option, index) => (
               <ComboBoxOption
                 key={index}
-                onClick={() => handleOptionSelect(option)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOptionSelect(option);
+                }}
                 $isSelected={option === inputValue}
               >
                 {option}
               </ComboBoxOption>
             ))
           ) : (
-            <ComboBoxCreateOption onClick={handleCreateOption}>
+            <ComboBoxCreateOption onClick={(e) => {
+              e.stopPropagation();
+              handleCreateOption();
+            }}>
               Create "{inputValue}"
             </ComboBoxCreateOption>
           )}
@@ -176,7 +186,10 @@ const CreatableComboBox = ({
           {filteredOptions.length > 0 &&
             !filteredOptions.includes(inputValue) &&
             inputValue.trim() !== "" && (
-              <ComboBoxCreateOption onClick={handleCreateOption}>
+              <ComboBoxCreateOption onClick={(e) => {
+                e.stopPropagation();
+                handleCreateOption();
+              }}>
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}

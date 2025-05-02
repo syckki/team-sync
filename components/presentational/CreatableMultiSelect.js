@@ -6,6 +6,7 @@ import {
   ReadonlyField
 } from "./CustomSelect";
 import { ComboBoxCreateOption } from "./CreatableComboBox";
+import { registerDropdown, closeAllDropdowns } from "/lib/dropdownManager";
 
 // Styled components for the CreatableMultiSelect
 const MultiSelectContainer = styled.div`
@@ -174,20 +175,16 @@ const CreatableMultiSelect = ({
     onChange(newValue);
   };
 
-  // Close dropdown when clicking outside
+  // Register with the dropdown manager to coordinate dropdowns
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
+    // Register a close function with the dropdown manager
+    const unregister = registerDropdown(() => {
+      setIsOpen(false);
+    });
+    
+    // Cleanup on unmount
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      unregister();
     };
   }, []);
 
@@ -237,7 +234,11 @@ const CreatableMultiSelect = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsOpen(true)}
+          onFocus={(e) => {
+            e.stopPropagation();
+            closeAllDropdowns(() => setIsOpen(false));
+            setIsOpen(true);
+          }}
           placeholder={value.length === 0 ? placeholder : ""}
           autoComplete="new-password"
           data-lpignore="true"

@@ -407,6 +407,7 @@ const ReportForm = ({
                 ? "500"
                 : "normal",
           }}
+          autoComplete="off"
         />
       ),
     },
@@ -421,6 +422,7 @@ const ReportForm = ({
           }
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
+          autoComplete="off"
         />
       ),
     },
@@ -556,6 +558,7 @@ const ReportForm = ({
                         ]}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
+                        autoComplete="off"
                       />
                     </div>
 
@@ -586,6 +589,7 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
+                          autoComplete="off"
                         />
                       </div>
 
@@ -609,6 +613,7 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
+                          autoComplete="off"
                         />
                       </div>
                     </div>

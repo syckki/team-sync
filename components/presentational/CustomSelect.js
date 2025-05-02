@@ -147,28 +147,14 @@ const CustomSelect = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Only close if the click is outside this component
       if (selectRef.current && !selectRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
 
-    // Handle global clicks to close dropdown when clicking on other elements
     document.addEventListener("mousedown", handleClickOutside);
-    
-    // Handle global focus changes
-    const handleFocusChange = (event) => {
-      // Only close if focus has moved outside this component
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    
-    document.addEventListener("focusin", handleFocusChange);
-    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("focusin", handleFocusChange);
     };
   }, []);
 
@@ -216,7 +202,6 @@ const CustomSelect = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
-          onFocus={() => !disabled && setIsOpen(true)}
         />
         {value.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

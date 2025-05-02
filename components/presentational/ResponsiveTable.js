@@ -10,6 +10,7 @@ const TableContainer = styled.div`
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: visible; /* Allow content to overflow beyond table boundaries */
 `;
 
 const Table = styled.table`
@@ -21,6 +22,8 @@ const Table = styled.table`
   th, td {
     text-align: left;
     padding: 0.75rem;
+    overflow: visible;
+    position: relative;
   }
   
   th {
@@ -100,8 +103,9 @@ const Table = styled.table`
       margin-bottom: 1rem;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      overflow: hidden;
+      overflow: visible; /* Allow dropdowns to be visible outside the card */
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      position: relative; /* For proper stacking context */
     }
     
     /* Style each cell as a row in the card */
@@ -112,6 +116,8 @@ const Table = styled.table`
       text-align: right;
       flex-direction: column;
       align-items: flex-start;
+      overflow: visible;
+      position: relative;
     }
     
     /* Show the column header using data-label attribute */

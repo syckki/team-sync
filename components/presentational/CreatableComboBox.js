@@ -40,6 +40,7 @@ const CreatableComboBox = ({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
   
   // If in readonly mode, render a simple display
   if (readonly) {
@@ -97,9 +98,20 @@ const CreatableComboBox = ({
       setIsOpen(false);
     });
     
+    // Add our own direct event listener for clicks on the document
+    // This helps handle clicks on disabled elements
+    const handleGlobalClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClick, true);
+    
     // Cleanup on unmount
     return () => {
       unregister();
+      document.removeEventListener('click', handleGlobalClick, true);
     };
   }, []);
 
@@ -129,7 +141,7 @@ const CreatableComboBox = ({
   };
 
   return (
-    <ComboBoxContainer ref={inputRef}>
+    <ComboBoxContainer ref={containerRef}>
       <ComboBoxInputWrapper>
         <ComboBoxInput
           type="text"

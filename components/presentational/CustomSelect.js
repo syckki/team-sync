@@ -152,9 +152,20 @@ const CustomSelect = ({
       setIsOpen(false);
     });
     
+    // Add our own direct event listener for clicks on the document
+    // This helps handle clicks on disabled elements
+    const handleGlobalClick = (e) => {
+      if (selectRef.current && !selectRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClick, true);
+    
     // Cleanup on unmount
     return () => {
       unregister();
+      document.removeEventListener('click', handleGlobalClick, true);
     };
   }, []);
 

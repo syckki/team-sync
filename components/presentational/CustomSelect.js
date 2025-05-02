@@ -77,9 +77,8 @@ export const ComboBoxDropdown = styled.ul`
   overflow-y: auto;
   z-index: 1001; // Match the higher z-index from container
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  /* Fixed width strategy for dropdowns */
-  min-width: 230px; /* Ensure minimum width to display full text */
-  width: 100%;     /* Take up full width of container */
+  width: max-content;
+  min-width: 100%;
   white-space: nowrap;
 `;
 
@@ -88,8 +87,6 @@ export const ComboBoxOption = styled.li`
   cursor: pointer;
   white-space: nowrap;
   overflow: visible;
-  width: 100%; 
-  text-overflow: ellipsis;
 
   &:hover {
     background-color: #f1f5f9;

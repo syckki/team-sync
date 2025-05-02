@@ -542,8 +542,8 @@ const ReportForm = ({
                 <Label htmlFor="teamRole">Role on the Team</Label>
                 <Input
                   type="text"
-                  id={`teamRole-${Date.now()}`}
-                  name={`teamRole-${Date.now()}`}
+                  id={`teamRole-${inputKeyRef.current}`}
+                  name={`teamRole-${inputKeyRef.current}`}
                   value={teamRole}
                   onChange={(e) => setTeamRole(e.target.value)}
                   required

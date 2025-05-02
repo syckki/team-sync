@@ -24,9 +24,9 @@ export const ComboBoxInput = styled.input.attrs(props => ({
   autoCorrect: "off",
   autoCapitalize: "none",
   spellCheck: "false",
-  // Use unique name/id to prevent Chrome from associating with saved values
-  name: props.name || `input-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  id: props.id || `field-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+  // Use name/id from props
+  name: props.name,
+  id: props.id,
   // LastPass and other password managers should ignore
   "data-lpignore": "true",
   "data-form-type": "other",
@@ -140,9 +140,13 @@ const CustomSelect = ({
   placeholder,
   disabled = false,
   readonly = false,
+  id,
+  name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
+  // Generate unique ID/name on client-side only
+  const [uniqueId] = useState(() => `select-${Math.random().toString(36).substr(2, 9)}`);
 
   // If in readonly mode, render a simple display
   if (readonly) {
@@ -205,6 +209,8 @@ const CustomSelect = ({
           disabled={disabled}
           $hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+          id={id || uniqueId}
+          name={name || uniqueId}
         />
         {value.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

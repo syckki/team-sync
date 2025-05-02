@@ -144,17 +144,27 @@ const CustomSelect = ({
     );
   }
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or on any disabled field
   useEffect(() => {
+    // Close this dropdown when clicked outside
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+      
+      // Also close when clicking on any disabled element
+      if (event.target.disabled || event.target.getAttribute('aria-disabled') === 'true') {
         setIsOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    // Add another listener to close dropdowns on focus changes
+    document.addEventListener("focusin", handleClickOutside);
+    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleClickOutside);
     };
   }, []);
 

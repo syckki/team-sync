@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { registerDropdownCloseListener } from "../../lib/dropdownManager";
 import { 
   ComboBoxDropdown, 
   ComboBoxOption,
@@ -175,11 +174,8 @@ const CreatableMultiSelect = ({
     onChange(newValue);
   };
 
-  // Close dropdown in two ways:
-  // 1. When clicked outside this specific dropdown
-  // 2. When the global close event is triggered (clicking on disabled elements)
+  // Close dropdown when clicking outside
   useEffect(() => {
-    // Handle clicks outside this specific dropdown
     const handleClickOutside = (event) => {
       if (
         containerRef.current &&
@@ -188,19 +184,10 @@ const CreatableMultiSelect = ({
         setIsOpen(false);
       }
     };
-    
-    // Add event listener for clicks outside
+
     document.addEventListener("mousedown", handleClickOutside);
-    
-    // Register with the dropdown manager to close on global close events
-    const cleanupGlobalListener = registerDropdownCloseListener(() => {
-      setIsOpen(false);
-    });
-    
-    // Cleanup both listeners
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      cleanupGlobalListener();
     };
   }, []);
 

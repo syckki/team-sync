@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
+import { registerDropdownCloseListener } from "../../lib/dropdownManager";
 
 // Styled components for the CustomSelect
 export const ComboBoxContainer = styled.div`
@@ -144,27 +145,29 @@ const CustomSelect = ({
     );
   }
 
-  // Close dropdown when clicking outside or on any disabled field
+  // Close dropdown in two ways:
+  // 1. When clicked outside this specific dropdown
+  // 2. When the global close event is triggered (clicking on disabled elements)
   useEffect(() => {
-    // Close this dropdown when clicked outside
+    // Handle clicks outside this specific dropdown
     const handleClickOutside = (event) => {
       if (selectRef.current && !selectRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-      
-      // Also close when clicking on any disabled element
-      if (event.target.disabled || event.target.getAttribute('aria-disabled') === 'true') {
-        setIsOpen(false);
-      }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    // Add another listener to close dropdowns on focus changes
-    document.addEventListener("focusin", handleClickOutside);
     
+    // Add event listener for clicks outside
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    // Register with the dropdown manager to close on global close events
+    const cleanupGlobalListener = registerDropdownCloseListener(() => {
+      setIsOpen(false);
+    });
+    
+    // Cleanup both listeners
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("focusin", handleClickOutside);
+      cleanupGlobalListener();
     };
   }, []);
 

@@ -3,8 +3,15 @@ import { GlobalStyles } from '../styles/globalStyles';
 import { theme } from '../styles/theme';
 import Layout from '../components/presentational/Layout';
 import Head from 'next/head';
+import { useEffect } from 'react';
+import { initDropdownManager } from '../lib/dropdownManager';
 
 const App = ({ Component, pageProps }) => {
+  // Initialize dropdown manager for handling global dropdown behavior
+  useEffect(() => {
+    const cleanup = initDropdownManager();
+    return cleanup;
+  }, []);
   return (
     <>
       <Head>

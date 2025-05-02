@@ -376,6 +376,7 @@ const ReportForm = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
         />
       ),
     },
@@ -399,6 +400,7 @@ const ReportForm = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
           style={{
             width: "100px",
             color:
@@ -459,6 +461,7 @@ const ReportForm = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
         />
       ),
     },
@@ -527,6 +530,7 @@ const ReportForm = ({
                   spellCheck="false"
                   autoCorrect="off"
                   autoCapitalize="off"
+                  aria-autocomplete="none"
                 />
               </FormGroup>
 
@@ -544,6 +548,7 @@ const ReportForm = ({
                   spellCheck="false"
                   autoCorrect="off"
                   autoCapitalize="off"
+                  aria-autocomplete="none"
                 />
               </FormGroup>
             </TeamFormSection>

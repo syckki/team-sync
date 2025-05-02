@@ -196,6 +196,7 @@ const CustomSelect = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
         />
         {value.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

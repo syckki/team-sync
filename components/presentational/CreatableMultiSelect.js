@@ -244,6 +244,7 @@ const CreatableMultiSelect = ({
           spellCheck="false"
           autoCorrect="off"
           autoCapitalize="off"
+          aria-autocomplete="none"
         />
       </SelectedItemsContainer>
 

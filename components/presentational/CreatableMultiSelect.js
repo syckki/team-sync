@@ -177,6 +177,7 @@ const CreatableMultiSelect = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Only close if the click is outside this component
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target)
@@ -185,9 +186,22 @@ const CreatableMultiSelect = ({
       }
     };
 
+    // Handle global clicks to close dropdown when clicking on other elements
     document.addEventListener("mousedown", handleClickOutside);
+    
+    // Handle global focus changes
+    const handleFocusChange = (event) => {
+      // Only close if focus has moved outside this component
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener("focusin", handleFocusChange);
+    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleFocusChange);
     };
   }, []);
 

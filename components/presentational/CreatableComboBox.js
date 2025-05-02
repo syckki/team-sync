@@ -117,6 +117,7 @@ const CreatableComboBox = ({
 
   // Handle key navigation
   const handleKeyDown = (e) => {
+    console.log("Key pressed: ", e.key);
     if (e.key === "Escape") {
       setIsOpen(false);
     } else if (e.key === "Enter") {
@@ -148,12 +149,15 @@ const CreatableComboBox = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onClick={()=> console.log('clicked')}
           onFocus={(e) => {
+            console.log("Focused");
             if (disabled) return;
             e.stopPropagation();
             closeAllDropdowns(() => setIsOpen(false));
             setIsOpen(true);
           }}
+          onBlur={()=> console.log('onBlur')}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"

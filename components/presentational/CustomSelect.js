@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
+import { registerDropdown, closeAllDropdowns } from "/lib/dropdownManager";
 
 // Styled components for the CustomSelect
 export const ComboBoxContainer = styled.div`
@@ -144,17 +145,16 @@ const CustomSelect = ({
     );
   }
 
-  // Close dropdown when clicking outside
+  // Register with the dropdown manager to coordinate dropdowns
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
+    // Register a close function with the dropdown manager
+    const unregister = registerDropdown(() => {
+      setIsOpen(false);
+    });
+    
+    // Cleanup on unmount
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      unregister();
     };
   }, []);
 
@@ -186,7 +186,17 @@ const CustomSelect = ({
 
   return (
     <ComboBoxContainer ref={selectRef}>
-      <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
+      <ComboBoxInputWrapper 
+        onClick={(e) => {
+          if (disabled) return;
+          // Stop propagation to prevent the global click handler from closing all dropdowns
+          e.stopPropagation();
+          // Close all other dropdowns
+          closeAllDropdowns(() => setIsOpen(false));
+          // Toggle this dropdown
+          setIsOpen(!isOpen);
+        }}
+      >
         <ComboBoxInput
           type="text"
           value={value}
@@ -238,7 +248,10 @@ const CustomSelect = ({
           {options.map((option, index) => (
             <ComboBoxOption
               key={index}
-              onClick={() => handleOptionSelect(option)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOptionSelect(option);
+              }}
               $isSelected={option === value}
             >
               {option}

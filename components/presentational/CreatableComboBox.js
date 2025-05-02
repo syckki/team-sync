@@ -9,6 +9,7 @@ import {
   ComboBoxOption,
   ReadonlyField
 } from "./CustomSelect";
+import { registerDropdown, closeAllDropdowns } from "/lib/dropdownManager";
 
 // Styled component specific to CreatableComboBox
 const ComboBoxCreateOption = styled.li`

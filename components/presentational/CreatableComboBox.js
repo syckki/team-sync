@@ -9,7 +9,6 @@ import {
   ComboBoxOption,
   ReadonlyField
 } from "./CustomSelect";
-import { registerDropdown, closeAllDropdowns } from "/lib/dropdownManager";
 
 // Styled component specific to CreatableComboBox
 const ComboBoxCreateOption = styled.li`
@@ -40,7 +39,6 @@ const CreatableComboBox = ({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const inputRef = useRef(null);
-  const containerRef = useRef(null);
   
   // If in readonly mode, render a simple display
   if (readonly) {
@@ -91,33 +89,22 @@ const CreatableComboBox = ({
     }
   };
 
-  // Register with the dropdown manager to coordinate dropdowns
+  // Close dropdown when clicking outside
   useEffect(() => {
-    // Register a close function with the dropdown manager
-    const unregister = registerDropdown(() => {
-      setIsOpen(false);
-    });
-    
-    // Add our own direct event listener for clicks on the document
-    // This helps handle clicks on disabled elements
-    const handleGlobalClick = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (inputRef.current && !inputRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-    
-    document.addEventListener('click', handleGlobalClick, true);
-    
-    // Cleanup on unmount
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      unregister();
-      document.removeEventListener('click', handleGlobalClick, true);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // Handle key navigation
   const handleKeyDown = (e) => {
-    console.log("Key pressed: ", e.key);
     if (e.key === "Escape") {
       setIsOpen(false);
     } else if (e.key === "Enter") {
@@ -142,22 +129,14 @@ const CreatableComboBox = ({
   };
 
   return (
-    <ComboBoxContainer ref={containerRef}>
+    <ComboBoxContainer ref={inputRef}>
       <ComboBoxInputWrapper>
         <ComboBoxInput
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onClick={()=> console.log('clicked')}
-          onFocus={(e) => {
-            console.log("Focused");
-            if (disabled) return;
-            e.stopPropagation();
-            closeAllDropdowns(() => setIsOpen(false));
-            setIsOpen(true);
-          }}
-          onBlur={()=> console.log('onBlur')}
+          onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"
@@ -181,20 +160,14 @@ const CreatableComboBox = ({
             filteredOptions.map((option, index) => (
               <ComboBoxOption
                 key={index}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOptionSelect(option);
-                }}
+                onClick={() => handleOptionSelect(option)}
                 $isSelected={option === inputValue}
               >
                 {option}
               </ComboBoxOption>
             ))
           ) : (
-            <ComboBoxCreateOption onClick={(e) => {
-              e.stopPropagation();
-              handleCreateOption();
-            }}>
+            <ComboBoxCreateOption onClick={handleCreateOption}>
               Create "{inputValue}"
             </ComboBoxCreateOption>
           )}
@@ -202,10 +175,7 @@ const CreatableComboBox = ({
           {filteredOptions.length > 0 &&
             !filteredOptions.includes(inputValue) &&
             inputValue.trim() !== "" && (
-              <ComboBoxCreateOption onClick={(e) => {
-                e.stopPropagation();
-                handleCreateOption();
-              }}>
+              <ComboBoxCreateOption onClick={handleCreateOption}>
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}

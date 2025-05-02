@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { registerDropdown, closeAllDropdowns } from "/lib/dropdownManager";
 
 // Styled components for the CustomSelect
 export const ComboBoxContainer = styled.div`
@@ -145,27 +144,17 @@ const CustomSelect = ({
     );
   }
 
-  // Register with the dropdown manager to coordinate dropdowns
+  // Close dropdown when clicking outside
   useEffect(() => {
-    // Register a close function with the dropdown manager
-    const unregister = registerDropdown(() => {
-      setIsOpen(false);
-    });
-    
-    // Add our own direct event listener for clicks on the document
-    // This helps handle clicks on disabled elements
-    const handleGlobalClick = (e) => {
-      if (selectRef.current && !selectRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-    
-    document.addEventListener('click', handleGlobalClick, true);
-    
-    // Cleanup on unmount
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      unregister();
-      document.removeEventListener('click', handleGlobalClick, true);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -197,17 +186,7 @@ const CustomSelect = ({
 
   return (
     <ComboBoxContainer ref={selectRef}>
-      <ComboBoxInputWrapper 
-        onClick={(e) => {
-          if (disabled) return;
-          // Stop propagation to prevent the global click handler from closing all dropdowns
-          e.stopPropagation();
-          // Close all other dropdowns
-          closeAllDropdowns(() => setIsOpen(false));
-          // Toggle this dropdown
-          setIsOpen(!isOpen);
-        }}
-      >
+      <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
         <ComboBoxInput
           type="text"
           value={value}
@@ -259,10 +238,7 @@ const CustomSelect = ({
           {options.map((option, index) => (
             <ComboBoxOption
               key={index}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOptionSelect(option);
-              }}
+              onClick={() => handleOptionSelect(option)}
               $isSelected={option === value}
             >
               {option}

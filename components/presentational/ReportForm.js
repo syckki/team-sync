@@ -494,6 +494,44 @@ const ReportForm = ({
 
   return (
     <>
+      {/* Hidden dummy form to trick browser autocomplete */}
+      <div style={{ display: 'none' }}>
+        <form id="dummyForm" autoComplete="off">
+          <input type="text" name="fakeusernameremembered" />
+          <input type="password" name="fakepasswordremembered" />
+          <input type="submit" style={{ display: 'none' }} tabIndex="-1" />
+        </form>
+      </div>
+      
+      {/* Global style to suppress browser autofill styling */}
+      <style jsx global>{`
+        /* Hide autofill background color */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        textarea:-webkit-autofill:active,
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus,
+        select:-webkit-autofill:active {
+          transition: background-color 5000s ease-in-out 0s;
+          -webkit-text-fill-color: inherit !important;
+        }
+        
+        /* Prevent browser password manager icons */
+        input::-webkit-credentials-auto-fill-button {
+          visibility: hidden;
+          display: none !important;
+          pointer-events: none;
+          position: absolute;
+          right: 0;
+        }
+      `}</style>
+      
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && (
         <SuccessMessage>
@@ -502,7 +540,20 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form onSubmit={handleSubmit} autoComplete="off">
+          <Form 
+            onSubmit={handleSubmit} 
+            autoComplete="nope" 
+            noValidate
+            onFocus={(e) => {
+              // This forces browsers to respect the autocomplete settings
+              const target = e.target;
+              if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                // Re-apply all autocomplete prevention attributes on focus
+                target.setAttribute('autocomplete', 'new-password');
+                target.setAttribute('data-lpignore', 'true');
+              }
+            }}
+          >
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">Team Name</Label>

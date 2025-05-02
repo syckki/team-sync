@@ -34,6 +34,7 @@ const CreatableComboBox = ({
   storageKey,
   disabled = false,
   readonly = false,
+  ...otherProps
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
@@ -141,6 +142,7 @@ const CreatableComboBox = ({
           autoComplete="off"
           disabled={disabled}
           $hasValue={inputValue.length > 0}
+          {...otherProps}
         />
         {inputValue.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

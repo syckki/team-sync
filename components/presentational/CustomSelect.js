@@ -18,7 +18,15 @@ export const ComboBoxInputWrapper = styled.div`
   align-items: center;
 `;
 
-export const ComboBoxInput = styled.input`
+export const ComboBoxInput = styled.input.attrs(props => ({
+  // Apply additional browser-specific attributes to prevent autocomplete
+  autoComplete: "new-password", // This is a common trick to prevent autocomplete
+  autoCorrect: "off",
+  autoCapitalize: "none",
+  spellCheck: "false",
+  // Still pass all other props
+  ...props
+}))`
   width: 100%;
   padding: 0.5rem 0.75rem;
   padding-right: 2rem;

@@ -39,7 +39,15 @@ const Label = styled.label`
   line-height: 1;
 `;
 
-const Input = styled.input`
+const Input = styled.input.attrs(props => ({
+  // Apply additional browser-specific attributes to prevent autocomplete
+  autoComplete: "new-password", // This is a common trick to prevent autocomplete
+  autoCorrect: "off",
+  autoCapitalize: "none",
+  spellCheck: "false",
+  // Still pass all other props
+  ...props
+}))`
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid hsl(20 5.9% 90%);
@@ -491,7 +499,14 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form onSubmit={handleSubmit} autoComplete="off">
+          <Form 
+            onSubmit={handleSubmit} 
+            autoComplete="off" 
+            autoCorrect="off"
+            spellCheck="false"
+            aria-autocomplete="none"
+            data-form-type="other"
+          >
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">Team Name</Label>
@@ -512,6 +527,11 @@ const ReportForm = ({
                   options={teamMemberOptions}
                   placeholder="Enter your name"
                   autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  aria-autocomplete="none"
+                  data-form-type="other"
+                  name={`team-member-${Math.random()}`}
                 />
               </FormGroup>
 

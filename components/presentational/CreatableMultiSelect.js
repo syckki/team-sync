@@ -191,13 +191,8 @@ const CreatableMultiSelect = ({
     };
   }, []);
   
-  // Handle blur event - close dropdown immediately when focus moves outside component
-  const handleBlur = (event) => {
-    // Only close if we're not clicking within our own component
-    if (containerRef.current && !containerRef.current.contains(event.relatedTarget)) {
-      setIsOpen(false);
-    }
-  };
+  // We don't need a separate blur handler, since we have the click outside handler
+  // This ensures the dropdown stays open when clicking items within it
 
   // Handle key navigation
   const handleKeyDown = (e) => {
@@ -246,7 +241,6 @@ const CreatableMultiSelect = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
-          onBlur={handleBlur}
           placeholder={value.length === 0 ? placeholder : ""}
           autoComplete="new-password"
           data-lpignore="true"

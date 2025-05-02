@@ -11,9 +11,9 @@ import { ComboBoxCreateOption } from "./CreatableComboBox";
 const MultiSelectContainer = styled.div`
   position: relative;
   width: 100%;
-  z-index: 1000; // Higher z-index to match ComboBoxContainer
+  z-index: 10; // Base z-index
   &:focus-within {
-    z-index: 1001; // Even higher when focused
+    z-index: 9999; // Much higher when focused to ensure active dropdowns appear on top
   }
 `;
 

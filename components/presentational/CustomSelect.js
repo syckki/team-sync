@@ -5,9 +5,9 @@ import styled from "styled-components";
 export const ComboBoxContainer = styled.div`
   position: relative;
   width: 100%;
-  z-index: 1000; // Higher z-index to ensure it stacks above all other elements
+  z-index: 10; // Base z-index
   &:focus-within {
-    z-index: 1001; // Even higher when focused to ensure active dropdowns appear on top
+    z-index: 9999; // Much higher when focused to ensure active dropdowns appear on top of everything
   }
 `;
 
@@ -70,16 +70,18 @@ export const ComboBoxDropdown = styled.ul`
   padding: 0;
   list-style: none;
   border: 1px solid #e2e8f0;
-  border-top: none;
   border-radius: 0 0 4px 4px;
   background-color: white;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1001; // Match the higher z-index from container
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10000; // Extremely high z-index to appear above everything
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: max-content;
   min-width: 100%;
   white-space: nowrap;
+  padding-top: 4px; // Add some padding to separate from the input
+  margin-top: -1px; // Slightly overlap with input to avoid gap
+  overflow-x: visible;
 `;
 
 export const ComboBoxOption = styled.li`
@@ -87,6 +89,9 @@ export const ComboBoxOption = styled.li`
   cursor: pointer;
   white-space: nowrap;
   overflow: visible;
+  display: block;
+  width: 100%;
+  text-overflow: ellipsis;
 
   &:hover {
     background-color: #f1f5f9;

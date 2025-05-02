@@ -138,7 +138,11 @@ const CreatableComboBox = ({
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
-          autoComplete="off"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
           disabled={disabled}
           $hasValue={inputValue.length > 0}
         />

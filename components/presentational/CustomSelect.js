@@ -191,6 +191,11 @@ const CustomSelect = ({
           disabled={disabled}
           $hasValue={value.length > 0}
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
         />
         {value.length > 0 && !disabled && (
           <ClearButton onClick={handleClearValue} type="button" title="Clear">

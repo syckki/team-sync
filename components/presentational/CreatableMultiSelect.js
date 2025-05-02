@@ -239,7 +239,11 @@ const CreatableMultiSelect = ({
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
           placeholder={value.length === 0 ? placeholder : ""}
-          autoComplete="off"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       </SelectedItemsContainer>
 

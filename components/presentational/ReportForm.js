@@ -371,7 +371,11 @@ const ReportForm = ({
           required
           placeholder="Est (Hrs)"
           style={{ width: "100px" }}
-          autoComplete="off"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       ),
     },
@@ -390,6 +394,11 @@ const ReportForm = ({
           }
           required
           placeholder="Act (Hrs)"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
           style={{
             width: "100px",
             color:
@@ -445,7 +454,11 @@ const ReportForm = ({
           ]}
           placeholder="Quality Impact"
           storageKey="qualityImpactOptions"
-          autoComplete="off"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       ),
     },
@@ -509,7 +522,11 @@ const ReportForm = ({
                   onChange={setTeamMember}
                   options={teamMemberOptions}
                   placeholder="Enter your name"
-                  autoComplete="off"
+                  autoComplete="new-password"
+                  data-lpignore="true"
+                  spellCheck="false"
+                  autoCorrect="off"
+                  autoCapitalize="off"
                 />
               </FormGroup>
 
@@ -522,7 +539,11 @@ const ReportForm = ({
                   onChange={(e) => setTeamRole(e.target.value)}
                   required
                   placeholder="Your role (e.g., Developer, Designer, Project Manager)"
-                  autoComplete="off"
+                  autoComplete="new-password"
+                  data-lpignore="true"
+                  spellCheck="false"
+                  autoCorrect="off"
+                  autoCapitalize="off"
                 />
               </FormGroup>
             </TeamFormSection>
@@ -580,6 +601,11 @@ const ReportForm = ({
                           required
                           placeholder="Enter task details..."
                           rows={3}
+                          autoComplete="new-password"
+                          data-lpignore="true"
+                          spellCheck="false"
+                          autoCorrect="off"
+                          autoCapitalize="off"
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -603,6 +629,11 @@ const ReportForm = ({
                           required
                           placeholder="Describe how AI helped with this task"
                           rows={3}
+                          autoComplete="new-password"
+                          data-lpignore="true"
+                          spellCheck="false"
+                          autoCorrect="off"
+                          autoCapitalize="off"
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",

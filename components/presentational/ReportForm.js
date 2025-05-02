@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 
 import CustomSelect from "./CustomSelect";
@@ -262,6 +262,8 @@ const ReportForm = ({
   success,
   teamMemberOptions = [],
 }) => {
+  // Create a stable unique ID reference for form fields
+  const inputKeyRef = useRef(Math.random().toString(36).substring(2, 9));
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
     toggleRowExpansion(rowId);
@@ -532,8 +534,8 @@ const ReportForm = ({
                   spellCheck="false"
                   aria-autocomplete="none"
                   data-form-type="other"
-                  name={`team-member-${Date.now()}`}
-                  id={`team-member-${Date.now()}`}
+                  name="team-member"
+                  id="team-member"
                   data-lpignore="true"
                 />
               </FormGroup>
@@ -542,8 +544,8 @@ const ReportForm = ({
                 <Label htmlFor="teamRole">Role on the Team</Label>
                 <Input
                   type="text"
-                  id={`teamRole-${inputKeyRef.current}`}
-                  name={`teamRole-${inputKeyRef.current}`}
+                  id="teamRole"
+                  name="teamRole"
                   value={teamRole}
                   onChange={(e) => setTeamRole(e.target.value)}
                   required
@@ -618,8 +620,8 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          name={`task-details-${row.id}-${Date.now()}`}
-                          id={`task-details-${row.id}-${Date.now()}`}
+                          name={`task-details-${row.id}`}
+                          id={`task-details-${row.id}`}
                           autoComplete="chrome-off"
                           autoCorrect="off"
                           data-lpignore="true"
@@ -646,8 +648,8 @@ const ReportForm = ({
                             borderRadius: "4px",
                             padding: "0.75rem",
                           }}
-                          name={`notes-${row.id}-${Date.now()}`}
-                          id={`notes-${row.id}-${Date.now()}`}
+                          name={`notes-${row.id}`}
+                          id={`notes-${row.id}`}
                           autoComplete="chrome-off"
                           autoCorrect="off"
                           data-lpignore="true"

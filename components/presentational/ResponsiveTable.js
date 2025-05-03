@@ -19,7 +19,7 @@ const Table = styled.table`
   border-collapse: collapse;
   font-size: 0.875rem;
 
-  /* Basic styles for the table - Mobile First */
+  /* Basic styles for the table */
   th,
   td {
     text-align: left;
@@ -27,81 +27,48 @@ const Table = styled.table`
     overflow: visible;
     position: relative;
   }
-  
-  /* Mobile and tablet styles (default) */
-  thead {
-    display: none; /* Hide table headers on mobile and tablet */
-  }
-  
-  /* Display each row as a card */
-  tbody tr {
-    display: block;
-    margin-bottom: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: visible; /* Allow dropdowns to be visible outside the card */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    position: relative; /* For proper stacking context */
-  }
-  
-  /* Style each cell as a row in the card */
-  tbody td {
-    display: flex;
-    padding: 0.75rem;
-    border-bottom: 1px solid #e2e8f0;
-    text-align: right;
-    flex-direction: column;
-    align-items: flex-start;
-    overflow: visible;
+
+  th {
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    text-transform: uppercase;
+    color: rgb(107 114 128);
+    letter-spacing: 0.05em;
+    background-color: rgb(249 250 251);
     position: relative;
   }
-  
-  /* Show the column header using data-label attribute */
-  tbody td:before {
-    content: attr(data-label);
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: #444;
-    font-size: 0.85rem;
+
+  @media (min-width: ${Breakpoint.LAPTOP}px) {
+    tbody td:not(:first-of-type):not(:last-of-type) {
+      padding: 0.75rem 0.75rem 0.75rem 0;
+    }
   }
-  
-  /* Alternating row background for better readability */
-  tbody td:nth-child(even) {
-    background-color: #f8f9fa;
+
+  /* Fixed-width columns */
+  th.fixed-width,
+  td.fixed-width {
+    width: var(--column-width, auto);
   }
-  
-  /* Remove bottom border from last cell in each row */
-  tbody td:last-child {
-    border-bottom: none;
-  }
-  
+
   /* Summary row styling */
   tr.summary-row {
-    border: 2px solid #4e7fff;
     background-color: #f8fafc;
     font-weight: 600;
+    border-top: 2px solid #e2e8f0;
   }
-  
-  tr.summary-row td:before {
-    color: #4e7fff;
-  }
-  
-  /* Add extra margin between rows */
-  tbody tr + tr {
-    margin-top: 1.5rem;
-  }
-  
+
   /* Expandable row styling */
   tr.expandable-row td {
     cursor: pointer;
   }
-  
+
   tr.expanded {
     background-color: rgba(78, 127, 255, 0.08);
   }
-  
+
   tr.detail-row {
-    background-color: #f8fafc;
+    background-color: #fcfcfc;
     border-top: 1px dashed #e2e8f0;
     border-bottom: 1px dashed #e2e8f0;
   }
@@ -109,7 +76,7 @@ const Table = styled.table`
   tr.detail-row td {
     padding: 0;
   }
-  
+
   .expand-icon {
     color: #4e7fff;
     display: inline-flex;
@@ -118,72 +85,77 @@ const Table = styled.table`
     width: 1.5rem;
     height: 1.5rem;
     transition: transform 0.2s ease;
+    user-select: none; /* Prevent text selection on click */
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For IE/Edge */
   }
-  
+
   tr.expanded .expand-icon {
     transform: rotate(90deg);
   }
-  
-  /* Desktop styles - progressively enhance for larger screens */
-  @media (min-width: ${Breakpoint.LAPTOP}px) {
-    /* Reset display for thead */
+
+  @media (max-width: ${Breakpoint.LAPTOP}px) {
+    /* CSS-based responsive transformation for mobile and tablets */
+    /* Hide table headers on mobile and tablet */
     thead {
-      display: table-header-group;
-    }
-    
-    /* Reset row display */
-    tbody tr {
-      display: table-row;
-      margin-bottom: 0;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    
-    /* Reset cell display */
-    tbody td {
-      display: table-cell;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: left;
-      flex-direction: row;
-    }
-    
-    /* Hide the data labels */
-    tbody td:before {
       display: none;
     }
-    
-    /* Style header cells */
-    th {
-      font-weight: 500;
-      font-size: 0.75rem;
-      line-height: 1rem;
-      text-transform: uppercase;
-      color: rgb(107 114 128);
-      letter-spacing: 0.05em;
-      background-color: rgb(249 250 251);
+
+    /* Display each row as a card */
+    tbody tr {
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: visible; /* Allow dropdowns to be visible outside the card */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      position: relative; /* For proper stacking context */
     }
-    
-    /* Fixed-width columns */
-    th.fixed-width, td.fixed-width {
-      width: var(--column-width, auto);
+
+    /* Style each cell as a row in the card */
+    tbody td {
+      display: flex;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: right;
+      flex-direction: column;
+      align-items: flex-start;
+      overflow: visible;
+      position: relative;
     }
-    
-    /* Reset cell padding */
-    tbody td:not(:first-of-type):not(:last-of-type) {
-      padding: 0.75rem 0.75rem 0.75rem 0;
+
+    /* Show the column header using data-label attribute */
+    tbody td:before {
+      content: attr(data-label);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #444;
+      font-size: 0.85rem;
     }
-    
-    /* Alternating row background */
-    tbody tr:nth-child(even) {
+
+    /* Alternating row background for better readability */
+    tbody td:nth-child(even) {
       background-color: #f8f9fa;
     }
-    
-    /* Reset summary row styling */
+
+    /* Remove bottom border from last cell in each row */
+    tbody td:last-child {
+      border-bottom: none;
+    }
+
+    /* Summary row styling for mobile */
     tr.summary-row {
-      border: none;
-      border-top: 2px solid #e2e8f0;
+      border: 2px solid #4e7fff;
+    }
+
+    tr.summary-row td:before {
+      color: #4e7fff;
+    }
+
+    /* Add extra margin between rows */
+    tbody tr + tr {
+      margin-top: 1.5rem;
     }
   }
 `;
@@ -252,7 +224,14 @@ const ResponsiveTable = ({
                 {expandableRowRender && (
                   <td
                     onClick={() => onRowToggle && onRowToggle(row[keyField])}
-                    style={{ cursor: "pointer", width: "40px" }}
+                    style={{ 
+                      cursor: "pointer", 
+                      width: "40px",
+                      userSelect: "none", /* Prevent text selection on click */
+                      WebkitUserSelect: "none", /* For Safari */
+                      MozUserSelect: "none", /* For Firefox */
+                      msUserSelect: "none" /* For IE/Edge */
+                    }}
                   >
                     <div className="expand-icon">
                       <svg

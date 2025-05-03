@@ -184,17 +184,6 @@ const CustomSelect = ({
     onChange("");
   };
 
-  // Handle blur events on the input
-  const handleBlur = (e) => {
-    // This timeout allows the click event on options to fire before closing the dropdown
-    setTimeout(() => {
-      // Don't close if the related target is within the same component
-      if (selectRef.current && !selectRef.current.contains(e.relatedTarget)) {
-        setIsOpen(false);
-      }
-    }, 100);
-  };
-
   return (
     <ComboBoxContainer ref={selectRef}>
       <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
@@ -203,7 +192,6 @@ const CustomSelect = ({
           value={value}
           readOnly
           onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled}
           $hasValue={value.length > 0}

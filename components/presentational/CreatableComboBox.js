@@ -128,17 +128,6 @@ const CreatableComboBox = ({
     onChange("");
   };
 
-  // Handle blur events on the input
-  const handleBlur = (e) => {
-    // This timeout allows the click event on options to fire before closing the dropdown
-    setTimeout(() => {
-      // Don't close if the related target is within the same component
-      if (inputRef.current && !inputRef.current.contains(e.relatedTarget)) {
-        setIsOpen(false);
-      }
-    }, 100);
-  };
-
   return (
     <ComboBoxContainer ref={inputRef}>
       <ComboBoxInputWrapper>
@@ -148,7 +137,6 @@ const CreatableComboBox = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
-          onBlur={handleBlur}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"

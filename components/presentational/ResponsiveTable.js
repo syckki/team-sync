@@ -18,44 +18,77 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
-  
-  /* Basic styles for the table */
-  th, td {
+
+  /* Basic styles for the table - Mobile First */
+  th,
+  td {
     text-align: left;
     padding: 0.75rem;
     overflow: visible;
     position: relative;
   }
   
-  th {
-    font-weight: 500;
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-    color: rgb(107 114 128);
-    letter-spacing: 0.05em;
-    background-color: rgb(249 250 251);
-    position: relative;
-  }
-
-  tbody td:not(:first-of-type):not(:last-of-type) {
-    padding: 0.75rem 0.75rem 0.75rem 0;
+  /* Mobile and tablet styles (default) */
+  thead {
+    display: none; /* Hide table headers on mobile and tablet */
   }
   
-  tbody tr:nth-child(even) {
+  /* Display each row as a card */
+  tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: visible; /* Allow dropdowns to be visible outside the card */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative; /* For proper stacking context */
+  }
+  
+  /* Style each cell as a row in the card */
+  tbody td {
+    display: flex;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: visible;
+    position: relative;
+  }
+  
+  /* Show the column header using data-label attribute */
+  tbody td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #444;
+    font-size: 0.85rem;
+  }
+  
+  /* Alternating row background for better readability */
+  tbody td:nth-child(even) {
     background-color: #f8f9fa;
   }
   
-  /* Fixed-width columns */
-  th.fixed-width, td.fixed-width {
-    width: var(--column-width, auto);
+  /* Remove bottom border from last cell in each row */
+  tbody td:last-child {
+    border-bottom: none;
   }
   
   /* Summary row styling */
   tr.summary-row {
+    border: 2px solid #4e7fff;
     background-color: #f8fafc;
     font-weight: 600;
-    border-top: 2px solid #e2e8f0;
+  }
+  
+  tr.summary-row td:before {
+    color: #4e7fff;
+  }
+  
+  /* Add extra margin between rows */
+  tbody tr + tr {
+    margin-top: 1.5rem;
   }
   
   /* Expandable row styling */
@@ -91,67 +124,66 @@ const Table = styled.table`
     transform: rotate(90deg);
   }
   
-  @media (max-width: ${Breakpoint.LAPTOP}px) {
-    /* CSS-based responsive transformation for mobile and tablets */
-    /* Hide table headers on mobile and tablet */
+  /* Desktop styles - progressively enhance for larger screens */
+  @media (min-width: ${Breakpoint.LAPTOP}px) {
+    /* Reset display for thead */
     thead {
+      display: table-header-group;
+    }
+    
+    /* Reset row display */
+    tbody tr {
+      display: table-row;
+      margin-bottom: 0;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    
+    /* Reset cell display */
+    tbody td {
+      display: table-cell;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      flex-direction: row;
+    }
+    
+    /* Hide the data labels */
+    tbody td:before {
       display: none;
     }
     
-    /* Display each row as a card */
-    tbody tr {
-      display: block;
-      margin-bottom: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: visible; /* Allow dropdowns to be visible outside the card */
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      position: relative; /* For proper stacking context */
+    /* Style header cells */
+    th {
+      font-weight: 500;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      text-transform: uppercase;
+      color: rgb(107 114 128);
+      letter-spacing: 0.05em;
+      background-color: rgb(249 250 251);
     }
     
-    /* Style each cell as a row in the card */
-    tbody td {
-      display: flex;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: right;
-      flex-direction: column;
-      align-items: flex-start;
-      overflow: visible;
-      position: relative;
+    /* Fixed-width columns */
+    th.fixed-width, td.fixed-width {
+      width: var(--column-width, auto);
     }
     
-    /* Show the column header using data-label attribute */
-    tbody td:before {
-      content: attr(data-label);
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      color: #444;
-      font-size: 0.85rem;
+    /* Reset cell padding */
+    tbody td:not(:first-of-type):not(:last-of-type) {
+      padding: 0.75rem 0.75rem 0.75rem 0;
     }
     
-    /* Alternating row background for better readability */
-    tbody td:nth-child(even) {
+    /* Alternating row background */
+    tbody tr:nth-child(even) {
       background-color: #f8f9fa;
     }
     
-    /* Remove bottom border from last cell in each row */
-    tbody td:last-child {
-      border-bottom: none;
-    }
-    
-    /* Summary row styling for mobile */
+    /* Reset summary row styling */
     tr.summary-row {
-      border: 2px solid #4e7fff;
-    }
-    
-    tr.summary-row td:before {
-      color: #4e7fff;
-    }
-    
-    /* Add extra margin between rows */
-    tbody tr + tr {
-      margin-top: 1.5rem;
+      border: none;
+      border-top: 2px solid #e2e8f0;
     }
   }
 `;
@@ -168,7 +200,7 @@ const EmptyState = styled.div`
 /**
  * ResponsiveTable Component
  * A single source of truth for table rendering that adapts with CSS
- * Uses data-attributes to label columns in mobile view for accessibility 
+ * Uses data-attributes to label columns in mobile view for accessibility
  */
 const ResponsiveTable = ({
   data = [],
@@ -180,7 +212,7 @@ const ResponsiveTable = ({
   expandableRowRender = null,
   expandedRows = {},
   onRowToggle = null,
-  customSummaryRow = null
+  customSummaryRow = null,
 }) => {
   // Return empty state if no data
   if (!data || data.length === 0) {
@@ -194,11 +226,11 @@ const ResponsiveTable = ({
           <tr>
             {/* Add expansion column if expandable rows are enabled */}
             {expandableRowRender && <th style={{ width: "40px" }}></th>}
-            
+
             {columns.map((column, index) => (
-              <th 
-                key={index} 
-                className={column.width ? "fixed-width" : ""} 
+              <th
+                key={index}
+                className={column.width ? "fixed-width" : ""}
                 style={column.width ? { "--column-width": column.width } : {}}
               >
                 {column.header}
@@ -209,10 +241,16 @@ const ResponsiveTable = ({
         <tbody>
           {data.map((row, rowIndex) => (
             <React.Fragment key={row[keyField] || rowIndex}>
-              <tr className={expandableRowRender && expandedRows[row[keyField]] ? "expanded" : ""}>
+              <tr
+                className={
+                  expandableRowRender && expandedRows[row[keyField]]
+                    ? "expanded"
+                    : ""
+                }
+              >
                 {/* Expansion toggle if expandable rows are enabled */}
                 {expandableRowRender && (
-                  <td 
+                  <td
                     onClick={() => onRowToggle && onRowToggle(row[keyField])}
                     style={{ cursor: "pointer", width: "40px" }}
                   >
@@ -232,20 +270,22 @@ const ResponsiveTable = ({
                     </div>
                   </td>
                 )}
-                
+
                 {columns.map((column, colIndex) => {
                   // Prepare the cell content
-                  const cellContent = renderCustomCell 
+                  const cellContent = renderCustomCell
                     ? renderCustomCell(row, column.field, column)
-                    : column.render 
-                      ? column.render(row[column.field], row) 
+                    : column.render
+                      ? column.render(row[column.field], row)
                       : row[column.field];
-                      
+
                   return (
-                    <td 
+                    <td
                       key={colIndex}
-                      className={column.width ? "fixed-width" : ""} 
-                      style={column.width ? { "--column-width": column.width } : {}}
+                      className={column.width ? "fixed-width" : ""}
+                      style={
+                        column.width ? { "--column-width": column.width } : {}
+                      }
                       data-label={column.header} // Important for mobile view labels
                     >
                       {cellContent}
@@ -253,7 +293,7 @@ const ResponsiveTable = ({
                   );
                 })}
               </tr>
-              
+
               {/* Expandable detail row if provided and row is expanded */}
               {expandableRowRender && expandedRows[row[keyField]] && (
                 <tr className="detail-row">
@@ -264,17 +304,17 @@ const ResponsiveTable = ({
               )}
             </React.Fragment>
           ))}
-          
+
           {/* Summary row if provided */}
           {summaryRow && (
             <tr className="summary-row">
               {/* Add empty cell for expansion column if expandable rows are enabled */}
               {expandableRowRender && <td></td>}
-              
+
               {columns.map((column, colIndex) => (
-                <td 
+                <td
                   key={colIndex}
-                  className={column.width ? "fixed-width" : ""} 
+                  className={column.width ? "fixed-width" : ""}
                   style={column.width ? { "--column-width": column.width } : {}}
                   data-label={`Summary: ${column.header}`}
                 >

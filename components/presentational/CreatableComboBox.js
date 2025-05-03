@@ -128,6 +128,14 @@ const CreatableComboBox = ({
     onChange("");
   };
 
+  // Handle blur events on the input
+  const handleBlur = (e) => {
+    // Don't close if the related target is within the same component
+    if (inputRef.current && !inputRef.current.contains(e.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <ComboBoxContainer ref={inputRef}>
       <ComboBoxInputWrapper>
@@ -137,6 +145,7 @@ const CreatableComboBox = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
+          onBlur={handleBlur}
           placeholder={placeholder}
           autoComplete="new-password"
           data-lpignore="true"
@@ -160,7 +169,8 @@ const CreatableComboBox = ({
             filteredOptions.map((option, index) => (
               <ComboBoxOption
                 key={index}
-                onClick={() => handleOptionSelect(option)}
+                onMouseDown={() => handleOptionSelect(option)}
+                onTouchStart={() => handleOptionSelect(option)}
                 $isSelected={option === inputValue}
               >
                 {option}

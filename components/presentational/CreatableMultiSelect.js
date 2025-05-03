@@ -212,6 +212,15 @@ const CreatableMultiSelect = ({
     }
   };
 
+  // Handle blur events on the input
+  const handleBlur = (e) => {
+    // Don't close if the related target is within the same component
+    if (containerRef.current && !containerRef.current.contains(e.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
+
+
   return (
     <MultiSelectContainer ref={containerRef}>
       <SelectedItemsContainer
@@ -238,6 +247,7 @@ const CreatableMultiSelect = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
+          onBlur={handleBlur}
           placeholder={value.length === 0 ? placeholder : ""}
           autoComplete="new-password"
           data-lpignore="true"
@@ -254,7 +264,8 @@ const CreatableMultiSelect = ({
             ? filteredOptions.map((option, index) => (
                 <ComboBoxOption
                   key={index}
-                  onClick={() => handleOptionSelect(option)}
+                  onMouseDown={() => handleOptionSelect(option)}
+                  onTouchStart={() => handleOptionSelect(option)}
                 >
                   {option}
                 </ComboBoxOption>

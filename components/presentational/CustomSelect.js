@@ -184,6 +184,14 @@ const CustomSelect = ({
     onChange("");
   };
 
+  // Handle blur events on the input
+  const handleBlur = (e) => {
+    // Don't close if the related target is within the same component
+    if (selectRef.current && !selectRef.current.contains(e.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <ComboBoxContainer ref={selectRef}>
       <ComboBoxInputWrapper onClick={() => !disabled && setIsOpen(!isOpen)}>
@@ -192,6 +200,7 @@ const CustomSelect = ({
           value={value}
           readOnly
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled}
           $hasValue={value.length > 0}
@@ -238,7 +247,8 @@ const CustomSelect = ({
           {options.map((option, index) => (
             <ComboBoxOption
               key={index}
-              onClick={() => handleOptionSelect(option)}
+              onMouseDown={() => handleOptionSelect(option)}
+              onTouchStart={() => handleOptionSelect(option)}
               $isSelected={option === value}
             >
               {option}

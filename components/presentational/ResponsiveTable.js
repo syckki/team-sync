@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { BREAKPOINTS, belowBreakpoint } from "../../lib/breakpoints";
 
 // CSS-only responsive table with a single source of truth
 const TableContainer = styled.div`
@@ -90,9 +91,9 @@ const Table = styled.table`
     transform: rotate(90deg);
   }
   
-  @media (max-width: 992px) {
-    /* CSS-based responsive transformation for mobile */
-    /* Hide table headers on mobile */
+  ${belowBreakpoint(BREAKPOINTS.LAPTOP)} {
+    /* CSS-based responsive transformation for mobile and tablets */
+    /* Hide table headers on mobile and tablet */
     thead {
       display: none;
     }

@@ -39,7 +39,23 @@ const Table = styled.table`
     position: relative;
   }
 
+  /* Desktop styles for detail rows */
   @media (min-width: ${Breakpoint.LAPTOP}px) {
+    /* Show expansion buttons on desktop */
+    .expand-icon {
+      display: inline-flex;
+    }
+    
+    /* Hide detail rows by default on desktop */
+    tr.detail-row {
+      display: none; 
+    }
+    
+    /* Only show detail rows when the parent is expanded */
+    tr.expanded + tr.detail-row {
+      display: table-row;
+    }
+    
     tbody td:not(:first-of-type):not(:last-of-type) {
       padding: 0.75rem 0.75rem 0.75rem 0;
     }
@@ -122,6 +138,16 @@ const Table = styled.table`
       display: grid;
       grid-template-columns: 1fr;
       gap: 1rem;
+    }
+    
+    /* Align form fields horizontally in mobile view when space allows */
+    @media (min-width: ${Breakpoint.LARGE_MOBILE}px) {
+      tr.detail-row form .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
     }
     
     /* Form field labels should be more prominent */

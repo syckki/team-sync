@@ -101,9 +101,38 @@ const Table = styled.table`
     thead {
       display: none;
     }
+    
+    /* Hide expand/collapse button on mobile */
+    .expand-icon {
+      display: none;
+    }
+    
+    /* Auto-expand all rows in mobile view */
+    tr.detail-row {
+      display: block !important; /* Force display of detail rows */
+    }
+    
+    /* Make form fields displayed more prominently */
+    tr.detail-row td {
+      padding: 1rem !important;
+    }
+    
+    /* Form fields in a detail row should be aligned in a grid */
+    tr.detail-row form {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    /* Form field labels should be more prominent */
+    tr.detail-row label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
 
     /* Display each row as a card */
-    tbody tr {
+    tbody tr:not(.detail-row) {
       display: block;
       margin-bottom: 1rem;
       border: 1px solid #e2e8f0;
@@ -114,11 +143,11 @@ const Table = styled.table`
     }
 
     /* Style each cell as a row in the card */
-    tbody td {
+    tbody tr:not(.detail-row) td {
       display: flex;
       padding: 0.75rem;
       border-bottom: 1px solid #e2e8f0;
-      text-align: right;
+      text-align: left; /* Align text to the left - as requested */
       flex-direction: column;
       align-items: flex-start;
       overflow: visible;
@@ -273,8 +302,8 @@ const ResponsiveTable = ({
                 })}
               </tr>
 
-              {/* Expandable detail row if provided and row is expanded */}
-              {expandableRowRender && expandedRows[row[keyField]] && (
+              {/* Expandable detail row - always show on mobile, respect expandedRows on desktop */}
+              {expandableRowRender && (
                 <tr className="detail-row">
                   <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}

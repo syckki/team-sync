@@ -12,6 +12,7 @@ import {
   onOffline,
   syncQueuedMessages,
 } from "../../lib/networkService";
+import { getUserAuthorId, fetchThreadMetadata } from "../../lib/userUtils";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
 
@@ -241,13 +242,8 @@ const DecryptionContainer = ({ id, key64 }) => {
       try {
         setIsLoading(true);
 
-        // Generate or retrieve author ID from localStorage
-        let userAuthorId = localStorage.getItem("encrypted-app-author-id");
-        if (!userAuthorId) {
-          userAuthorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-          localStorage.setItem("encrypted-app-author-id", userAuthorId);
-        }
-
+        // Get user author ID using the utility function
+        const userAuthorId = getUserAuthorId();
         setAuthorId(userAuthorId);
 
         // Import the key from the URL fragment
@@ -255,6 +251,16 @@ const DecryptionContainer = ({ id, key64 }) => {
 
         // Determine if we should fetch all messages or just the user's
         const all = viewMode === "all" ? "" : "&all=false";
+
+        // Fetch thread metadata first
+        const threadMetadata = await fetchThreadMetadata(id);
+        setIsThreadCreator(threadMetadata.isCreator);
+        setThreadTitle(threadMetadata.threadTitle);
+        
+        // Update document title in the browser if available
+        if (typeof document !== "undefined") {
+          document.title = `${threadMetadata.threadTitle} - Secure Encrypted Thread`;
+        }
 
         // Fetch messages from the thread based on authorId and all parameter
         const response = await fetch(
@@ -268,15 +274,7 @@ const DecryptionContainer = ({ id, key64 }) => {
         const threadData = await response.json();
         const decryptedMessages = [];
 
-        // Set thread metadata from the API response
-        setIsThreadCreator(threadData.isCreator);
-        const title = threadData.threadTitle || id;
-        setThreadTitle(title);
 
-        // Update document title in the browser if available
-        if (typeof document !== "undefined") {
-          document.title = `${title} - Secure Encrypted Thread`;
-        }
 
         // Decrypt each message in the thread
         for (const message of threadData.messages) {

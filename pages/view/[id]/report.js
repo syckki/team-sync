@@ -6,6 +6,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import ReportFormContainer from "../../../components/containers/ReportFormContainer";
 import ReportViewer from "../../../components/containers/ReportViewer";
+import { getUserAuthorId, fetchThreadMetadata } from "../../../lib/userUtils";
 
 const Container = styled.div`
   width: 100%;
@@ -147,18 +148,11 @@ const ReportPage = () => {
   // Fetch thread title when key is available
   useEffect(() => {
     if (key && id) {
-      // Generate or retrieve author ID from localStorage
-      let authorId = localStorage.getItem("encrypted-app-author-id");
-      if (!authorId) {
-        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-        localStorage.setItem("encrypted-app-author-id", authorId);
-      }
-
-      fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setThreadTitle(data.threadTitle || id);
-          setTeamName(data.threadTitle || id);
+      // Fetch thread metadata using our utility function
+      fetchThreadMetadata(id)
+        .then((metadata) => {
+          setThreadTitle(metadata.threadTitle);
+          setTeamName(metadata.threadTitle);
         })
         .catch((err) => {
           console.error("Error fetching thread data:", err);

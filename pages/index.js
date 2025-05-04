@@ -1,71 +1,89 @@
-import Head from 'next/head';
-import EncryptionContainer from '../components/containers/EncryptionContainer';
-import styled from 'styled-components';
+import Head from "next/head";
+import EncryptionContainer from "../components/containers/EncryptionContainer";
+import styled from "styled-components";
 
 const Container = styled.div`
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  max-width: 600px;
 `;
 
 const HeaderBanner = styled.div`
-  background-color: #3b82f6;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: 0.5rem;
+  background-color: hsl(217 91% 60%);
   color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
 `;
 
 const PageTitle = styled.h1`
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  color: white;
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.025em;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  
+
+  /* Reduce size on mobile devices */
   @media (max-width: 576px) {
     font-size: 1rem;
+    line-height: 1.3rem;
   }
 `;
 
-const LockIcon = styled.span`
-  display: inline-flex;
+const LockIcon = styled.div`
+  width: 1.25rem;
+  height: auto;
   margin-right: 0.5rem;
-  
-  svg {
-    width: 1.25rem;
-    height: 1.25rem;
-    
-    @media (max-width: 576px) {
-      margin-right: 0.15rem;
-    }
+  display: inline-flex;
+
+  /* Reduce size on mobile devices */
+  @media (max-width: 576px) {
+    width: 1rem;
+    margin-right: 0.15rem;
   }
 `;
 
 const PageSubtitle = styled.p`
-  font-size: 1rem;
   margin: 0;
-  opacity: 0.9;
-  
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(255 255 255 / 0.9);
+
+  /* Adjust size on mobile devices */
   @media (max-width: 576px) {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
+    line-height: 1.1rem;
+    margin-top: 0.25rem;
   }
 `;
 
 const ContentContainer = styled.div`
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 0 2rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1rem 1.5rem;
+  }
 `;
 
 const HomePage = ({ staticProps }) => {
   return (
     <>
       <Head>
-        <title>Secure Communications Hub</title>
-        <meta name="description" content="End-to-End Encrypted Communication Platform" />
+        <title>Secure Message Composer | AI Productivity Tracker</title>
+        <meta
+          name="description"
+          content="Create end-to-end encrypted messages with client-side AES encryption"
+        />
       </Head>
       <Container>
         <HeaderBanner>
@@ -83,10 +101,10 @@ const HomePage = ({ staticProps }) => {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </LockIcon>
-            Secure End-to-End Encryption
+            Secure Message Composer
           </PageTitle>
           <PageSubtitle>
-            Share sensitive information securely using client-side encryption
+            Create encrypted communications protected by client-side AES encryption
           </PageSubtitle>
         </HeaderBanner>
         <ContentContainer>
@@ -101,7 +119,7 @@ const HomePage = ({ staticProps }) => {
 export async function getStaticProps() {
   return {
     props: {
-      staticProps: {}
+      staticProps: {},
     },
   };
 }

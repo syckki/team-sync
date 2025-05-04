@@ -2,12 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 const Form = styled.form`
-  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
-  background-color: ${({ theme }) => theme.colors.card};
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const Title = styled.h2`
@@ -139,8 +134,15 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
         />
       </FormGroup>
       
-      <Button type="submit" disabled={isLoading || !isFormValid}>
-        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Encrypt & Create Secure Link')}
+      <Button type="submit" disabled={isLoading || !isFormValid} style={{ 
+        backgroundColor: '#3b82f6', 
+        color: 'white',
+        border: 'none',
+        padding: '0.75rem 1.5rem',
+        borderRadius: '0.375rem',
+        fontWeight: '500'
+      }}>
+        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Create Secure Message')}
       </Button>
     </Form>
   );

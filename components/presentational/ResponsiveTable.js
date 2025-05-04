@@ -39,23 +39,7 @@ const Table = styled.table`
     position: relative;
   }
 
-  /* Desktop styles for detail rows */
   @media (min-width: ${Breakpoint.LAPTOP}px) {
-    /* Show expansion buttons on desktop */
-    .expand-icon {
-      display: inline-flex;
-    }
-    
-    /* Hide detail rows by default on desktop */
-    tr.detail-row {
-      display: none; 
-    }
-    
-    /* Only show detail rows when the parent is expanded */
-    tr.expanded + tr.detail-row {
-      display: table-row;
-    }
-    
     tbody td:not(:first-of-type):not(:last-of-type) {
       padding: 0.75rem 0.75rem 0.75rem 0;
     }
@@ -117,48 +101,9 @@ const Table = styled.table`
     thead {
       display: none;
     }
-    
-    /* Hide expand/collapse button on mobile */
-    .expand-icon {
-      display: none;
-    }
-    
-    /* Auto-expand all rows in mobile view */
-    tr.detail-row {
-      display: block !important; /* Force display of detail rows */
-    }
-    
-    /* Make form fields displayed more prominently */
-    tr.detail-row td {
-      padding: 1rem !important;
-    }
-    
-    /* Form fields in a detail row should be aligned in a grid */
-    tr.detail-row form {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-    
-    /* Align form fields horizontally in mobile view when space allows */
-    @media (min-width: ${Breakpoint.LARGE_MOBILE}px) {
-      tr.detail-row form .form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-      }
-    }
-    
-    /* Form field labels should be more prominent */
-    tr.detail-row label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
 
     /* Display each row as a card */
-    tbody tr:not(.detail-row) {
+    tbody tr {
       display: block;
       margin-bottom: 1rem;
       border: 1px solid #e2e8f0;
@@ -169,11 +114,11 @@ const Table = styled.table`
     }
 
     /* Style each cell as a row in the card */
-    tbody tr:not(.detail-row) td {
+    tbody td {
       display: flex;
       padding: 0.75rem;
       border-bottom: 1px solid #e2e8f0;
-      text-align: left; /* Align text to the left - as requested */
+      text-align: right;
       flex-direction: column;
       align-items: flex-start;
       overflow: visible;
@@ -328,8 +273,8 @@ const ResponsiveTable = ({
                 })}
               </tr>
 
-              {/* Expandable detail row - always show on mobile, respect expandedRows on desktop */}
-              {expandableRowRender && (
+              {/* Expandable detail row if provided and row is expanded */}
+              {expandableRowRender && expandedRows[row[keyField]] && (
                 <tr className="detail-row">
                   <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}

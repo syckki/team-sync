@@ -7,6 +7,7 @@ import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
 import ResponsiveTable from "./ResponsiveTable";
+import InfoTooltip from "./InfoTooltip";
 
 const Form = styled.form`
   margin-bottom: 1.5rem;
@@ -32,7 +33,8 @@ const TeamFormSection = styled.div`
 `;
 
 const Label = styled.label`
-  display: block;
+  display: flex;
+  align-items: center;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: hsl(20 14.3% 4.1%);
@@ -567,7 +569,14 @@ const ReportForm = ({
           <Form onSubmit={handleSubmit} autoComplete="off">
             <TeamFormSection>
               <FormGroup>
-                <Label htmlFor="teamName">Team Name</Label>
+                <Label htmlFor="teamName">
+                  Team Name
+                  <InfoTooltip 
+                    title="Team Name" 
+                    content="Identifies the team to which the collaborator belongs for team-level analysis and reporting." 
+                    actionHint="This field is pre-filled and cannot be edited."
+                  />
+                </Label>
                 <Input
                   type="text"
                   id="teamName"
@@ -578,7 +587,14 @@ const ReportForm = ({
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="teamMember">Team Member Name</Label>
+                <Label htmlFor="teamMember">
+                  Team Member Name
+                  <InfoTooltip 
+                    title="Team Member Name" 
+                    content="Identifies the individual reporting productivity. Essential for individual tracking if necessary." 
+                    actionHint="You can select from existing members or create a new entry."
+                  />
+                </Label>
                 <CreatableComboBox
                   value={teamMember}
                   onChange={setTeamMember}
@@ -594,7 +610,14 @@ const ReportForm = ({
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="teamRole">Role on the Team</Label>
+                <Label htmlFor="teamRole">
+                  Role on the Team
+                  <InfoTooltip 
+                    title="Role on the Team" 
+                    content="Identifies the collaborator's role. Helps analyze which roles benefit most from which tools or task types." 
+                    actionHint="Enter your specific role within the team."
+                  />
+                </Label>
                 <Input
                   type="text"
                   id="teamRole"

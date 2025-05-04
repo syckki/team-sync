@@ -125,6 +125,7 @@ const Header = () => {
 
         <Nav>
           <StyledLink href="/">Thread New</StyledLink>
+          <StyledLink href="/inbox">Inbox</StyledLink>
           <StyledLink href="/about">About</StyledLink>
         </Nav>
       </HeaderContent>

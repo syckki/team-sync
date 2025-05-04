@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Header from "./Header";
+import MinWidthWarning from "./MinWidthWarning";
 import { Breakpoint } from "../../lib/styles";
 
 const Main = styled.main`
@@ -27,6 +28,7 @@ const Footer = styled.footer`
 const Layout = ({ children }) => {
   return (
     <>
+      <MinWidthWarning minWidth={280} />
       <Header />
       <Main>{children}</Main>
       <Footer>

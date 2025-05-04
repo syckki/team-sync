@@ -79,10 +79,10 @@ const HomePage = ({ staticProps }) => {
   return (
     <>
       <Head>
-        <title>Secure Message Composer | AI Productivity Tracker</title>
+        <title>Create New Thread | AI Productivity Tracker</title>
         <meta
           name="description"
-          content="Create end-to-end encrypted messages with client-side AES encryption"
+          content="Create secure encrypted conversation threads with end-to-end protection"
         />
       </Head>
       <Container>
@@ -101,10 +101,10 @@ const HomePage = ({ staticProps }) => {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </LockIcon>
-            Secure Message Composer
+            Create New Thread
           </PageTitle>
           <PageSubtitle>
-            Create encrypted communications protected by client-side AES encryption
+            Create a secure conversation that only participants with the key can access
           </PageSubtitle>
         </HeaderBanner>
         <ContentContainer>

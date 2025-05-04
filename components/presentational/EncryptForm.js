@@ -142,7 +142,7 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
         borderRadius: '0.375rem',
         fontWeight: '500'
       }}>
-        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Create Secure Message')}
+        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Create Secure Thread')}
       </Button>
     </Form>
   );

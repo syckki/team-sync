@@ -186,26 +186,6 @@ const ResponsiveTable = ({
   onRowToggle = null,
   customSummaryRow = null,
 }) => {
-  // State to track window width
-  const [isMobile, setIsMobile] = React.useState(false);
-  
-  // Effect to check if we're on mobile/tablet viewport (≤1200px)
-  React.useEffect(() => {
-    // Handler to call on window resize
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 1200);
-    };
-    
-    // Set on initial load
-    handleResize();
-    
-    // Add event listener
-    window.addEventListener("resize", handleResize);
-    
-    // Remove event listener on cleanup
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
   // Return empty state if no data
   if (!data || data.length === 0) {
     return <EmptyState>{emptyMessage}</EmptyState>;
@@ -235,12 +215,12 @@ const ResponsiveTable = ({
             <React.Fragment key={row[keyField] || rowIndex}>
               <tr
                 className={
-                  expandableRowRender && (isMobile || expandedRows[row[keyField]])
+                  expandableRowRender && expandedRows[row[keyField]]
                     ? "expanded"
                     : ""
                 }
               >
-                {/* Expansion toggle if expandable rows are enabled - hide on mobile */}
+                {/* Expansion toggle if expandable rows are enabled */}
                 {expandableRowRender && (
                   <td
                     onClick={() => onRowToggle && onRowToggle(row[keyField])}
@@ -250,8 +230,7 @@ const ResponsiveTable = ({
                       userSelect: "none", /* Prevent text selection on click */
                       WebkitUserSelect: "none", /* For Safari */
                       MozUserSelect: "none", /* For Firefox */
-                      msUserSelect: "none", /* For IE/Edge */
-                      display: isMobile ? "none" : "table-cell" /* Hide on mobile */
+                      msUserSelect: "none" /* For IE/Edge */
                     }}
                   >
                     <div className="expand-icon">
@@ -273,27 +252,11 @@ const ResponsiveTable = ({
 
                 {columns.map((column, colIndex) => {
                   // Prepare the cell content
-                  let cellContent = renderCustomCell
+                  const cellContent = renderCustomCell
                     ? renderCustomCell(row, column.field, column)
                     : column.render
                       ? column.render(row[column.field], row)
                       : row[column.field];
-                  
-                  // For mobile view, add the AI Productivity # sequence to the first column
-                  if (isMobile && colIndex === 0) {
-                    cellContent = (
-                      <>
-                        <div style={{ 
-                          fontWeight: "500", 
-                          color: "#4e7fff", 
-                          marginBottom: "0.5rem" 
-                        }}>
-                          AI Productivity #{rowIndex + 1}
-                        </div>
-                        {cellContent}
-                      </>
-                    );
-                  }
 
                   return (
                     <td
@@ -310,10 +273,10 @@ const ResponsiveTable = ({
                 })}
               </tr>
 
-              {/* Expandable detail row if provided and row is expanded (or on mobile) */}
-              {expandableRowRender && (isMobile || expandedRows[row[keyField]]) && (
+              {/* Expandable detail row if provided and row is expanded */}
+              {expandableRowRender && expandedRows[row[keyField]] && (
                 <tr className="detail-row">
-                  <td colSpan={isMobile ? columns.length : columns.length + 1}>
+                  <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}
                   </td>
                 </tr>
@@ -324,8 +287,8 @@ const ResponsiveTable = ({
           {/* Summary row if provided */}
           {summaryRow && (
             <tr className="summary-row">
-              {/* Add empty cell for expansion column if expandable rows are enabled (only on desktop) */}
-              {expandableRowRender && !isMobile && <td></td>}
+              {/* Add empty cell for expansion column if expandable rows are enabled */}
+              {expandableRowRender && <td></td>}
 
               {columns.map((column, colIndex) => (
                 <td

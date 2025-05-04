@@ -57,7 +57,7 @@ const TaskIcon = styled.div`
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     width: 1rem;
     height: 1rem;
-    margin-right: 0.3rem;
+    margin-right: 0.15rem;
   }
 `;
 

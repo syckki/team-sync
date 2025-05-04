@@ -73,7 +73,7 @@ const LockIcon = styled.div`
   /* Reduce size on mobile devices */
   @media (max-width: 576px) {
     width: 1rem;
-    margin-right: 0.3rem;
+    margin-right: 0.15rem;
   }
 `;
 

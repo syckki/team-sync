@@ -190,6 +190,50 @@ const ResponsiveTable = ({
   if (!data || data.length === 0) {
     return <EmptyState>{emptyMessage}</EmptyState>;
   }
+  
+  // Track if we're on mobile viewport (using window.matchMedia if available)
+  const [isMobile, setIsMobile] = React.useState(false);
+  
+  // Media query effect to detect screen size
+  React.useEffect(() => {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia(`(max-width: ${Breakpoint.LAPTOP}px)`);
+      
+      // Set initial value
+      setIsMobile(mediaQuery.matches);
+      
+      // Add listener for changes
+      const handleResize = (e) => {
+        setIsMobile(e.matches);
+      };
+      
+      // Modern browsers
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleResize);
+        return () => mediaQuery.removeEventListener('change', handleResize);
+      } 
+      // Older browsers
+      else if (mediaQuery.addListener) {
+        mediaQuery.addListener(handleResize);
+        return () => mediaQuery.removeListener(handleResize);
+      }
+    }
+  }, []);
+  
+  // For mobile, we'll always expand all rows
+  const effectiveExpandedRows = React.useMemo(() => {
+    if (isMobile) {
+      // Create an object with all rows expanded
+      return data.reduce((acc, row) => {
+        acc[row[keyField]] = true;
+        return acc;
+      }, {});
+    }
+    
+    // On desktop, use the provided expandedRows state
+    return expandedRows;
+  }, [data, expandedRows, keyField, isMobile]);
 
   return (
     <TableContainer>
@@ -215,17 +259,17 @@ const ResponsiveTable = ({
             <React.Fragment key={row[keyField] || rowIndex}>
               <tr
                 className={
-                  expandableRowRender && expandedRows[row[keyField]]
+                  expandableRowRender && effectiveExpandedRows[row[keyField]]
                     ? "expanded"
                     : ""
                 }
               >
-                {/* Expansion toggle if expandable rows are enabled */}
+                {/* Expansion toggle for desktop or sequence # for mobile */}
                 {expandableRowRender && (
                   <td
-                    onClick={() => onRowToggle && onRowToggle(row[keyField])}
+                    onClick={() => !isMobile && onRowToggle && onRowToggle(row[keyField])}
                     style={{ 
-                      cursor: "pointer", 
+                      cursor: isMobile ? "default" : "pointer", 
                       width: "40px",
                       userSelect: "none", /* Prevent text selection on click */
                       WebkitUserSelect: "none", /* For Safari */
@@ -233,20 +277,35 @@ const ResponsiveTable = ({
                       msUserSelect: "none" /* For IE/Edge */
                     }}
                   >
-                    <div className="expand-icon">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                    {isMobile ? (
+                      // Show AI Productivity number on mobile
+                      <div 
+                        style={{ 
+                          fontSize: "0.75rem", 
+                          fontWeight: "600",
+                          color: "#4e7fff",
+                          whiteSpace: "nowrap"
+                        }}
                       >
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                      </svg>
-                    </div>
+                        AI Productivity #{rowIndex + 1}
+                      </div>
+                    ) : (
+                      // Show expand/collapse icon on desktop
+                      <div className="expand-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </div>
+                    )}
                   </td>
                 )}
 
@@ -274,7 +333,7 @@ const ResponsiveTable = ({
               </tr>
 
               {/* Expandable detail row if provided and row is expanded */}
-              {expandableRowRender && expandedRows[row[keyField]] && (
+              {expandableRowRender && effectiveExpandedRows[row[keyField]] && (
                 <tr className="detail-row">
                   <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}

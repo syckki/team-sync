@@ -27,9 +27,10 @@ const Logo = styled.div`
   font-weight: 700;
   color: ${({ theme }) => theme.colors.primary};
   
-  /* Center logo on mobile */
+  /* Center logo on mobile and reduce size */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     text-align: center;
+    font-size: 1rem;
   }
 `;
 
@@ -51,6 +52,13 @@ const TaskIcon = styled.div`
   height: 2rem;
   margin-right: 0.5rem;
   display: inline-flex;
+  
+  /* Reduce icon size on mobile */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.3rem;
+  }
 `;
 
 const Nav = styled.nav`

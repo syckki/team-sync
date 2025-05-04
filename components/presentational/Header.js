@@ -14,12 +14,23 @@ const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  /* Use column layout on small mobile devices */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
 `;
 
 const Logo = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.primary};
+  
+  /* Center logo on mobile */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    text-align: center;
+  }
 `;
 
 const LogoLink = styled(Link)`
@@ -27,6 +38,12 @@ const LogoLink = styled(Link)`
   color: inherit;
   display: flex;
   align-items: center;
+  
+  /* Center logo content on mobile */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    justify-content: center;
+    margin: 0 auto;
+  }
 `;
 
 const TaskIcon = styled.div`
@@ -39,6 +56,12 @@ const TaskIcon = styled.div`
 const Nav = styled.nav`
   display: flex;
   align-items: center;
+  
+  /* Center navigation on mobile */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    justify-content: center;
+    width: 100%;
+  }
 `;
 
 const StyledLink = styled(Link)`
@@ -52,9 +75,16 @@ const StyledLink = styled(Link)`
     color: ${({ theme }) => theme.colors.primary};
   }
   
-  /* Hide navigation links on small mobile devices (less than 576px) */
+  /* Adjust spacing on mobile */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
-    display: none;
+    margin: 0 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  &:first-child {
+    @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+      margin-left: 0;
+    }
   }
 `;
 

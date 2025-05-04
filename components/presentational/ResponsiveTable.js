@@ -125,15 +125,12 @@ const Table = styled.table`
       text-align: right;
       flex-direction: row;
       align-items: center;
+      justify-content: space-between;
       overflow: visible;
       position: relative;
 
       > * {
         width: auto;
-
-        &:last-child {
-          margin-left: auto;
-        }
       }
     }
 
@@ -147,11 +144,8 @@ const Table = styled.table`
     }
 
     tbody tr.expanded td:not(:first-child):before {
+      margin-right: 1rem; /* Space between label and content */
       flex-shrink: 0; /* Prevent the label from shrinking */
-    }
-
-    tbody tr.expanded td:not(:first-child) > div:first-of-type {
-      margin-right: 1rem; /* Space between tooltip and content */
     }
 
     /* Alternating row background for better readability */

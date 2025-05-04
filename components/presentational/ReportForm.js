@@ -188,6 +188,14 @@ const DeleteButton = styled.button`
   }
 `;
 
+const RowDetail = styled.div`
+  padding: 1rem;
+
+  @media (max-width: ${Breakpoint.LAPTOP}px) {
+    padding: 1.25rem 0.75rem;
+  }
+`;
+
 const TextAreaWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
@@ -286,34 +294,35 @@ const ReportForm = ({
 
   // Define column structure for the new ResponsiveTable
   // Create delete buttons for each row first
-  const rowsWithDeleteButtons = rows.map(row => {
+  const rowsWithDeleteButtons = rows.map((row) => {
     // Only add delete button if there's more than one row
-    const deleteButton = rows.length > 1 ? (
-      <DeleteButton
-        className="delete-action-button"
-        onClick={(e) => {
-          e.stopPropagation(); // Prevent row expansion
-          removeRow(row.id);
-        }}
-        style={{ width: "1.5rem", height: "1.5rem", padding: "0.125rem" }}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    const deleteButton =
+      rows.length > 1 ? (
+        <DeleteButton
+          className="delete-action-button"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent row expansion
+            removeRow(row.id);
+          }}
+          style={{ width: "1.5rem", height: "1.5rem", padding: "0.125rem" }}
         >
-          <path d="M3 6h18"></path>
-          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-          <line x1="10" x2="10" y1="11" y2="17"></line>
-          <line x1="14" x2="14" y1="11" y2="17"></line>
-        </svg>
-      </DeleteButton>
-    ) : null;
-    
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            <line x1="10" x2="10" y1="11" y2="17"></line>
+            <line x1="14" x2="14" y1="11" y2="17"></line>
+          </svg>
+        </DeleteButton>
+      ) : null;
+
     return {
       ...row,
       _deleteButton: deleteButton,
@@ -324,7 +333,8 @@ const ReportForm = ({
     {
       header: "Platform",
       field: "platform",
-      tooltip: "Identifies the system, product, or main platform where the task was performed. Helps understand AI impact.",
+      tooltip:
+        "Identifies the system, product, or main platform where the task was performed. Helps understand AI impact.",
       actionHint: "Select or create a platform name.",
       render: (value, row) => (
         <CreatableComboBox
@@ -350,7 +360,8 @@ const ReportForm = ({
     {
       header: "Initiative",
       field: "projectInitiative",
-      tooltip: "Identifies the specific project or initiative. Standardized data helps with grouping and filtering in reports.",
+      tooltip:
+        "Identifies the specific project or initiative. Standardized data helps with grouping and filtering in reports.",
       actionHint: "Select an existing initiative or create a new one.",
       render: (value, row) => (
         <CreatableComboBox
@@ -368,7 +379,8 @@ const ReportForm = ({
     {
       header: "SDLC Step",
       field: "sdlcStep",
-      tooltip: "Maps the task to a standard Software Development Life Cycle phase. Enables analysis of AI impact across different phases.",
+      tooltip:
+        "Maps the task to a standard Software Development Life Cycle phase. Enables analysis of AI impact across different phases.",
       actionHint: "Select one of the standard SDLC steps.",
       render: (value, row) => (
         <CreatableComboBox
@@ -384,7 +396,8 @@ const ReportForm = ({
     {
       header: "SDLC Task",
       field: "sdlcTask",
-      tooltip: "Specifies the detailed task within the SDLC step. Adds granularity to see what specific tasks are accelerated by AI.",
+      tooltip:
+        "Specifies the detailed task within the SDLC step. Adds granularity to see what specific tasks are accelerated by AI.",
       actionHint: "Select a task related to the chosen SDLC step.",
       render: (value, row) => (
         <CreatableComboBox
@@ -401,8 +414,10 @@ const ReportForm = ({
     {
       header: "Task Category",
       field: "taskCategory",
-      tooltip: "High-level categorization of task type, independent of SDLC. Useful for cross-analysis (e.g., which tools work best for 'Code Generation').",
-      actionHint: "Select or create a task category that best describes the work.",
+      tooltip:
+        "High-level categorization of task type, independent of SDLC. Useful for cross-analysis (e.g., which tools work best for 'Code Generation').",
+      actionHint:
+        "Select or create a task category that best describes the work.",
       render: (value, row) => (
         <CreatableComboBox
           value={value}
@@ -429,8 +444,10 @@ const ReportForm = ({
       header: "Est (hrs)",
       field: "estimatedTimeWithoutAI",
       width: "100px",
-      tooltip: "Time the task would have taken without AI tools. Establishes the baseline for measuring time savings.",
-      actionHint: "Enter your honest estimate of how long this would have taken without AI.",
+      tooltip:
+        "Time the task would have taken without AI tools. Establishes the baseline for measuring time savings.",
+      actionHint:
+        "Enter your honest estimate of how long this would have taken without AI.",
       render: (value, row) => (
         <Input
           type="number"
@@ -456,7 +473,8 @@ const ReportForm = ({
       header: "Act (hrs)",
       field: "actualTimeWithAI",
       width: "100px",
-      tooltip: "Actual time the task took using AI tools. Shows real-time savings through color-coding (green when faster, red when slower).",
+      tooltip:
+        "Actual time the task took using AI tools. Shows real-time savings through color-coding (green when faster, red when slower).",
       actionHint: "Record the actual time spent including AI assistance.",
       render: (value, row) => (
         <Input
@@ -498,7 +516,8 @@ const ReportForm = ({
     {
       header: "Complexity",
       field: "complexity",
-      tooltip: "Adds context to time savings. Saving 1 hour on a complex task may be more impactful than on a simple one. Helps weigh results.",
+      tooltip:
+        "Adds context to time savings. Saving 1 hour on a complex task may be more impactful than on a simple one. Helps weigh results.",
       actionHint: "Select the appropriate complexity level for this task.",
       render: (value, row) => (
         <CustomSelect
@@ -514,8 +533,10 @@ const ReportForm = ({
     {
       header: "Quality Impact",
       field: "qualityImpact",
-      tooltip: "Evaluates if AI use affected output quality. Ensures productivity gains don't compromise quality.",
-      actionHint: "Select how AI affected the quality of the output compared to traditional methods.",
+      tooltip:
+        "Evaluates if AI use affected output quality. Ensures productivity gains don't compromise quality.",
+      actionHint:
+        "Select how AI affected the quality of the output compared to traditional methods.",
       render: (value, row) => (
         <CreatableComboBox
           value={value}
@@ -589,9 +610,9 @@ const ReportForm = ({
               <FormGroup>
                 <Label htmlFor="teamName">
                   Team Name
-                  <InfoTooltip 
-                    title="Team Name" 
-                    content="Identifies the team to which the collaborator belongs for team-level analysis and reporting." 
+                  <InfoTooltip
+                    title="Team Name"
+                    content="Identifies the team to which the collaborator belongs for team-level analysis and reporting."
                     actionHint="This field is pre-filled and cannot be edited."
                   />
                 </Label>
@@ -607,9 +628,9 @@ const ReportForm = ({
               <FormGroup>
                 <Label htmlFor="teamMember">
                   Team Member Name
-                  <InfoTooltip 
-                    title="Team Member Name" 
-                    content="Identifies the individual reporting productivity. Essential for individual tracking if necessary." 
+                  <InfoTooltip
+                    title="Team Member Name"
+                    content="Identifies the individual reporting productivity. Essential for individual tracking if necessary."
                     actionHint="You can select from existing members or create a new entry."
                   />
                 </Label>
@@ -630,9 +651,9 @@ const ReportForm = ({
               <FormGroup>
                 <Label htmlFor="teamRole">
                   Role on the Team
-                  <InfoTooltip 
-                    title="Role on the Team" 
-                    content="Identifies the collaborator's role. Helps analyze which roles benefit most from which tools or task types." 
+                  <InfoTooltip
+                    title="Role on the Team"
+                    content="Identifies the collaborator's role. Helps analyze which roles benefit most from which tools or task types."
                     actionHint="Enter your specific role within the team."
                   />
                 </Label>
@@ -660,13 +681,21 @@ const ReportForm = ({
                 columns={tableColumns}
                 keyField="id"
                 expandableRowRender={(row) => (
-                  <div style={{ padding: "1rem" }}>
+                  <RowDetail>
                     <div style={{ marginBottom: "1rem" }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: "0.5rem" }}>
-                        <InnerLabel style={{ margin: 0 }}>AI Tools used</InnerLabel>
-                        <InfoTooltip 
-                          title="AI Tools Used" 
-                          content="Identifies specific AI tools used for the task. Crucial for comparing tool effectiveness across different tasks." 
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginBottom: "0.5rem",
+                        }}
+                      >
+                        <InnerLabel style={{ margin: 0 }}>
+                          AI Tools used
+                        </InnerLabel>
+                        <InfoTooltip
+                          title="AI Tools Used"
+                          content="Identifies specific AI tools used for the task. Crucial for comparing tool effectiveness across different tasks."
                           actionHint="Select multiple tools if you used more than one for this task."
                         />
                       </div>
@@ -694,11 +723,19 @@ const ReportForm = ({
 
                     <TextAreaWrapper>
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: "0.5rem" }}>
-                          <InnerLabel style={{ margin: 0 }}>Task Details</InnerLabel>
-                          <InfoTooltip 
-                            title="Task Details" 
-                            content="Specific and concise task description. Context is essential for interpreting the entry and understanding where AI was applied." 
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
+                          <InnerLabel style={{ margin: 0 }}>
+                            Task Details
+                          </InnerLabel>
+                          <InfoTooltip
+                            title="Task Details"
+                            content="Specific and concise task description. Context is essential for interpreting the entry and understanding where AI was applied."
                             actionHint="Provide enough detail to understand the task's scope and requirements."
                           />
                         </div>
@@ -730,11 +767,17 @@ const ReportForm = ({
                       </div>
 
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: "0.5rem" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: "0.5rem",
+                          }}
+                        >
                           <InnerLabel style={{ margin: 0 }}>Notes</InnerLabel>
-                          <InfoTooltip 
-                            title="Notes" 
-                            content="Space for qualitative notes on how AI specifically helped, challenges encountered, or other relevant context not captured in numbers." 
+                          <InfoTooltip
+                            title="Notes"
+                            content="Space for qualitative notes on how AI specifically helped, challenges encountered, or other relevant context not captured in numbers."
                             actionHint="Describe specifically how the AI tools assisted with this task and any notable observations."
                           />
                         </div>
@@ -765,7 +808,7 @@ const ReportForm = ({
                         />
                       </div>
                     </TextAreaWrapper>
-                  </div>
+                  </RowDetail>
                 )}
                 expandedRows={expandedRows}
                 onRowToggle={toggleRowExpand}

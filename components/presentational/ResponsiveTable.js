@@ -125,12 +125,15 @@ const Table = styled.table`
       text-align: right;
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
       overflow: visible;
       position: relative;
 
       > * {
         width: auto;
+
+        &:last-child {
+          margin-left: auto;
+        }
       }
     }
 
@@ -144,8 +147,11 @@ const Table = styled.table`
     }
 
     tbody tr.expanded td:not(:first-child):before {
-      margin-right: 1rem; /* Space between label and content */
       flex-shrink: 0; /* Prevent the label from shrinking */
+    }
+
+    tbody tr.expanded td:not(:first-child) > div:first-of-type {
+      margin-right: 1rem; /* Space between tooltip and content */
     }
 
     /* Alternating row background for better readability */
@@ -166,12 +172,12 @@ const Table = styled.table`
     tr.detail-row {
       background: none;
     }
-    
+
     /* Hide the original Action column in mobile view */
     td[data-label="Action"] {
       display: none !important;
     }
-    
+
     /* Summary row styling for mobile */
     tr.summary-row {
       border: 2px solid #4e7fff;
@@ -279,12 +285,12 @@ const ResponsiveTable = ({
                 className={column.width ? "fixed-width" : ""}
                 style={column.width ? { "--column-width": column.width } : {}}
               >
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                   {column.header}
                   {column.tooltip && (
-                    <InfoTooltip 
-                      title={column.header} 
-                      content={column.tooltip} 
+                    <InfoTooltip
+                      title={column.header}
+                      content={column.tooltip}
                       actionHint={column.actionHint}
                     />
                   )}
@@ -329,7 +335,7 @@ const ResponsiveTable = ({
                           width: "100%",
                           display: "flex",
                           justifyContent: "space-between",
-                          alignItems: "center"
+                          alignItems: "center",
                         }}
                       >
                         <span>AI Productivity #{rowIndex + 1}</span>
@@ -372,21 +378,14 @@ const ResponsiveTable = ({
                       }
                       data-label={column.header} // Important for mobile view labels
                     >
-                      {isMobile && column.tooltip ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <span>{column.header}</span>
-                            <InfoTooltip 
-                              title={column.header} 
-                              content={column.tooltip} 
-                              actionHint={column.actionHint}
-                            />
-                          </div>
-                          <div>{cellContent}</div>
-                        </div>
-                      ) : (
-                        cellContent
+                      {isMobile && column.tooltip && (
+                        <InfoTooltip
+                          title={column.header}
+                          content={column.tooltip}
+                          actionHint={column.actionHint}
+                        />
                       )}
+                      {cellContent}
                     </td>
                   );
                 })}

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import DecryptionContainer from '../../../components/containers/DecryptionContainer';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { saveThreadToHistory } from '../../../lib/inboxUtils';
 
 const LoadingMessage = styled.div`
   text-align: center;
@@ -97,11 +96,6 @@ const ViewPage = ({ pageProps }) => {
       }
       
       setKey(fragment);
-      
-      // Save this thread to history for the inbox
-      const currentUrl = window.location.href;
-      saveThreadToHistory(id, id, currentUrl);
-      
       setIsLoading(false);
     } catch (err) {
       console.error('Error parsing key from URL:', err);

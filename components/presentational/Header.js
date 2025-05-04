@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styled from "styled-components";
+import { Breakpoint } from "../../lib/styles";
 
 const HeaderContainer = styled.header`
   background-color: ${({ theme }) => theme.colors.card};
@@ -49,6 +50,11 @@ const StyledLink = styled(Link)`
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
+  }
+  
+  /* Hide navigation links on small mobile devices (less than 576px) */
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    display: none;
   }
 `;
 

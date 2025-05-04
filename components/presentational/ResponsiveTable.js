@@ -47,7 +47,9 @@ const Table = styled.table`
   /* Fixed-width columns */
   th.fixed-width,
   td.fixed-width {
-    width: var(--column-width, auto);
+    @media (min-width: ${Breakpoint.LAPTOP}px) {
+      width: var(--column-width, auto);
+    }
   }
 
   /* Summary row styling */
@@ -68,7 +70,6 @@ const Table = styled.table`
 
   tr.detail-row {
     background-color: #fcfcfc;
-    border-top: 1px dashed #e2e8f0;
     border-bottom: 1px dashed #e2e8f0;
   }
 
@@ -104,17 +105,20 @@ const Table = styled.table`
     /* Display each row as a card */
     tbody tr {
       display: block;
-      margin-bottom: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
       overflow: visible; /* Allow dropdowns to be visible outside the card */
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       position: relative; /* For proper stacking context */
     }
 
     /* Style each cell as a row in the card */
-    tbody td {
+    tbody tr td {
       display: flex;
+
+      > * {
+        width: 100%;
+      }
+    }
+
+    tbody tr.expanded td {
       padding: 0.75rem;
       border-bottom: 1px solid #e2e8f0;
       text-align: right;
@@ -123,26 +127,43 @@ const Table = styled.table`
       justify-content: space-between;
       overflow: visible;
       position: relative;
+
+      > * {
+        width: auto;
+      }
     }
 
     /* Show the column header using data-label attribute */
-    tbody td:before {
+    tbody tr.expanded td:before {
       content: attr(data-label);
       font-weight: 600;
       color: #444;
       font-size: 0.85rem;
+      text-align: left;
+    }
+
+    tbody tr.expanded td:not(:first-child):before {
       margin-right: 1rem; /* Space between label and content */
       flex-shrink: 0; /* Prevent the label from shrinking */
     }
 
     /* Alternating row background for better readability */
-    tbody td:nth-child(even) {
+    tbody tr:nth-child(4n-1),
+    tbody tr:nth-child(4n) {
       background-color: #f8f9fa;
     }
 
     /* Remove bottom border from last cell in each row */
     tbody td:last-child {
       border-bottom: none;
+    }
+
+    tr.expanded {
+      background: none;
+    }
+
+    tr.detail-row {
+      background: none;
     }
 
     /* Summary row styling for mobile */
@@ -155,7 +176,7 @@ const Table = styled.table`
     }
 
     /* Add extra margin between rows */
-    tbody tr + tr {
+    tbody tr.detail-row + tr {
       margin-top: 1.5rem;
     }
   }
@@ -191,29 +212,31 @@ const ResponsiveTable = ({
   if (!data || data.length === 0) {
     return <EmptyState>{emptyMessage}</EmptyState>;
   }
-  
+
   // Track if we're on mobile viewport (using window.matchMedia if available)
   const [isMobile, setIsMobile] = React.useState(false);
-  
+
   // Media query effect to detect screen size
   React.useEffect(() => {
     // Check if we're in a browser environment
-    if (typeof window !== 'undefined') {
-      const mediaQuery = window.matchMedia(`(max-width: ${Breakpoint.LAPTOP}px)`);
-      
+    if (typeof window !== "undefined") {
+      const mediaQuery = window.matchMedia(
+        `(max-width: ${Breakpoint.LAPTOP}px)`,
+      );
+
       // Set initial value
       setIsMobile(mediaQuery.matches);
-      
+
       // Add listener for changes
       const handleResize = (e) => {
         setIsMobile(e.matches);
       };
-      
+
       // Modern browsers
       if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener('change', handleResize);
-        return () => mediaQuery.removeEventListener('change', handleResize);
-      } 
+        mediaQuery.addEventListener("change", handleResize);
+        return () => mediaQuery.removeEventListener("change", handleResize);
+      }
       // Older browsers
       else if (mediaQuery.addListener) {
         mediaQuery.addListener(handleResize);
@@ -221,7 +244,7 @@ const ResponsiveTable = ({
       }
     }
   }, []);
-  
+
   // For mobile, we'll always expand all rows
   const effectiveExpandedRows = React.useMemo(() => {
     if (isMobile) {
@@ -231,7 +254,7 @@ const ResponsiveTable = ({
         return acc;
       }, {});
     }
-    
+
     // On desktop, use the provided expandedRows state
     return expandedRows;
   }, [data, expandedRows, keyField, isMobile]);
@@ -268,24 +291,26 @@ const ResponsiveTable = ({
                 {/* Expansion toggle for desktop or sequence # for mobile */}
                 {expandableRowRender && (
                   <td
-                    onClick={() => !isMobile && onRowToggle && onRowToggle(row[keyField])}
-                    style={{ 
-                      cursor: isMobile ? "default" : "pointer", 
+                    onClick={() =>
+                      !isMobile && onRowToggle && onRowToggle(row[keyField])
+                    }
+                    style={{
+                      cursor: isMobile ? "default" : "pointer",
                       width: "40px",
-                      userSelect: "none", /* Prevent text selection on click */
-                      WebkitUserSelect: "none", /* For Safari */
-                      MozUserSelect: "none", /* For Firefox */
-                      msUserSelect: "none" /* For IE/Edge */
+                      userSelect: "none" /* Prevent text selection on click */,
+                      WebkitUserSelect: "none" /* For Safari */,
+                      MozUserSelect: "none" /* For Firefox */,
+                      msUserSelect: "none" /* For IE/Edge */,
                     }}
                   >
                     {isMobile ? (
                       // Show AI Productivity number on mobile
-                      <div 
-                        style={{ 
-                          fontSize: "0.75rem", 
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
                           fontWeight: "600",
                           color: "#4e7fff",
-                          whiteSpace: "nowrap"
+                          whiteSpace: "nowrap",
                         }}
                       >
                         AI Productivity #{rowIndex + 1}

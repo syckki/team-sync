@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Breakpoint } from "../../lib/styles";
 
 import CustomSelect from "./CustomSelect";
 import CreatableComboBox from "./CreatableComboBox";
@@ -12,7 +13,7 @@ const Form = styled.form`
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 0rem;
 `;
 
 const TeamFormSection = styled.div`
@@ -68,6 +69,14 @@ const InnerLabel = styled.div`
   color: rgb(107 114 128);
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
+
+  @media (max-width: ${Breakpoint.LAPTOP}px) {
+    text-transform: none;
+    font-weight: 600;
+    color: #444;
+    font-size: 0.85rem;
+    text-align: left;
+  }
 `;
 
 const SubmitButton = styled.button`
@@ -356,7 +365,7 @@ const ReportForm = ({
       ),
     },
     {
-      header: "Est (h)",
+      header: "Est (hrs)",
       field: "estimatedTimeWithoutAI",
       width: "100px",
       render: (value, row) => (
@@ -381,7 +390,7 @@ const ReportForm = ({
       ),
     },
     {
-      header: "Act (h)",
+      header: "Act (hrs)",
       field: "actualTimeWithAI",
       width: "100px",
       render: (value, row) => (
@@ -562,7 +571,7 @@ const ReportForm = ({
                 expandableRowRender={(row) => (
                   <div style={{ padding: "1rem" }}>
                     <div style={{ marginBottom: "1rem" }}>
-                      <InnerLabel>AI TOOLS USED</InnerLabel>
+                      <InnerLabel>AI Tools used</InnerLabel>
                       <CreatableMultiSelect
                         value={row.aiToolUsed}
                         onChange={(value) =>
@@ -593,7 +602,7 @@ const ReportForm = ({
                       }}
                     >
                       <div>
-                        <InnerLabel>TASK DETAILS</InnerLabel>
+                        <InnerLabel>Task Details</InnerLabel>
                         <AutoResizeTextArea
                           value={row.taskDetails}
                           onChange={(e) =>
@@ -622,7 +631,7 @@ const ReportForm = ({
                       </div>
 
                       <div>
-                        <InnerLabel>NOTES</InnerLabel>
+                        <InnerLabel>Notes</InnerLabel>
                         <AutoResizeTextArea
                           value={row.notesHowAIHelped}
                           onChange={(e) =>

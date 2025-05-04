@@ -82,6 +82,12 @@ export const ComboBoxDropdown = styled.ul`
   padding-top: 4px; // Add some padding to separate from the input
   margin-top: -1px; // Slightly overlap with input to avoid gap
   overflow-x: visible;
+  text-align: left; // Ensure items are left-aligned
+  
+  @media (max-width: 1200px) {
+    right: 0; // Align with the right edge of the container on mobile
+    left: auto; // Override left:0 on mobile
+  }
 `;
 
 export const ComboBoxOption = styled.li`
@@ -92,6 +98,7 @@ export const ComboBoxOption = styled.li`
   display: block;
   width: 100%;
   text-overflow: ellipsis;
+  text-align: left; /* Ensure text is always left-aligned */
 
   &:hover {
     background-color: #f1f5f9;

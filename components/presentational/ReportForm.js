@@ -174,15 +174,6 @@ const DeleteButton = styled.button`
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  
-  /* Position the delete button at the top right of mobile rows */
-  @media (max-width: ${Breakpoint.LAPTOP}px) {
-    &.delete-action-button {
-      position: absolute;
-      top: 0;
-      right: 0;
-    }
-  }
   justify-self: center;
 
   &:hover {

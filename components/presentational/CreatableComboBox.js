@@ -19,6 +19,9 @@ const ComboBoxCreateOption = styled.li`
   font-weight: 600;
   white-space: nowrap;
   overflow: visible;
+  text-align: left; /* Ensure text is always left-aligned */
+  width: 100%;
+  display: block;
 
   &:hover {
     background-color: #f1f5f9;

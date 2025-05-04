@@ -165,14 +165,6 @@ const Table = styled.table`
     tr.detail-row {
       background: none;
     }
-
-    /* Position the delete button at the top right in mobile view */
-    .delete-action-button {
-      position: absolute !important;
-      top: 0.5rem !important;
-      right: 0.5rem !important;
-      z-index: 10 !important;
-    }
     
     /* Hide the original Action column in mobile view */
     td[data-label="Action"] {
@@ -309,7 +301,7 @@ const ResponsiveTable = ({
                     }
                     style={{
                       cursor: isMobile ? "default" : "pointer",
-                      width: "40px",
+                      width: isMobile ? "auto" : "40px",
                       userSelect: "none" /* Prevent text selection on click */,
                       WebkitUserSelect: "none" /* For Safari */,
                       MozUserSelect: "none" /* For Firefox */,

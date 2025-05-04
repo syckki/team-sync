@@ -95,69 +95,10 @@ const Table = styled.table`
     transform: rotate(90deg);
   }
 
-  @media (max-width: ${Breakpoint.LAPTOP}px) {
-    /* CSS-based responsive transformation for mobile and tablets */
-    /* Hide table headers on mobile and tablet */
-    thead {
-      display: none;
-    }
-
-    /* Display each row as a card */
-    tbody tr {
-      display: block;
-      margin-bottom: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: visible; /* Allow dropdowns to be visible outside the card */
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      position: relative; /* For proper stacking context */
-    }
-
-    /* Style each cell as a row in the card */
-    tbody td {
-      display: flex;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: right;
-      flex-direction: column;
-      align-items: flex-start;
-      overflow: visible;
-      position: relative;
-    }
-
-    /* Show the column header using data-label attribute */
-    tbody td:before {
-      content: attr(data-label);
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      color: #444;
-      font-size: 0.85rem;
-    }
-
-    /* Alternating row background for better readability */
-    tbody td:nth-child(even) {
-      background-color: #f8f9fa;
-    }
-
-    /* Remove bottom border from last cell in each row */
-    tbody td:last-child {
-      border-bottom: none;
-    }
-
-    /* Summary row styling for mobile */
-    tr.summary-row {
-      border: 2px solid #4e7fff;
-    }
-
-    tr.summary-row td:before {
-      color: #4e7fff;
-    }
-
-    /* Add extra margin between rows */
-    tbody tr + tr {
-      margin-top: 1.5rem;
-    }
-  }
+  /* This media query is no longer needed since we've moved to mobile-first approach.
+   * All the CSS properties for mobile view are now defined at the root level.
+   * Desktop-specific overrides are handled by the min-width media query. 
+   */
 `;
 
 const EmptyState = styled.div`

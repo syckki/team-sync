@@ -49,16 +49,21 @@ const CreatableComboBox = ({
     );
   }
 
-  // Update filtered options when input changes
+  // Update filtered options when input or options change
   useEffect(() => {
-    if (inputValue.trim() === "") {
-      setFilteredOptions(options);
-    } else {
-      const filtered = options.filter((option) =>
-        option.toLowerCase().includes(inputValue.toLowerCase()),
-      );
-      setFilteredOptions(filtered);
-    }
+    const updateFilteredOptions = () => {
+      if (inputValue.trim() === "") {
+        setFilteredOptions(options);
+      } else {
+        const filtered = options.filter((option) =>
+          option.toLowerCase().includes(inputValue.toLowerCase()),
+        );
+        setFilteredOptions(filtered);
+      }
+    };
+    
+    // Only update if component is mounted
+    updateFilteredOptions();
   }, [inputValue, options]);
 
   // Handle input change

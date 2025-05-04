@@ -214,15 +214,19 @@ const ResponsiveTable = ({
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= Breakpoint.LAPTOP;
-      setIsMobileView(mobile);
       
-      // If switching to mobile view, auto-expand all rows
-      if (mobile && !isMobileView) {
-        const newExpandedState = {};
-        data.forEach(row => {
-          newExpandedState[row[keyField]] = true;
-        });
-        setMobileExpandedRows(newExpandedState);
+      // Only update state if the mobile state has changed
+      if (mobile !== isMobileView) {
+        setIsMobileView(mobile);
+        
+        // If switching to mobile view, auto-expand all rows
+        if (mobile) {
+          const newExpandedState = {};
+          data.forEach(row => {
+            newExpandedState[row[keyField]] = true;
+          });
+          setMobileExpandedRows(newExpandedState);
+        }
       }
     };
     

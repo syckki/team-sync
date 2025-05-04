@@ -177,12 +177,8 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         dataObj.replyToId = replyToId;
       }
       
-      // Generate or retrieve author ID from localStorage
-      let authorId = localStorage.getItem('encrypted-app-author-id');
-      if (!authorId) {
-        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-        localStorage.setItem('encrypted-app-author-id', authorId);
-      }
+      // Get user author ID using the utility function
+      const authorId = getUserAuthorId();
       
       // Add author ID to data object
       dataObj.authorId = authorId;

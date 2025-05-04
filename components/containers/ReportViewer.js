@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import styled from "styled-components";
 
 import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
+import { getUserAuthorId } from "../../lib/userUtils";
 import ReportViewerPresentation from "../presentational/ReportViewer";
 
 // Report container components
@@ -63,8 +64,8 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
     try {
       setIsLoading(true);
 
-      // Get author ID from localStorage
-      const authorId = localStorage.getItem("encrypted-app-author-id");
+      // Get user author ID using the utility function
+      const authorId = getUserAuthorId();
       if (!authorId) {
         throw new Error(
           "Author ID not found. Please go back to the thread view."

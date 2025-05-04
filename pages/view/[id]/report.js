@@ -56,6 +56,12 @@ const PageTitle = styled.h1`
   font-weight: 500;
   display: flex;
   align-items: center;
+  
+  /* Reduce size on mobile devices */
+  @media (max-width: 576px) {
+    font-size: 1rem;
+    line-height: 1.3rem;
+  }
 `;
 
 const LockIcon = styled.div`
@@ -63,6 +69,12 @@ const LockIcon = styled.div`
   height: auto;
   margin-right: 0.5rem;
   display: inline-flex;
+  
+  /* Reduce size on mobile devices */
+  @media (max-width: 576px) {
+    width: 1rem;
+    margin-right: 0.3rem;
+  }
 `;
 
 const PageSubtitle = styled.p`
@@ -71,6 +83,13 @@ const PageSubtitle = styled.p`
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: rgb(255 255 255 / 0.9);
+  
+  /* Adjust size on mobile devices */
+  @media (max-width: 576px) {
+    font-size: 0.8rem;
+    line-height: 1.1rem;
+    margin-top: 0.25rem;
+  }
 `;
 
 const ContentContainer = styled.div`

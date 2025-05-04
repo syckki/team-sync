@@ -596,8 +596,8 @@ const ReportForm = ({
 
                     <div
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        display: "flex",
+                        flexDirection: "column",
                         gap: "1.5rem",
                       }}
                     >

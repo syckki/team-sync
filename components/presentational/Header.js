@@ -4,7 +4,7 @@ import { Breakpoint } from "../../lib/styles";
 
 const HeaderContainer = styled.header`
   background-color: ${({ theme }) => theme.colors.card};
-  padding: 1rem 2rem;
+  padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 

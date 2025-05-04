@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Breakpoint } from "../../lib/styles";
+import InfoTooltip from "./InfoTooltip";
 
 // CSS-only responsive table with a single source of truth
 const TableContainer = styled.div`
@@ -278,7 +279,16 @@ const ResponsiveTable = ({
                 className={column.width ? "fixed-width" : ""}
                 style={column.width ? { "--column-width": column.width } : {}}
               >
-                {column.header}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {column.header}
+                  {column.tooltip && (
+                    <InfoTooltip 
+                      title={column.header} 
+                      content={column.tooltip} 
+                      actionHint={column.actionHint}
+                    />
+                  )}
+                </div>
               </th>
             ))}
           </tr>
@@ -362,7 +372,21 @@ const ResponsiveTable = ({
                       }
                       data-label={column.header} // Important for mobile view labels
                     >
-                      {cellContent}
+                      {isMobile && column.tooltip ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <span>{column.header}</span>
+                            <InfoTooltip 
+                              title={column.header} 
+                              content={column.tooltip} 
+                              actionHint={column.actionHint}
+                            />
+                          </div>
+                          <div>{cellContent}</div>
+                        </div>
+                      ) : (
+                        cellContent
+                      )}
                     </td>
                   );
                 })}

@@ -28,7 +28,7 @@ const Footer = styled.footer`
 const Layout = ({ children }) => {
   return (
     <>
-      <MinWidthWarning minWidth={360} />
+      <MinWidthWarning minWidth={280} />
       <Header />
       <Main>{children}</Main>
       <Footer>

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { generateKey, encryptData, exportKeyToBase64 } from '../../lib/cryptoUtils';
 import { queueMessage } from '../../lib/dbService';
 import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
-import { getUserAuthorId } from '../../lib/userUtils';
 import EncryptForm from '../presentational/EncryptForm';
 import styled from 'styled-components';
 
@@ -177,8 +176,12 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         dataObj.replyToId = replyToId;
       }
       
-      // Get user author ID using the utility function
-      const authorId = getUserAuthorId();
+      // Generate or retrieve author ID from localStorage
+      let authorId = localStorage.getItem('encrypted-app-author-id');
+      if (!authorId) {
+        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+        localStorage.setItem('encrypted-app-author-id', authorId);
+      }
       
       // Add author ID to data object
       dataObj.authorId = authorId;

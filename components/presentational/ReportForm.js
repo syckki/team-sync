@@ -144,7 +144,7 @@ const ActionButton = styled.button`
   font-weight: 500;
   background-color: ${(props) =>
     props.primary ? "#4e7fff" : "hsl(60 4.8% 95.9%)"};
-  color: hsl(24 9.8% 10%);
+  color: hsl(24 9.8% 10%;);
   transition: background-color 0.2s;
 
   &:hover {
@@ -185,14 +185,6 @@ const DeleteButton = styled.button`
   svg {
     width: 1rem;
     height: 1rem;
-  }
-`;
-
-const RowDetail = styled.div`
-  padding: 1rem;
-  
-  @media (max-width: ${Breakpoint.LAPTOP}px) {
-    padding: 1.25rem 0.75rem;
   }
 `;
 
@@ -487,11 +479,18 @@ const ReportForm = ({
             width: "100px",
             color:
               row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                ? parseFloat(row.estimatedTimeWithoutAI) >
-                  parseFloat(row.actualTimeWithAI)
-                  ? "#047857"
-                  : "#dc2626"
+                ? parseFloat(row.actualTimeWithAI) <
+                  parseFloat(row.estimatedTimeWithoutAI)
+                  ? "#16a34a"
+                  : parseFloat(row.actualTimeWithAI) >
+                      parseFloat(row.estimatedTimeWithoutAI)
+                    ? "#dc2626"
+                    : "inherit"
                 : "inherit",
+            fontWeight:
+              row.estimatedTimeWithoutAI && row.actualTimeWithAI
+                ? "500"
+                : "normal",
           }}
         />
       ),
@@ -499,27 +498,79 @@ const ReportForm = ({
     {
       header: "Complexity",
       field: "complexity",
-      tooltip: "Task complexity level, which provides context for time savings. Complex tasks often show greater AI impact.",
+      tooltip: "Adds context to time savings. Saving 1 hour on a complex task may be more impactful than on a simple one. Helps weigh results.",
       actionHint: "Select the appropriate complexity level for this task.",
       render: (value, row) => (
         <CustomSelect
           value={value}
-          onChange={(newValue) => handleRowChange(row.id, "complexity", newValue)}
-          options={[
-            { value: "Low", label: "Low" },
-            { value: "Medium", label: "Medium" },
-            { value: "High", label: "High" },
-          ]}
+          onChange={(newValue) =>
+            handleRowChange(row.id, "complexity", newValue)
+          }
+          options={["Low", "Medium", "High"]}
           placeholder="Complexity"
-          autoComplete="off"
         />
       ),
     },
     {
-      header: "Actions",
-      field: "_deleteButton",
-      width: "80px",
-      align: "center",
+      header: "Quality Impact",
+      field: "qualityImpact",
+      tooltip: "Evaluates if AI use affected output quality. Ensures productivity gains don't compromise quality.",
+      actionHint: "Select how AI affected the quality of the output compared to traditional methods.",
+      render: (value, row) => (
+        <CreatableComboBox
+          value={value}
+          onChange={(newValue) =>
+            handleRowChange(row.id, "qualityImpact", newValue)
+          }
+          options={[
+            "Improved Readability",
+            "Better Performance",
+            "More Comprehensive",
+            "More Accurate",
+            "Higher Consistency",
+            "More Secure",
+            "Better UX",
+            "More Scalable",
+          ]}
+          placeholder="Quality Impact"
+          storageKey="qualityImpactOptions"
+          autoComplete="new-password"
+          data-lpignore="true"
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
+          aria-autocomplete="none"
+        />
+      ),
+    },
+    {
+      header: "Action",
+      field: "action",
+      render: (value, row) =>
+        rows.length > 1 ? (
+          <DeleteButton
+            className="delete-action-button"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row expansion
+              removeRow(row.id);
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              <line x1="10" x2="10" y1="11" y2="17"></line>
+              <line x1="14" x2="14" y1="11" y2="17"></line>
+            </svg>
+          </DeleteButton>
+        ) : null,
     },
   ];
 
@@ -547,7 +598,7 @@ const ReportForm = ({
                 <Input
                   type="text"
                   id="teamName"
-                  value={teamName || "Experience Delivery"}
+                  value={teamName}
                   readOnly
                   required
                 />

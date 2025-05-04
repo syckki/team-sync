@@ -282,6 +282,7 @@ const ReportForm = ({
   addRow,
   removeRow,
   handleSubmit,
+  handleSaveAsDraft,
   isSubmitting,
   error,
   success,

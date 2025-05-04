@@ -56,7 +56,7 @@ const PageTitle = styled.h1`
   font-weight: 500;
   display: flex;
   align-items: center;
-  
+
   /* Reduce size on mobile devices */
   @media (max-width: 576px) {
     font-size: 1rem;
@@ -69,7 +69,7 @@ const LockIcon = styled.div`
   height: auto;
   margin-right: 0.5rem;
   display: inline-flex;
-  
+
   /* Reduce size on mobile devices */
   @media (max-width: 576px) {
     width: 1rem;
@@ -83,7 +83,7 @@ const PageSubtitle = styled.p`
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: rgb(255 255 255 / 0.9);
-  
+
   /* Adjust size on mobile devices */
   @media (max-width: 576px) {
     font-size: 0.8rem;
@@ -147,18 +147,22 @@ const ReportPage = () => {
   // Fetch thread title when key is available
   useEffect(() => {
     if (key && id) {
-      const authorId = localStorage.getItem("encrypted-app-author-id");
-      if (authorId) {
-        fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            setThreadTitle(data.threadTitle || id);
-            setTeamName(data.threadTitle || id);
-          })
-          .catch((err) => {
-            console.error("Error fetching thread data:", err);
-          });
+      // Generate or retrieve author ID from localStorage
+      let authorId = localStorage.getItem("encrypted-app-author-id");
+      if (!authorId) {
+        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+        localStorage.setItem("encrypted-app-author-id", authorId);
       }
+
+      fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setThreadTitle(data.threadTitle || id);
+          setTeamName(data.threadTitle || id);
+        })
+        .catch((err) => {
+          console.error("Error fetching thread data:", err);
+        });
     }
   }, [key, id]);
 

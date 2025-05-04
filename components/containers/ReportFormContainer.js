@@ -139,6 +139,122 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
     });
   };
 
+  // Common function to process and prepare report data
+  const prepareReportData = async (status = 'submitted') => {
+    // Basic validation
+    if (!teamMember.trim()) {
+      throw new Error("Please enter your name");
+    }
+
+    if (!teamRole.trim()) {
+      throw new Error("Please enter your role");
+    }
+
+    if (rows.length === 0) {
+      throw new Error("Please add at least one entry");
+    }
+
+    // Process the form data
+    const reportEntries = rows.map((row) => ({
+      sdlcStep: row.sdlcStep,
+      sdlcTask: row.sdlcTask,
+      platform: row.platform,
+      projectInitiative: row.projectInitiative,
+      taskCategory: row.taskCategory,
+      taskDetails: row.taskDetails,
+      hours: roundToQuarterHour(row.actualTimeWithAI),
+      aiTool: Array.isArray(row.aiToolUsed) && row.aiToolUsed.length > 0
+        ? row.aiToolUsed.join(", ")
+        : "",
+      aiProductivity: row.notesHowAIHelped,
+      hoursSaved: row.hoursSaved,
+      complexity: row.complexity,
+      qualityImpact: row.qualityImpact,
+    }));
+
+    // Create the report object
+    const reportData = {
+      teamName,
+      teamMember,
+      teamRole,
+      timestamp: new Date().toISOString(),
+      entries: reportEntries,
+      status, // Add status field: 'draft' or 'submitted'
+    };
+
+    // Import the key to use for encryption
+    const cryptoKey = await importKeyFromBase64(keyFragment);
+
+    // Encrypt the report data
+    const jsonData = JSON.stringify(reportData);
+    const encoder = new TextEncoder();
+    const encodedData = encoder.encode(jsonData);
+    const encryptedData = await encryptData(encodedData, cryptoKey);
+
+    // Add author ID if available (for multi-user identification)
+    const authorId = localStorage.getItem("encrypted-app-author-id") || null;
+
+    // Prepare the report submission
+    return {
+      threadId: id,
+      data: encryptedData,
+      metadata: {
+        authorId,
+        isReport: true,
+        timestamp: new Date().toISOString(),
+        status, // Add status to metadata
+      },
+    };
+  };
+
+  // Handle saving as draft
+  const handleSaveAsDraft = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const submitData = await prepareReportData('draft');
+
+      // Send to the server
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error saving draft. Please try again.");
+      }
+
+      // Save the team member name for future use if it's new
+      if (teamMember && !teamMemberOptions.includes(teamMember)) {
+        try {
+          const updatedOptions = [...teamMemberOptions, teamMember];
+          localStorage.setItem("teamMemberOptions", JSON.stringify(updatedOptions));
+        } catch (localStorageErr) {
+          console.error("Error saving team member option:", localStorageErr);
+          // Non-critical error, continue
+        }
+      }
+
+      setSuccess(true);
+      
+      // Show success message but don't reset form
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+      
+    } catch (err) {
+      console.error("Error saving draft:", err);
+      setError(err.message || "Error saving draft. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -146,68 +262,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
     setError(null);
 
     try {
-      // Basic validation
-      if (!teamMember.trim()) {
-        throw new Error("Please enter your name");
-      }
-
-      if (!teamRole.trim()) {
-        throw new Error("Please enter your role");
-      }
-
-      if (rows.length === 0) {
-        throw new Error("Please add at least one entry");
-      }
-
-      // Process the form data
-      const reportEntries = rows.map((row) => ({
-        sdlcStep: row.sdlcStep,
-        sdlcTask: row.sdlcTask,
-        platform: row.platform,
-        projectInitiative: row.projectInitiative,
-        taskCategory: row.taskCategory,
-        taskDetails: row.taskDetails,
-        hours: roundToQuarterHour(row.actualTimeWithAI),
-        aiTool: Array.isArray(row.aiToolUsed) && row.aiToolUsed.length > 0
-          ? row.aiToolUsed.join(", ")
-          : "",
-        aiProductivity: row.notesHowAIHelped,
-        hoursSaved: row.hoursSaved,
-        complexity: row.complexity,
-        qualityImpact: row.qualityImpact,
-      }));
-
-      // Create the report object
-      const reportData = {
-        teamName,
-        teamMember,
-        teamRole,
-        timestamp: new Date().toISOString(),
-        entries: reportEntries,
-      };
-
-      // Import the key to use for encryption
-      const cryptoKey = await importKeyFromBase64(keyFragment);
-
-      // Encrypt the report data
-      const jsonData = JSON.stringify(reportData);
-      const encoder = new TextEncoder();
-      const encodedData = encoder.encode(jsonData);
-      const encryptedData = await encryptData(encodedData, cryptoKey);
-
-      // Add author ID if available (for multi-user identification)
-      const authorId = localStorage.getItem("encrypted-app-author-id") || null;
-
-      // Prepare the report submission
-      const submitData = {
-        threadId: id,
-        data: encryptedData,
-        metadata: {
-          authorId,
-          isReport: true,
-          timestamp: new Date().toISOString(),
-        },
-      };
+      const submitData = await prepareReportData('submitted');
 
       // Send to the server
       const response = await fetch("/api/upload", {
@@ -284,6 +339,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       addRow={addRow}
       removeRow={removeRow}
       handleSubmit={handleSubmit}
+      handleSaveAsDraft={handleSaveAsDraft}
       isSubmitting={isSubmitting}
       error={error}
       success={success}

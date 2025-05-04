@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { generateKey, encryptData, exportKeyToBase64 } from '../../lib/cryptoUtils';
 import { queueMessage } from '../../lib/dbService';
 import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
+import { getUserAuthorId } from '../../lib/userUtils';
 import EncryptForm from '../presentational/EncryptForm';
 import styled from 'styled-components';
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData, exportKeyToBase64 } from "../../lib/cryptoUtils";
+import { getUserAuthorId } from "../../lib/userUtils";
 import ReportForm from "../presentational/ReportForm";
 
 /**
@@ -195,8 +196,8 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       const encodedData = encoder.encode(jsonData);
       const encryptedData = await encryptData(encodedData, cryptoKey);
 
-      // Add author ID if available (for multi-user identification)
-      const authorId = localStorage.getItem("encrypted-app-author-id") || null;
+      // Get user author ID using the utility function
+      const authorId = getUserAuthorId();
 
       // Prepare the report submission
       const submitData = {

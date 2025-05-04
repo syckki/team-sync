@@ -317,7 +317,7 @@ const ResponsiveTable = ({
                     }}
                   >
                     {isMobile ? (
-                      // Show AI Productivity number on mobile with relative positioning for delete button
+                      // Show AI Productivity number with delete button next to it on mobile
                       <div
                         style={{
                           fontSize: "0.75rem",
@@ -325,10 +325,13 @@ const ResponsiveTable = ({
                           color: "#4e7fff",
                           whiteSpace: "nowrap",
                           width: "100%",
-                          position: "relative" /* Allow absolute positioning inside */
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center"
                         }}
                       >
-                        AI Productivity #{rowIndex + 1}
+                        <span>AI Productivity #{rowIndex + 1}</span>
+                        {row._deleteButton}
                       </div>
                     ) : (
                       // Show expand/collapse icon on desktop

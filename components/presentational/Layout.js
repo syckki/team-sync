@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Header from "./Header";
+import { Breakpoint } from "../../lib/styles";
 
 const Main = styled.main`
   /*max-width: 1200px;*/
@@ -8,6 +9,10 @@ const Main = styled.main`
   min-height: calc(
     100vh - 120px
   ); /* Adjust based on header and footer height */
+
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    padding: 1rem;
+  }
 `;
 
 const Footer = styled.footer`

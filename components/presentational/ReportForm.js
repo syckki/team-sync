@@ -174,6 +174,15 @@ const DeleteButton = styled.button`
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
+  
+  /* Position the delete button at the top right of mobile rows */
+  @media (max-width: ${Breakpoint.LAPTOP}px) {
+    &.delete-action-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+  }
   justify-self: center;
 
   &:hover {
@@ -183,6 +192,20 @@ const DeleteButton = styled.button`
   svg {
     width: 1rem;
     height: 1rem;
+  }
+`;
+
+const TextAreaWrapper = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1rem;
+
+  @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
+    flex-flow: column nowrap;
+  }
+
+  > div {
+    flex: 1;
   }
 `;
 
@@ -480,6 +503,7 @@ const ReportForm = ({
       render: (value, row) =>
         rows.length > 1 ? (
           <DeleteButton
+            className="delete-action-button"
             onClick={(e) => {
               e.stopPropagation(); // Prevent row expansion
               removeRow(row.id);
@@ -594,13 +618,7 @@ const ReportForm = ({
                       />
                     </div>
 
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "1.5rem",
-                      }}
-                    >
+                    <TextAreaWrapper>
                       <div>
                         <InnerLabel>Task Details</InnerLabel>
                         <AutoResizeTextArea
@@ -658,7 +676,7 @@ const ReportForm = ({
                           }}
                         />
                       </div>
-                    </div>
+                    </TextAreaWrapper>
                   </div>
                 )}
                 expandedRows={expandedRows}

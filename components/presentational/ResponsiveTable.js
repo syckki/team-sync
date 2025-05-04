@@ -166,6 +166,19 @@ const Table = styled.table`
       background: none;
     }
 
+    /* Position the delete button at the top right in mobile view */
+    .delete-action-button {
+      position: absolute !important;
+      top: 0.5rem !important;
+      right: 0.5rem !important;
+      z-index: 10 !important;
+    }
+    
+    /* Hide the original Action column in mobile view */
+    td[data-label="Action"] {
+      display: none !important;
+    }
+    
     /* Summary row styling for mobile */
     tr.summary-row {
       border: 2px solid #4e7fff;
@@ -304,13 +317,15 @@ const ResponsiveTable = ({
                     }}
                   >
                     {isMobile ? (
-                      // Show AI Productivity number on mobile
+                      // Show AI Productivity number on mobile with relative positioning for delete button
                       <div
                         style={{
                           fontSize: "0.75rem",
                           fontWeight: "600",
                           color: "#4e7fff",
                           whiteSpace: "nowrap",
+                          width: "100%",
+                          position: "relative" /* Allow absolute positioning inside */
                         }}
                       >
                         AI Productivity #{rowIndex + 1}

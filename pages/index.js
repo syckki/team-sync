@@ -104,7 +104,7 @@ const HomePage = ({ staticProps }) => {
             Create New Thread
           </PageTitle>
           <PageSubtitle>
-            Create a secure conversation that only participants with the key can access
+            Begin a new encrypted thread with end-to-end protection
           </PageSubtitle>
         </HeaderBanner>
         <ContentContainer>

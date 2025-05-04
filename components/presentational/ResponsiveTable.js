@@ -4,7 +4,6 @@ import { Breakpoint } from "../../lib/styles";
 
 // CSS-only responsive table with a single source of truth
 const TableContainer = styled.div`
-  width: 100%;
   margin-bottom: 1rem;
   overflow-x: auto;
   background-color: white;
@@ -119,8 +118,9 @@ const Table = styled.table`
       padding: 0.75rem;
       border-bottom: 1px solid #e2e8f0;
       text-align: right;
-      flex-direction: column;
-      align-items: flex-start;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
       overflow: visible;
       position: relative;
     }
@@ -129,9 +129,10 @@ const Table = styled.table`
     tbody td:before {
       content: attr(data-label);
       font-weight: 600;
-      margin-bottom: 0.25rem;
       color: #444;
       font-size: 0.85rem;
+      margin-right: 1rem; /* Space between label and content */
+      flex-shrink: 0; /* Prevent the label from shrinking */
     }
 
     /* Alternating row background for better readability */

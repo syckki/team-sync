@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { generateKey, encryptData, exportKeyToBase64 } from '../../lib/cryptoUtils';
 import { queueMessage } from '../../lib/dbService';
 import { initNetworkMonitoring, isOnline, onOnline, onOffline, syncQueuedMessages } from '../../lib/networkService';
+import { saveRecentlySharedThread, saveThreadToHistory } from '../../lib/inboxUtils';
 import EncryptForm from '../presentational/EncryptForm';
 import styled from 'styled-components';
 
@@ -244,6 +245,12 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
         
         setEncryptedResult({ url: secureUrl });
         
+        // Save to recently shared thread history
+        saveRecentlySharedThread(secureUrl);
+        
+        // Save to thread history for the inbox
+        saveThreadToHistory(threadId, content.title || threadId, secureUrl);
+        
         // Automatically redirect to the secure URL after a delay
         setTimeout(() => {
           window.location.href = secureUrl;
@@ -357,16 +364,8 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
             </>
           ) : (
             <>
-              <p>Share this secure link (includes the encryption key after the # symbol):</p>
-              <SecureLink href={encryptedResult.url} target="_blank" rel="noopener noreferrer">
-                {encryptedResult.url}
-              </SecureLink>
-              <CopyButton onClick={copyToClipboard}>
-                {copySuccess ? 'Copied!' : 'Copy Secure Link'}
-              </CopyButton>
-              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                Note: The encryption key is only included in the URL fragment (after the #) and is never sent to the server.
-              </p>
+              <p>Thread created successfully! You will be redirected to your thread in a moment.</p>
+              <p>The secure link has been saved to your inbox for easy access.</p>
               {isReply && !encryptedResult.queued && (
                 <p style={{ fontStyle: 'italic', marginTop: '0.5rem' }}>
                   Redirecting to your secure message in a moment...

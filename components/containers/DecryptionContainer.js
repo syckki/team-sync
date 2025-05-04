@@ -12,6 +12,7 @@ import {
   onOffline,
   syncQueuedMessages,
 } from "../../lib/networkService";
+import { saveThreadToHistory } from "../../lib/inboxUtils";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
 
@@ -276,6 +277,10 @@ const DecryptionContainer = ({ id, key64 }) => {
         // Update document title in the browser if available
         if (typeof document !== "undefined") {
           document.title = `${title} - Secure Encrypted Thread`;
+          
+          // Save thread to history with proper title
+          const currentUrl = window.location.href;
+          saveThreadToHistory(id, title, currentUrl);
         }
 
         // Decrypt each message in the thread

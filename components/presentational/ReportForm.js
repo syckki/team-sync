@@ -286,6 +286,7 @@ const ReportForm = ({
   isSubmitting,
   error,
   success,
+  successMessage,
   teamMemberOptions = [],
 }) => {
   // Function to handle row expansion for display purposes
@@ -601,7 +602,7 @@ const ReportForm = ({
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && (
         <SuccessMessage>
-          Your AI productivity report has been submitted successfully!
+          {successMessage || "Your AI productivity report has been submitted successfully!"}
         </SuccessMessage>
       )}
       <>
@@ -864,10 +865,25 @@ const ReportForm = ({
                 </AddIcon>
                 Add Entry
               </ActionButton>
+              
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <ActionButton 
+                  type="button" 
+                  onClick={handleSaveAsDraft} 
+                  disabled={isSubmitting}
+                  style={{ 
+                    backgroundColor: '#f3f4f6', 
+                    color: '#4b5563',
+                    border: '1px solid #d1d5db'
+                  }}
+                >
+                  {isSubmitting ? "Saving..." : "Save as Draft"}
+                </ActionButton>
 
-              <SubmitButton type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Report"}
-              </SubmitButton>
+                <SubmitButton type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Report"}
+                </SubmitButton>
+              </div>
             </ButtonRow>
           </Form>
         )}

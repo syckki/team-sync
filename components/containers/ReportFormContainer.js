@@ -38,6 +38,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
   const roundToQuarterHour = (time) => {
@@ -240,11 +241,13 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
         }
       }
 
+      setSuccessMessage("Your AI productivity report has been saved as a draft!");
       setSuccess(true);
       
       // Show success message but don't reset form
       setTimeout(() => {
         setSuccess(false);
+        setSuccessMessage("");
       }, 3000);
       
     } catch (err) {
@@ -288,6 +291,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
         }
       }
 
+      setSuccessMessage("Your AI productivity report has been submitted successfully!");
       setSuccess(true);
       
       // Reset the form after a delay
@@ -314,6 +318,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
         setTeamMember("");
         setTeamRole("");
         setSuccess(false);
+        setSuccessMessage("");
       }, 3000);
     } catch (err) {
       console.error("Error submitting report:", err);
@@ -343,6 +348,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       isSubmitting={isSubmitting}
       error={error}
       success={success}
+      successMessage={successMessage}
       teamMemberOptions={teamMemberOptions}
     />
   );

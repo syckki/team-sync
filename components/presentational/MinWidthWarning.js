@@ -69,7 +69,7 @@ const DeviceIcon = styled.div`
  * Component that shows a warning modal on extremely narrow screens
  * @param {number} minWidth - Minimum width in pixels before showing warning
  */
-const MinWidthWarning = ({ minWidth = 300 }) => {
+const MinWidthWarning = ({ minWidth = 360 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasUserDismissed, setHasUserDismissed] = useState(false);
 

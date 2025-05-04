@@ -21,6 +21,8 @@ const InfoIcon = styled.div`
   font-weight: bold;
   background-color: transparent;
   border: 1px solid #4e7fff;
+  letter-spacing: normal;
+  text-transform: none;
   
   &:hover {
     background-color: #4e7fff;
@@ -79,6 +81,9 @@ const TooltipTitle = styled.div`
   margin-bottom: 0.4rem;
   font-size: 0.8rem;
   color: #4e7fff;
+
+  letter-spacing: normal;
+  text-transform: none;
 `;
 
 const TooltipParagraph = styled.p`
@@ -86,6 +91,9 @@ const TooltipParagraph = styled.p`
   &:last-child {
     margin-bottom: 0;
   }
+
+  letter-spacing: normal;
+  text-transform: none;
 `;
 
 /**

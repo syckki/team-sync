@@ -188,6 +188,14 @@ const DeleteButton = styled.button`
   }
 `;
 
+const RowDetail = styled.div`
+  padding: 1rem;
+  
+  @media (max-width: ${Breakpoint.LAPTOP}px) {
+    padding: 1.25rem 0.75rem;
+  }
+`;
+
 const TextAreaWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
@@ -598,7 +606,7 @@ const ReportForm = ({
                 <Input
                   type="text"
                   id="teamName"
-                  value={teamName}
+                  value={teamName || "Experience Delivery"}
                   readOnly
                   required
                 />
@@ -660,7 +668,7 @@ const ReportForm = ({
                 columns={tableColumns}
                 keyField="id"
                 expandableRowRender={(row) => (
-                  <div style={{ padding: "1rem" }}>
+                  <RowDetail>
                     <div style={{ marginBottom: "1rem" }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: "0.5rem" }}>
                         <InnerLabel style={{ margin: 0 }}>AI Tools used</InnerLabel>
@@ -765,7 +773,7 @@ const ReportForm = ({
                         />
                       </div>
                     </TextAreaWrapper>
-                  </div>
+                  </RowDetail>
                 )}
                 expandedRows={expandedRows}
                 onRowToggle={toggleRowExpand}

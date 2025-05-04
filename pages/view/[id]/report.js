@@ -107,7 +107,7 @@ const ReportPage = () => {
 
   const [key, setKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");
-  const [teamName, setTeamName] = useState("");
+  const [teamName, setTeamName] = useState("Experience Delivery");
   const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [error, setError] = useState(null);
 

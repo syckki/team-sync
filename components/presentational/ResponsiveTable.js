@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Breakpoint } from "../../lib/styles";
 
@@ -157,6 +157,25 @@ const Table = styled.table`
     tbody tr + tr {
       margin-top: 1.5rem;
     }
+    
+    /* Detail row styling for mobile */
+    tr.detail-row {
+      margin-top: 0 !important;
+      border-top: none !important;
+      border-radius: 0 0 8px 8px !important;
+    }
+    
+    tr.detail-row td {
+      padding: 0.75rem !important;
+      background-color: #f8fafc;
+    }
+    
+    /* Remove margin after expanded rows since detail row follows */
+    tr.expanded {
+      margin-bottom: 0 !important;
+      border-bottom: none !important;
+      border-radius: 8px 8px 0 0 !important;
+    }
   }
 `;
 
@@ -186,10 +205,69 @@ const ResponsiveTable = ({
   onRowToggle = null,
   customSummaryRow = null,
 }) => {
+  // State to track if we're in mobile view (below LAPTOP breakpoint)
+  const [isMobileView, setIsMobileView] = useState(false);
+  // Track our own expanded state for mobile views
+  const [mobileExpandedRows, setMobileExpandedRows] = useState({});
+
+  // Initialize all rows as expanded on mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= Breakpoint.LAPTOP;
+      setIsMobileView(mobile);
+      
+      // If switching to mobile view, auto-expand all rows
+      if (mobile && !isMobileView) {
+        const newExpandedState = {};
+        data.forEach(row => {
+          newExpandedState[row[keyField]] = true;
+        });
+        setMobileExpandedRows(newExpandedState);
+      }
+    };
+    
+    // Set initial state
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, [data, keyField, isMobileView]);
+  
+  // When new data comes in, auto-expand new rows in mobile view
+  useEffect(() => {
+    if (isMobileView) {
+      const newExpandedState = {...mobileExpandedRows};
+      data.forEach(row => {
+        if (newExpandedState[row[keyField]] === undefined) {
+          newExpandedState[row[keyField]] = true;
+        }
+      });
+      setMobileExpandedRows(newExpandedState);
+    }
+  }, [data, isMobileView, keyField, mobileExpandedRows]);
+
   // Return empty state if no data
   if (!data || data.length === 0) {
     return <EmptyState>{emptyMessage}</EmptyState>;
   }
+  
+  // Determine which expanded state to use
+  const effectiveExpandedRows = isMobileView ? mobileExpandedRows : expandedRows;
+
+  // Handle row toggling, respecting the mobile view state
+  const handleRowToggle = (rowId) => {
+    if (isMobileView) {
+      setMobileExpandedRows(prev => ({
+        ...prev,
+        [rowId]: !prev[rowId]
+      }));
+    } else if (onRowToggle) {
+      onRowToggle(rowId);
+    }
+  };
 
   return (
     <TableContainer>
@@ -215,38 +293,50 @@ const ResponsiveTable = ({
             <React.Fragment key={row[keyField] || rowIndex}>
               <tr
                 className={
-                  expandableRowRender && expandedRows[row[keyField]]
+                  expandableRowRender && effectiveExpandedRows[row[keyField]]
                     ? "expanded"
                     : ""
                 }
               >
-                {/* Expansion toggle if expandable rows are enabled */}
+                {/* Expansion toggle or sequence number based on viewport */}
                 {expandableRowRender && (
                   <td
-                    onClick={() => onRowToggle && onRowToggle(row[keyField])}
+                    onClick={() => handleRowToggle(row[keyField])}
                     style={{ 
-                      cursor: "pointer", 
+                      cursor: isMobileView ? "default" : "pointer", 
                       width: "40px",
                       userSelect: "none", /* Prevent text selection on click */
                       WebkitUserSelect: "none", /* For Safari */
                       MozUserSelect: "none", /* For Firefox */
                       msUserSelect: "none" /* For IE/Edge */
                     }}
+                    data-label="No."
                   >
-                    <div className="expand-icon">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                      </svg>
-                    </div>
+                    {isMobileView ? (
+                      <div style={{ 
+                        fontWeight: 600, 
+                        color: "#4e7fff",
+                        fontSize: "0.85rem",
+                        whiteSpace: "nowrap"
+                      }}>
+                        AI Productivity #{rowIndex + 1}
+                      </div>
+                    ) : (
+                      <div className="expand-icon">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </div>
+                    )}
                   </td>
                 )}
 
@@ -274,7 +364,7 @@ const ResponsiveTable = ({
               </tr>
 
               {/* Expandable detail row if provided and row is expanded */}
-              {expandableRowRender && expandedRows[row[keyField]] && (
+              {expandableRowRender && effectiveExpandedRows[row[keyField]] && (
                 <tr className="detail-row">
                   <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}

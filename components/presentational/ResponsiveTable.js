@@ -95,6 +95,24 @@ const Table = styled.table`
     transform: rotate(90deg);
   }
 
+  /* Desktop styles - progressively enhance for larger screens */
+  @media (min-width: ${Breakpoint.LAPTOP}px) {
+    /* Show the expand icon on desktop */
+    .expand-icon {
+      display: inline-flex;
+    }
+    
+    /* Hide detail rows by default on desktop, only show when expanded */
+    tr.detail-row {
+      display: none;
+    }
+    
+    /* Only show detail row when parent is expanded */
+    tr.expanded + tr.detail-row {
+      display: table-row;
+    }
+  }
+
   @media (max-width: ${Breakpoint.LAPTOP}px) {
     /* CSS-based responsive transformation for mobile and tablets */
     /* Hide table headers on mobile and tablet */
@@ -105,20 +123,21 @@ const Table = styled.table`
     /* Display each row as a card */
     tbody tr {
       display: block;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       overflow: visible; /* Allow dropdowns to be visible outside the card */
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: relative; /* For proper stacking context */
+      background-color: #ffffff;
     }
 
     /* Style each cell as a row in the card */
     tbody td {
       display: flex;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: right;
+      padding: 1rem;
+      border-bottom: 1px solid #f0f4f8;
+      text-align: left;
       flex-direction: column;
       align-items: flex-start;
       overflow: visible;
@@ -129,14 +148,19 @@ const Table = styled.table`
     tbody td:before {
       content: attr(data-label);
       font-weight: 600;
-      margin-bottom: 0.25rem;
-      color: #444;
+      margin-bottom: 0.5rem;
+      color: #4a5568;
       font-size: 0.85rem;
+      letter-spacing: 0.015em;
     }
 
-    /* Alternating row background for better readability */
-    tbody td:nth-child(even) {
-      background-color: #f8f9fa;
+    /* Improve background contrast for better readability */
+    tbody tr:nth-child(odd) td {
+      background-color: #ffffff;
+    }
+    
+    tbody tr:nth-child(even) td {
+      background-color: #fafbfc;
     }
 
     /* Remove bottom border from last cell in each row */
@@ -147,6 +171,7 @@ const Table = styled.table`
     /* Summary row styling for mobile */
     tr.summary-row {
       border: 2px solid #4e7fff;
+      margin-top: 2rem;
     }
 
     tr.summary-row td:before {
@@ -156,6 +181,23 @@ const Table = styled.table`
     /* Add extra margin between rows */
     tbody tr + tr {
       margin-top: 1.5rem;
+    }
+    
+    /* Always show detail rows by default on mobile */
+    tr.detail-row {
+      margin-top: 0 !important; /* Override the margin between rows */
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    tr.detail-row td {
+      padding: 1rem;
+      background-color: #f9fafb;
+    }
+    
+    /* Hide the expand/collapse button on mobile */
+    .expand-icon {
+      display: none;
     }
   }
 `;
@@ -273,8 +315,8 @@ const ResponsiveTable = ({
                 })}
               </tr>
 
-              {/* Expandable detail row if provided and row is expanded */}
-              {expandableRowRender && expandedRows[row[keyField]] && (
+              {/* Expandable detail row - conditionally render based on screen size */}
+              {expandableRowRender && (
                 <tr className="detail-row">
                   <td colSpan={columns.length + 1}>
                     {expandableRowRender(row)}

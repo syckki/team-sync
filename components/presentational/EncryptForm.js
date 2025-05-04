@@ -110,7 +110,7 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Title>{isReply ? 'Send Encrypted Reply' : 'Create Encrypted Message'}</Title>
+      {isReply && <Title>Send Encrypted Reply</Title>}
       
       {error && <ErrorMessage>{error}</ErrorMessage>}
       

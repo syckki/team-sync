@@ -483,16 +483,12 @@ const DecryptionContainer = ({ id, key64 }) => {
     setShowAddForm(!showAddForm);
   };
   
-  // Handle click on a report message - navigate to edit if it's a draft and current user's report
+  // Handle click on a report message - navigate to appropriate route
   const handleReportClick = (message) => {
-    // Only allow editing if it's user's own report and has draft status
-    if (message.isCurrentUser && message.isReport && message.reportStatus === "draft") {
-      // Construct the URL with the report data as a URL parameter (this will be processed by ReportFormContainer)
-      const reportDataParam = encodeURIComponent(JSON.stringify(message.reportData));
-      window.location.href = `/channel/${id}/report?reportData=${reportDataParam}#${key64}`;
-    } else if (message.isReport) {
-      // For non-draft reports, just go to view mode
-      window.location.href = `/channel/${id}/report?view=true#${key64}`;
+    // Use the standard view=false parameter for all reports
+    // The messageIndex is used to identify the specific message
+    if (message.isReport) {
+      window.location.href = `/channel/${id}/report?view=false&index=${message.index}#${key64}`;
     }
   };
 

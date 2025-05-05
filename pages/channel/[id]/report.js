@@ -6,6 +6,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import ReportFormContainer from "../../../components/containers/ReportFormContainer";
 import ReportViewer from "../../../components/containers/ReportViewer";
+import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 
 const Container = styled.div`
   width: 100%;
@@ -102,14 +103,17 @@ const ContentContainer = styled.div`
 
 const ReportPage = () => {
   const router = useRouter();
-  const { id, view } = router.query;
+  const { id, view, index } = router.query;
   const isViewMode = view === "true";
+  const messageIndex = index ? parseInt(index) : null;
 
   const [key, setKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");
   const [teamName, setTeamName] = useState("");
   const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [error, setError] = useState(null);
+  const [reportData, setReportData] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
 
   // Extract the key from URL fragment on mount
   useEffect(() => {
@@ -144,7 +148,7 @@ const ReportPage = () => {
     }
   }, [router.isReady, isViewMode, id]);
 
-  // Fetch thread title when key is available
+  // Fetch thread title and specific message if messageIndex is provided
   useEffect(() => {
     if (key && id) {
       // Generate or retrieve author ID from localStorage
@@ -154,6 +158,7 @@ const ReportPage = () => {
         localStorage.setItem("encrypted-app-author-id", authorId);
       }
 
+      // First fetch thread metadata
       fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
         .then((response) => response.json())
         .then((data) => {
@@ -163,8 +168,48 @@ const ReportPage = () => {
         .catch((err) => {
           console.error("Error fetching thread data:", err);
         });
+
+      // If messageIndex is provided and we're not in view mode, fetch the specific message
+      if (messageIndex !== null && !isViewMode) {
+        fetch(`/api/download?threadId=${id}&authorId=${authorId}&messageIndex=${messageIndex}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch message data');
+            }
+            return response.arrayBuffer();
+          })
+          .then(async (buffer) => {
+            try {
+              // Import the key for decryption
+              const cryptoKey = await importKeyFromBase64(key);
+              
+              // Extract IV and ciphertext
+              const data = new Uint8Array(buffer);
+              const iv = data.slice(0, 12);
+              const ciphertext = data.slice(12);
+              
+              // Decrypt the data
+              const decryptedBuffer = await decryptData(ciphertext, cryptoKey, iv);
+              const decryptedText = new TextDecoder().decode(decryptedBuffer);
+              const parsedData = JSON.parse(decryptedText);
+              
+              // Set report data for editing
+              setReportData(parsedData);
+              
+              // Set read-only mode based on report status
+              setReadOnly(parsedData.status === "submitted");
+            } catch (err) {
+              console.error('Error decrypting message data:', err);
+              setError('Failed to decrypt message data. Please try again.');
+            }
+          })
+          .catch((err) => {
+            console.error('Error fetching message:', err);
+            setError(`Failed to load report: ${err.message}`);
+          });
+      }
     }
-  }, [key, id]);
+  }, [key, id, messageIndex, isViewMode]);
 
   return (
     <>
@@ -214,6 +259,9 @@ const ReportPage = () => {
               keyFragment={key}
               teamName={teamName}
               teamMemberOptions={teamMemberOptions}
+              reportData={reportData}
+              readOnly={readOnly}
+              messageIndex={messageIndex}
             />
           )}
           <Link href={`/channel/${id}#${key}`}>

@@ -298,7 +298,6 @@ const DecryptionContainer = ({ id, key64 }) => {
 
             // Decrypt the data
             const decrypted = await decryptData(ciphertext, key, iv);
-            console.log(new TextDecoder().decode(decrypted));
             // Parse the decrypted JSON
             const content = JSON.parse(new TextDecoder().decode(decrypted));
 

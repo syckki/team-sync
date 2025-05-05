@@ -14,7 +14,7 @@ const Container = styled.div`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   margin-bottom: 2rem;
-  max-width: 600px;
+  max-width: 800px;
 `;
 
 const HeaderBanner = styled.div`

@@ -15,13 +15,16 @@ const ReportFormContainer = ({
   keyFragment,
   teamName,
   teamMemberOptions = [],
+  reportData = null,
+  readOnly = false,
+  messageIndex = null
 }) => {
   const router = useRouter();
   const { id, reportData: reportDataParam } = router.query;
 
   // Set up state for read-only mode (for submitted reports)
-  // Default to false (editable) - will be set to true for submitted reports
-  const [readOnly, setReadOnly] = useState(false);
+  // Allow override from props (for messageIndex-based loading)
+  const [isReadOnly, setIsReadOnly] = useState(readOnly);
   
   // Form state
   const [teamMember, setTeamMember] = useState("");
@@ -46,50 +49,63 @@ const ReportFormContainer = ({
     },
   ]);
   
-  // Load existing report data if editing a draft
+  // Function to process report data (whether from URL param or direct props)
+  const processReportData = (existingReport) => {
+    // Check report status - if submitted, set read-only mode
+    if (existingReport.status === "submitted") {
+      setIsReadOnly(true);
+    }
+    
+    // Set team member and role
+    setTeamMember(existingReport.teamMember || "");
+    setTeamRole(existingReport.teamRole || "");
+    
+    // Load rows data if available
+    if (existingReport.entries && existingReport.entries.length > 0) {
+      // Map the entries to row format with unique IDs
+      const loadedRows = existingReport.entries.map(entry => ({
+        id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+        platform: entry.platform || "",
+        projectInitiative: entry.projectInitiative || "",
+        sdlcStep: entry.sdlcStep || "",
+        sdlcTask: entry.sdlcTask || "",
+        taskCategory: entry.taskCategory || "",
+        taskDetails: entry.taskDetails || "",
+        estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
+        actualTimeWithAI: entry.actualTimeWithAI || "",
+        aiToolUsed: entry.aiTool ? 
+          (Array.isArray(entry.aiTool) ? entry.aiTool : 
+           (entry.aiTool.includes(',') ? entry.aiTool.split(',').map(t => t.trim()) : [entry.aiTool])) 
+          : [],
+        complexity: entry.complexity || "",
+        qualityImpact: entry.qualityImpact || "",
+        notesHowAIHelped: entry.notesHowAIHelped || "",
+      }));
+      
+      setRows(loadedRows);
+    }
+  };
+  
+  // Load report data from props (passed from page component)
   useEffect(() => {
-    if (reportDataParam) {
+    if (reportData) {
+      processReportData(reportData);
+    }
+  }, [reportData]);
+  
+  // Load existing report data if editing a draft (from URL parameter)
+  useEffect(() => {
+    if (reportDataParam && !reportData) { // Only use URL param if no direct props
       try {
         // Parse the report data from URL parameter
         const existingReport = JSON.parse(decodeURIComponent(reportDataParam));
-        
-        // Check report status - if submitted, set read-only mode
-        if (existingReport.status === "submitted") {
-          setReadOnly(true);
-        }
-        
-        // Set team member and role
-        setTeamMember(existingReport.teamMember || "");
-        setTeamRole(existingReport.teamRole || "");
-        
-        // Load rows data if available
-        if (existingReport.entries && existingReport.entries.length > 0) {
-          // Map the entries to row format with unique IDs
-          const loadedRows = existingReport.entries.map(entry => ({
-            id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
-            platform: entry.platform || "",
-            projectInitiative: entry.projectInitiative || "",
-            sdlcStep: entry.sdlcStep || "",
-            sdlcTask: entry.sdlcTask || "",
-            taskCategory: entry.taskCategory || "",
-            taskDetails: entry.taskDetails || "",
-            estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
-            actualTimeWithAI: entry.actualTimeWithAI || "",
-            aiToolUsed: entry.aiTool ? 
-              (Array.isArray(entry.aiTool) ? entry.aiTool : [entry.aiTool]) : [],
-            complexity: entry.complexity || "",
-            qualityImpact: entry.qualityImpact || "",
-            notesHowAIHelped: entry.notesHowAIHelped || "",
-          }));
-          
-          setRows(loadedRows);
-        }
+        processReportData(existingReport);
       } catch (error) {
         console.error("Error parsing report data:", error);
         // Continue with empty form if there's an error
       }
     }
-  }, [reportDataParam]);
+  }, [reportDataParam, reportData]);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -258,7 +274,7 @@ const ReportFormContainer = ({
     combinedData.set(new Uint8Array(ciphertext), iv.length);
 
     // Prepare the report submission
-    return {
+    const submitData = {
       threadId: id,
       threadTitle: teamName,
       data: Array.from(combinedData), // <-- Convert the ArrayBuffer to array of bytes
@@ -269,6 +285,13 @@ const ReportFormContainer = ({
         status, // Add status to metadata
       },
     };
+    
+    // If we're editing an existing message, include the messageIndex
+    if (messageIndex !== null) {
+      submitData.messageIndex = messageIndex;
+    }
+    
+    return submitData;
   };
 
   // Handle saving as draft
@@ -422,7 +445,7 @@ const ReportFormContainer = ({
       success={success}
       successMessage={successMessage}
       teamMemberOptions={teamMemberOptions}
-      readOnly={readOnly} // Pass readOnly to the form
+      readOnly={isReadOnly} // Pass readOnly to the form
     />
   );
 };

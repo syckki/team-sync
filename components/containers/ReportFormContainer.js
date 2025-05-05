@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   importKeyFromBase64,
@@ -17,8 +17,12 @@ const ReportFormContainer = ({
   teamMemberOptions = [],
 }) => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, reportData: reportDataParam } = router.query;
 
+  // Set up state for read-only mode (for submitted reports)
+  // Default to false (editable) - will be set to true for submitted reports
+  const [readOnly, setReadOnly] = useState(false);
+  
   // Form state
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
@@ -41,6 +45,51 @@ const ReportFormContainer = ({
       notesHowAIHelped: "",
     },
   ]);
+  
+  // Load existing report data if editing a draft
+  useEffect(() => {
+    if (reportDataParam) {
+      try {
+        // Parse the report data from URL parameter
+        const existingReport = JSON.parse(decodeURIComponent(reportDataParam));
+        
+        // Check report status - if submitted, set read-only mode
+        if (existingReport.status === "submitted") {
+          setReadOnly(true);
+        }
+        
+        // Set team member and role
+        setTeamMember(existingReport.teamMember || "");
+        setTeamRole(existingReport.teamRole || "");
+        
+        // Load rows data if available
+        if (existingReport.entries && existingReport.entries.length > 0) {
+          // Map the entries to row format with unique IDs
+          const loadedRows = existingReport.entries.map(entry => ({
+            id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+            platform: entry.platform || "",
+            projectInitiative: entry.projectInitiative || "",
+            sdlcStep: entry.sdlcStep || "",
+            sdlcTask: entry.sdlcTask || "",
+            taskCategory: entry.taskCategory || "",
+            taskDetails: entry.taskDetails || "",
+            estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
+            actualTimeWithAI: entry.actualTimeWithAI || "",
+            aiToolUsed: entry.aiTool ? 
+              (Array.isArray(entry.aiTool) ? entry.aiTool : [entry.aiTool]) : [],
+            complexity: entry.complexity || "",
+            qualityImpact: entry.qualityImpact || "",
+            notesHowAIHelped: entry.notesHowAIHelped || "",
+          }));
+          
+          setRows(loadedRows);
+        }
+      } catch (error) {
+        console.error("Error parsing report data:", error);
+        // Continue with empty form if there's an error
+      }
+    }
+  }, [reportDataParam]);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -373,6 +422,7 @@ const ReportFormContainer = ({
       success={success}
       successMessage={successMessage}
       teamMemberOptions={teamMemberOptions}
+      readOnly={readOnly} // Pass readOnly to the form
     />
   );
 };

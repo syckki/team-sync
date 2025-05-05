@@ -288,6 +288,7 @@ const ReportForm = ({
   success,
   successMessage,
   teamMemberOptions = [],
+  readOnly = false, // Add readOnly prop with default false
 }) => {
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
@@ -356,6 +357,7 @@ const ReportForm = ({
           placeholder="Platform"
           storageKey="platformOptions"
           autoComplete="off"
+          disabled={readOnly}
         />
       ),
     },
@@ -375,6 +377,7 @@ const ReportForm = ({
           placeholder="Initiative"
           storageKey="projectOptions"
           autoComplete="off"
+          disabled={readOnly}
         />
       ),
     },
@@ -392,6 +395,7 @@ const ReportForm = ({
           placeholder="SDLC Step"
           storageKey="sdlcStepOptions"
           autoComplete="off"
+          disabled={readOnly}
         />
       ),
     },
@@ -408,7 +412,7 @@ const ReportForm = ({
           options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
           placeholder="SDLC Task"
           storageKey="sdlcTaskOptions"
-          disabled={!row.sdlcStep}
+          disabled={!row.sdlcStep || readOnly}
           autoComplete="off"
         />
       ),
@@ -439,6 +443,7 @@ const ReportForm = ({
           placeholder="Task Category"
           storageKey="taskCategoryOptions"
           autoComplete="off"
+          disabled={readOnly}
         />
       ),
     },
@@ -468,6 +473,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
+          readOnly={readOnly}
         />
       ),
     },
@@ -495,6 +501,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
+          readOnly={readOnly}
           style={{
             width: "100px",
             color:
@@ -529,6 +536,7 @@ const ReportForm = ({
           }
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
+          disabled={readOnly}
         />
       ),
     },
@@ -563,6 +571,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
+          disabled={readOnly}
         />
       ),
     },
@@ -577,6 +586,7 @@ const ReportForm = ({
               e.stopPropagation(); // Prevent row expansion
               removeRow(row.id);
             }}
+            disabled={readOnly}
           >
             <svg
               viewBox="0 0 24 24"
@@ -647,6 +657,7 @@ const ReportForm = ({
                   autoCorrect="off"
                   autoCapitalize="off"
                   aria-autocomplete="none"
+                  disabled={readOnly}
                 />
               </FormGroup>
 
@@ -672,6 +683,7 @@ const ReportForm = ({
                   autoCorrect="off"
                   autoCapitalize="off"
                   aria-autocomplete="none"
+                  readOnly={readOnly}
                 />
               </FormGroup>
             </TeamFormSection>
@@ -720,6 +732,7 @@ const ReportForm = ({
                         ]}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
+                        disabled={readOnly}
                       />
                     </div>
 
@@ -759,6 +772,7 @@ const ReportForm = ({
                           autoCorrect="off"
                           autoCapitalize="off"
                           aria-autocomplete="none"
+                          readOnly={readOnly}
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -801,6 +815,7 @@ const ReportForm = ({
                           autoCorrect="off"
                           autoCapitalize="off"
                           aria-autocomplete="none"
+                          readOnly={readOnly}
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -848,7 +863,7 @@ const ReportForm = ({
             </div>
 
             <ButtonRow>
-              <ActionButton type="button" onClick={addRow}>
+              <ActionButton type="button" onClick={addRow} disabled={readOnly}>
                 <AddIcon>
                   <svg
                     viewBox="0 0 24 24"
@@ -870,7 +885,7 @@ const ReportForm = ({
                 <ActionButton 
                   type="button" 
                   onClick={handleSaveAsDraft} 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || readOnly}
                   style={{ 
                     backgroundColor: '#f3f4f6', 
                     color: '#4b5563',
@@ -880,7 +895,7 @@ const ReportForm = ({
                   {isSubmitting ? "Saving..." : "Save as Draft"}
                 </ActionButton>
 
-                <SubmitButton type="submit" disabled={isSubmitting}>
+                <SubmitButton type="submit" disabled={isSubmitting || readOnly}>
                   {isSubmitting ? "Submitting..." : "Submit Report"}
                 </SubmitButton>
               </div>

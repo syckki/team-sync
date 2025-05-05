@@ -61,6 +61,12 @@ const MessageItem = styled.div`
   background-color: ${({ theme }) => theme.colors.card};
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  ${props => props.$isEditable && `
+    cursor: pointer;
+    &:hover {
+      background-color: #f0f4ff;
+    }
+  `}
 `;
 
 const MessageHeader = styled.div`
@@ -310,6 +316,9 @@ const DecryptionContainer = ({ id, key64 }) => {
                 content.entries && content.entries.length > 0
                   ? content.entries[0].aiTool
                   : "AI Tool";
+              
+              // Get report status (default to "submitted" for backward compatibility)
+              const reportStatus = content.status || "submitted";
 
               decryptedMessages.push({
                 index: message.index,
@@ -317,9 +326,11 @@ const DecryptionContainer = ({ id, key64 }) => {
                 isCreator: message.metadata?.isThreadCreator || false,
                 isCurrentUser: messageAuthorId === userAuthorId,
                 isReport: true,
+                reportStatus: reportStatus, // Add status to allow edit of drafts
                 title: `Report from ${content.teamMember} (${content.teamRole})`,
                 message: firstTool, // Show the AI tool used
                 timestamp: content.timestamp || message.metadata?.timestamp,
+                reportData: content, // Store full report data for editing
               });
             } else {
               // Regular message processing
@@ -472,6 +483,19 @@ const DecryptionContainer = ({ id, key64 }) => {
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
   };
+  
+  // Handle click on a report message - navigate to edit if it's a draft and current user's report
+  const handleReportClick = (message) => {
+    // Only allow editing if it's user's own report and has draft status
+    if (message.isCurrentUser && message.isReport && message.reportStatus === "draft") {
+      // Construct the URL with the report data as a URL parameter (this will be processed by ReportFormContainer)
+      const reportDataParam = encodeURIComponent(JSON.stringify(message.reportData));
+      window.location.href = `/channel/${id}/report?reportData=${reportDataParam}#${key64}`;
+    } else if (message.isReport) {
+      // For non-draft reports, just go to view mode
+      window.location.href = `/channel/${id}/report?view=true#${key64}`;
+    }
+  };
 
   if (isLoading) {
     return <LoadingContainer>Loading encrypted thread...</LoadingContainer>;
@@ -558,35 +582,54 @@ const DecryptionContainer = ({ id, key64 }) => {
         )}
 
         <MessagesList>
-          {filteredMessages.map((message, index) => (
-            <MessageItem key={index}>
-              <MessageHeader>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <MessageTitle>{message.title}</MessageTitle>
-                  {message.isQueued && (
-                    <MessageBadge $isQueued={true}>Queued</MessageBadge>
-                  )}
-                  {!message.isQueued && message.isCurrentUser && (
-                    <MessageBadge $isCurrentUser={true}>You</MessageBadge>
-                  )}
-                  {!message.isQueued &&
-                    message.isCreator &&
-                    !message.isCurrentUser && (
-                      <MessageBadge $isCreator={true}>Creator</MessageBadge>
+          {filteredMessages.map((message, index) => {
+            // Determine if message should be clickable/editable (user's own draft reports)
+            const isEditable = message.isCurrentUser && message.isReport && message.reportStatus === "draft";
+            
+            return (
+              <MessageItem 
+                key={index} 
+                $isEditable={isEditable}
+                onClick={() => message.isReport ? handleReportClick(message) : null}
+              >
+                <MessageHeader>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <MessageTitle>{message.title}</MessageTitle>
+                    {message.isQueued && (
+                      <MessageBadge $isQueued={true}>Queued</MessageBadge>
                     )}
-                  {!message.isQueued &&
-                    !message.isCreator &&
-                    !message.isCurrentUser && (
-                      <MessageBadge>Other</MessageBadge>
+                    {message.isReport && message.reportStatus === "draft" && (
+                      <MessageBadge style={{ backgroundColor: "#F59E0B" }}>Draft</MessageBadge>
                     )}
-                </div>
-                {message.timestamp && (
-                  <MessageDate>{formatDate(message.timestamp)}</MessageDate>
-                )}
-              </MessageHeader>
-              <MessageContent>{message.message}</MessageContent>
-            </MessageItem>
-          ))}
+                    {!message.isQueued && message.isCurrentUser && (
+                      <MessageBadge $isCurrentUser={true}>You</MessageBadge>
+                    )}
+                    {!message.isQueued &&
+                      message.isCreator &&
+                      !message.isCurrentUser && (
+                        <MessageBadge $isCreator={true}>Creator</MessageBadge>
+                      )}
+                    {!message.isQueued &&
+                      !message.isCreator &&
+                      !message.isCurrentUser && (
+                        <MessageBadge>Other</MessageBadge>
+                      )}
+                  </div>
+                  {message.timestamp && (
+                    <MessageDate>{formatDate(message.timestamp)}</MessageDate>
+                  )}
+                </MessageHeader>
+                <MessageContent>
+                  {message.message}
+                  {isEditable && (
+                    <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#4CAF50" }}>
+                      Click to edit this draft report
+                    </div>
+                  )}
+                </MessageContent>
+              </MessageItem>
+            );
+          })}
         </MessagesList>
       </MessagesContainer>
 

@@ -14,7 +14,7 @@ const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   /* Use column layout on small mobile devices */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     flex-direction: column;
@@ -26,7 +26,7 @@ const Logo = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.primary};
-  
+
   /* Center logo on mobile and reduce size */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     text-align: center;
@@ -39,7 +39,7 @@ const LogoLink = styled(Link)`
   color: inherit;
   display: flex;
   align-items: center;
-  
+
   /* Center logo content on mobile */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     justify-content: center;
@@ -52,7 +52,7 @@ const TaskIcon = styled.div`
   height: 2rem;
   margin-right: 0.5rem;
   display: inline-flex;
-  
+
   /* Reduce icon size on mobile */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     width: 1rem;
@@ -64,7 +64,7 @@ const TaskIcon = styled.div`
 const Nav = styled.nav`
   display: flex;
   align-items: center;
-  
+
   /* Center navigation on mobile */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     justify-content: center;
@@ -82,13 +82,13 @@ const StyledLink = styled(Link)`
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
   }
-  
+
   /* Adjust spacing on mobile */
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     margin: 0 0.75rem;
     font-size: 0.9rem;
   }
-  
+
   &:first-child {
     @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
       margin-left: 0;
@@ -119,12 +119,12 @@ const Header = () => {
                 <path d="M8 16h.01"></path>
               </svg>
             </TaskIcon>
-            AI Productivity Tracker
+            TeamSync
           </LogoLink>
         </Logo>
 
         <Nav>
-          <StyledLink href="/">Thread New</StyledLink>
+          <StyledLink href="/">New Channel</StyledLink>
           <StyledLink href="/about">About</StyledLink>
         </Nav>
       </HeaderContent>

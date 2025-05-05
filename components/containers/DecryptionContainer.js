@@ -292,7 +292,7 @@ const DecryptionContainer = ({ id, key64 }) => {
 
             // Decrypt the data
             const decrypted = await decryptData(ciphertext, key, iv);
-
+            console.log(new TextDecoder().decode(decrypted));
             // Parse the decrypted JSON
             const content = JSON.parse(new TextDecoder().decode(decrypted));
 
@@ -301,12 +301,10 @@ const DecryptionContainer = ({ id, key64 }) => {
               message.metadata?.authorId || content.authorId || null;
 
             // Check if this is a productivity report
-            const isReport =
-              message.metadata?.isReport ||
-              content.type === "aiProductivityReport";
+            const isReport = message.metadata?.isReport;
 
             // Process productivity reports differently to display nicely in thread view
-            if (isReport && content.type === "aiProductivityReport") {
+            if (isReport) {
               // Get the tool name from the first entry or use a default
               const firstTool =
                 content.entries && content.entries.length > 0
@@ -537,7 +535,7 @@ const DecryptionContainer = ({ id, key64 }) => {
             </ViewButton>
             <ViewButton
               onClick={() =>
-                (window.location.href = `/view/${id}/report?view=true#${key64}`)
+                (window.location.href = `/channel/${id}/report?view=true#${key64}`)
               }
               style={{ backgroundColor: "#4caf50", color: "white" }}
             >
@@ -593,7 +591,7 @@ const DecryptionContainer = ({ id, key64 }) => {
       </MessagesContainer>
 
       <AddMessageForm>
-        <ThreadTitle>Add to this conversation</ThreadTitle>
+        <ThreadTitle>Add to this Channel</ThreadTitle>
 
         <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
           <ToggleButton onClick={toggleAddForm}>
@@ -602,7 +600,7 @@ const DecryptionContainer = ({ id, key64 }) => {
 
           <ToggleButton
             onClick={() =>
-              (window.location.href = `/view/${id}/report#${key64}`)
+              (window.location.href = `/channel/${id}/report#${key64}`)
             }
             style={{ backgroundColor: "#4caf50" }}
           >

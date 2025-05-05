@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useState } from "react";
+import styled from "styled-components";
 
 const Form = styled.form`
   margin: 0 auto;
@@ -32,7 +32,7 @@ const TextArea = styled.textarea`
   line-height: 1.5;
   resize: vertical;
   transition: border-color 0.3s;
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
@@ -48,7 +48,7 @@ const Input = styled.input`
   font-family: inherit;
   font-size: 1rem;
   transition: border-color 0.3s;
-  
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
@@ -66,11 +66,11 @@ const Button = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
-  
+
   &:disabled {
     background-color: ${({ theme }) => theme.colors.disabled};
     cursor: not-allowed;
@@ -87,13 +87,13 @@ const ErrorMessage = styled.div`
 
 const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   const [formValues, setFormValues] = useState({
-    title: '',
-    message: '',
+    title: "",
+    message: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -106,9 +106,9 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   return (
     <Form onSubmit={handleSubmit}>
       {isReply && <Title>Send Encrypted Reply</Title>}
-      
+
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      
+
       <FormGroup>
         <Label htmlFor="title">Title</Label>
         <Input
@@ -117,11 +117,15 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
           name="title"
           value={formValues.title}
           onChange={handleChange}
-          placeholder={isReply ? "Reply: Enter a title" : "Enter a title for your message"}
+          placeholder={
+            isReply
+              ? "Reply: Enter a title"
+              : "Enter a name for this channel (e.g: Experience Delivery)"
+          }
           required
         />
       </FormGroup>
-      
+
       <FormGroup>
         <Label htmlFor="message">Message</Label>
         <TextArea
@@ -129,20 +133,32 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
           name="message"
           value={formValues.message}
           onChange={handleChange}
-          placeholder={isReply ? "Type your secure reply here..." : "Enter your confidential message here"}
+          placeholder={
+            isReply
+              ? "Type your secure reply here..."
+              : "Write a welcome message, context, or first update for this channel (e.g: Let’s use this space to share our weekly updates.)"
+          }
           required
         />
       </FormGroup>
-      
-      <Button type="submit" disabled={isLoading || !isFormValid} style={{ 
-        backgroundColor: '#3b82f6', 
-        color: 'white',
-        border: 'none',
-        padding: '0.75rem 1.5rem',
-        borderRadius: '0.375rem',
-        fontWeight: '500'
-      }}>
-        {isLoading ? 'Encrypting...' : (isReply ? 'Encrypt & Send Reply' : 'Launch Thread')}
+
+      <Button
+        type="submit"
+        disabled={isLoading || !isFormValid}
+        style={{
+          backgroundColor: "#3b82f6",
+          color: "white",
+          border: "none",
+          padding: "0.75rem 1.5rem",
+          borderRadius: "0.375rem",
+          fontWeight: "500",
+        }}
+      >
+        {isLoading
+          ? "Encrypting..."
+          : isReply
+            ? "Encrypt & Send Reply"
+            : "Create Channel"}
       </Button>
     </Form>
   );

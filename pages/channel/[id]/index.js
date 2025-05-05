@@ -1,5 +1,7 @@
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import DecryptionContainer from "../../../components/containers/DecryptionContainer";
 import Head from "next/head";
-import EncryptionContainer from "../components/containers/EncryptionContainer";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -75,16 +77,72 @@ const ContentContainer = styled.div`
   }
 `;
 
-const HomePage = ({ staticProps }) => {
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.colors.error};
+  background: ${({ theme }) => theme.colors.errorBg};
+  border-radius: 8px;
+  margin-top: 2rem;
+`;
+
+const ViewPage = ({ pageProps }) => {
+  const [key, setKey] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const router = useRouter();
+  const { id } = router.query;
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    try {
+      // Extract key from URL fragment (#)
+      const fragment = window.location.hash.slice(1);
+
+      // Handle the case where no key is provided in the URL
+      if (!fragment) {
+        router.push(`/channel/${id}/join`);
+        setIsLoading(false);
+        return;
+      }
+
+      setKey(fragment);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error parsing key from URL:", err);
+      setError(
+        "Could not retrieve encryption key from URL. Make sure you have the complete link.",
+      );
+      setIsLoading(false);
+    }
+  }, [router.isReady]);
+
+  if (isLoading) {
+    return <LoadingMessage>Loading encrypted content...</LoadingMessage>;
+  }
+
+  if (error) {
+    return <ErrorMessage>{error}</ErrorMessage>;
+  }
+
   return (
     <>
       <Head>
-        <title>Create New Channel</title>
-        <meta
-          name="description"
-          content="Start a secure channel for team collaboration."
-        />
+        <title>Inbox | AI Productivity Tracker</title>
+        <meta name="description" content="View an encrypted thread securely" />
+        <meta name="robots" content="noindex, nofollow" />
       </Head>
+
       <Container>
         <HeaderBanner>
           <PageTitle>
@@ -101,27 +159,35 @@ const HomePage = ({ staticProps }) => {
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </LockIcon>
-            Create New Channel
+            Channel Inbox
           </PageTitle>
           <PageSubtitle>
-            Start a secure channel for team collaboration.
+            Collaborate securely with your team in this encrypted channel.
           </PageSubtitle>
         </HeaderBanner>
+
         <ContentContainer>
-          <EncryptionContainer />
+          <DecryptionContainer id={id} key64={key} />
         </ContentContainer>
       </Container>
     </>
   );
 };
 
-// This gets called at build time
+// These get called at build time
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
+}
+
 export async function getStaticProps() {
   return {
     props: {
-      staticProps: {},
+      pageProps: {},
     },
   };
 }
 
-export default HomePage;
+export default ViewPage;

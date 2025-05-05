@@ -216,8 +216,8 @@ const ReportPage = () => {
               teamMemberOptions={teamMemberOptions}
             />
           )}
-          <Link href={`/view/${id}`}>
-            <BackLinkText>← Back to inbox</BackLinkText>
+          <Link href={`/channel/${id}#${key}`}>
+            <BackLinkText>← Back to Channel Inbox</BackLinkText>
           </Link>
         </ContentContainer>
       </Container>

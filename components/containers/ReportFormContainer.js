@@ -1,13 +1,21 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { importKeyFromBase64, encryptData, exportKeyToBase64 } from "../../lib/cryptoUtils";
+import {
+  importKeyFromBase64,
+  encryptData,
+  exportKeyToBase64,
+} from "../../lib/cryptoUtils";
 import ReportForm from "../presentational/ReportForm";
 
 /**
  * Container component for the Report Form
  * Handles state management, data processing, and form submission
  */
-const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) => {
+const ReportFormContainer = ({
+  keyFragment,
+  teamName,
+  teamMemberOptions = [],
+}) => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -141,7 +149,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
   };
 
   // Common function to process and prepare report data
-  const prepareReportData = async (status = 'submitted') => {
+  const prepareReportData = async (status = "submitted") => {
     // Basic validation
     if (!teamMember.trim()) {
       throw new Error("Please enter your name");
@@ -164,14 +172,18 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       taskCategory: row.taskCategory,
       taskDetails: row.taskDetails,
       hours: roundToQuarterHour(row.actualTimeWithAI),
-      aiTool: Array.isArray(row.aiToolUsed) && row.aiToolUsed.length > 0
-        ? row.aiToolUsed.join(", ")
-        : "",
+      aiTool:
+        Array.isArray(row.aiToolUsed) && row.aiToolUsed.length > 0
+          ? row.aiToolUsed.join(", ")
+          : "",
       aiProductivity: row.notesHowAIHelped,
       hoursSaved: row.hoursSaved,
       complexity: row.complexity,
       qualityImpact: row.qualityImpact,
     }));
+
+    // Add author ID if available (for multi-user identification)
+    const authorId = localStorage.getItem("encrypted-app-author-id");
 
     // Create the report object
     const reportData = {
@@ -181,6 +193,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       timestamp: new Date().toISOString(),
       entries: reportEntries,
       status, // Add status field: 'draft' or 'submitted'
+      authorId,
     };
 
     // Import the key to use for encryption
@@ -188,17 +201,18 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
 
     // Encrypt the report data
     const jsonData = JSON.stringify(reportData);
-    const encoder = new TextEncoder();
-    const encodedData = encoder.encode(jsonData);
-    const encryptedData = await encryptData(encodedData, cryptoKey);
+    const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
 
-    // Add author ID if available (for multi-user identification)
-    const authorId = localStorage.getItem("encrypted-app-author-id") || null;
+    // Convert the combined ciphertext and IV to ArrayBuffer for upload
+    const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+    combinedData.set(iv, 0);
+    combinedData.set(new Uint8Array(ciphertext), iv.length);
 
     // Prepare the report submission
     return {
       threadId: id,
-      data: encryptedData,
+      threadTitle: teamName,
+      data: Array.from(combinedData), // <-- Convert the ArrayBuffer to array of bytes
       metadata: {
         authorId,
         isReport: true,
@@ -215,7 +229,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
     setError(null);
 
     try {
-      const submitData = await prepareReportData('draft');
+      const submitData = await prepareReportData("draft");
 
       // Send to the server
       const response = await fetch("/api/upload", {
@@ -234,22 +248,26 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       if (teamMember && !teamMemberOptions.includes(teamMember)) {
         try {
           const updatedOptions = [...teamMemberOptions, teamMember];
-          localStorage.setItem("teamMemberOptions", JSON.stringify(updatedOptions));
+          localStorage.setItem(
+            "teamMemberOptions",
+            JSON.stringify(updatedOptions),
+          );
         } catch (localStorageErr) {
           console.error("Error saving team member option:", localStorageErr);
           // Non-critical error, continue
         }
       }
 
-      setSuccessMessage("Your AI productivity report has been saved as a draft!");
+      setSuccessMessage(
+        "Your AI productivity report has been saved as a draft!",
+      );
       setSuccess(true);
-      
+
       // Show success message but don't reset form
       setTimeout(() => {
         setSuccess(false);
         setSuccessMessage("");
       }, 3000);
-      
     } catch (err) {
       console.error("Error saving draft:", err);
       setError(err.message || "Error saving draft. Please try again.");
@@ -265,7 +283,7 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
     setError(null);
 
     try {
-      const submitData = await prepareReportData('submitted');
+      const submitData = await prepareReportData("submitted");
 
       // Send to the server
       const response = await fetch("/api/upload", {
@@ -284,16 +302,21 @@ const ReportFormContainer = ({ keyFragment, teamName, teamMemberOptions = [] }) 
       if (teamMember && !teamMemberOptions.includes(teamMember)) {
         try {
           const updatedOptions = [...teamMemberOptions, teamMember];
-          localStorage.setItem("teamMemberOptions", JSON.stringify(updatedOptions));
+          localStorage.setItem(
+            "teamMemberOptions",
+            JSON.stringify(updatedOptions),
+          );
         } catch (localStorageErr) {
           console.error("Error saving team member option:", localStorageErr);
           // Non-critical error, continue
         }
       }
 
-      setSuccessMessage("Your AI productivity report has been submitted successfully!");
+      setSuccessMessage(
+        "Your AI productivity report has been submitted successfully!",
+      );
       setSuccess(true);
-      
+
       // Reset the form after a delay
       setTimeout(() => {
         setRows([

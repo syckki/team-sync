@@ -1,4 +1,4 @@
-import { addMessageToThread } from '../../lib/thread';
+import { addMessageToThread } from "../../lib/thread";
 
 // Configure the API route to handle binary data
 export const config = {
@@ -8,70 +8,74 @@ export const config = {
 };
 
 async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     // Read the raw request body as a Buffer
     return new Promise((resolve) => {
       let data = [];
-      req.on('data', (chunk) => {
+      req.on("data", (chunk) => {
         data.push(chunk);
       });
-      
-      req.on('end', async () => {
+
+      req.on("end", async () => {
         try {
           // Combine all chunks
           const buffer = Buffer.concat(data);
-          
+
           if (!buffer || buffer.length === 0) {
-            res.status(400).json({ error: 'No data provided' });
+            res.status(400).json({ error: "No data provided" });
             return resolve();
           }
-          
-          // Extract query parameters
-          const { threadId, threadTitle } = req.query;
-          
-          // Get author ID from headers if available
-          const authorId = req.headers['x-author-id'] || null;
-          
-          // Create metadata object with author ID
-          const metadata = { authorId };
-          
+
+          const jsonString = buffer.toString("utf8");
+          const payload = JSON.parse(jsonString);
+          const dataBuffer = Buffer.from(payload.data);
+          const metadata = payload.metadata;
+          const { threadId, threadTitle } = payload;
+
           // Add the message to a thread (creates a new thread if threadId is null)
-          const threadInfo = await addMessageToThread(threadId, buffer, metadata, threadTitle);
-          
+          const threadInfo = await addMessageToThread(
+            threadId,
+            dataBuffer,
+            metadata,
+            threadTitle,
+          );
+
           // Return the download URL
-          const downloadUrl = `/view/${threadInfo.threadId}`;
-          
-          res.status(200).json({ 
-            success: true, 
+          const downloadUrl = `/channel/${threadInfo.threadId}`;
+
+          res.status(200).json({
+            success: true,
             threadId: threadInfo.threadId,
             messageIndex: threadInfo.messageIndex,
             totalMessages: threadInfo.totalMessages,
-            url: downloadUrl 
+            url: downloadUrl,
           });
           resolve();
         } catch (error) {
-          console.error('Upload processing error:', error);
-          
+          console.error("Upload processing error:", error);
+
           // Check if this is a duplicate thread title error
-          if (error.message && error.message.includes('Thread with title')) {
-            res.status(409).json({ 
+          if (error.message && error.message.includes("Thread with title")) {
+            res.status(409).json({
               error: error.message,
-              code: 'DUPLICATE_THREAD_TITLE'
+              code: "DUPLICATE_THREAD_TITLE",
             });
           } else {
-            res.status(500).json({ error: 'Error processing upload data' });
+            res.status(500).json({
+              error: "Error processing upload data",
+            });
           }
           resolve();
         }
       });
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return res.status(500).json({ error: 'Error uploading encrypted data' });
+    console.error("Upload error:", error);
+    return res.status(500).json({ error: "Error uploading encrypted data" });
   }
 }
 

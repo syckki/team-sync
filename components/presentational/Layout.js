@@ -33,8 +33,9 @@ const Layout = ({ children }) => {
       <Main>{children}</Main>
       <Footer>
         <p>
-          &copy; {new Date().getFullYear()} AI Productivity Tracker. All
-          encryption happens in your browser. Your data remains private.
+          &copy; {new Date().getFullYear()} TeamSync. All data is encrypted in
+          your browser. Nothing is stored on a server. Collaboration stays
+          private, secure, and end-to-end encrypted.
         </p>
       </Footer>
     </>

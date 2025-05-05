@@ -34,16 +34,14 @@ async function handler(req, res) {
           const payload = JSON.parse(jsonString);
           const dataBuffer = Buffer.from(payload.data);
           const metadata = payload.metadata;
-          const { threadId, threadTitle, messageIndex } = payload; // Extract messageIndex if it exists
+          const { threadId, threadTitle } = payload;
 
-          // If messageIndex is provided, we're updating an existing message
-          // Otherwise, we're adding a new message to the thread
+          // Add the message to a thread (creates a new thread if threadId is null)
           const threadInfo = await addMessageToThread(
             threadId,
             dataBuffer,
             metadata,
             threadTitle,
-            messageIndex // Pass messageIndex for updates
           );
 
           // Return the download URL

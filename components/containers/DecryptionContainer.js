@@ -311,16 +311,12 @@ const DecryptionContainer = ({ id, key64 }) => {
                   ? content.entries[0].aiTool
                   : "AI Tool";
 
-              // Get the report status (if available) - default to "submitted" if not specified
-              const status = content.status || message.metadata?.status || "submitted";
-
               decryptedMessages.push({
                 index: message.index,
                 authorId: messageAuthorId,
                 isCreator: message.metadata?.isThreadCreator || false,
                 isCurrentUser: messageAuthorId === userAuthorId,
                 isReport: true,
-                status: status, // Include the status in message data 
                 title: `Report from ${content.teamMember} (${content.teamRole})`,
                 message: firstTool, // Show the AI tool used
                 timestamp: content.timestamp || message.metadata?.timestamp,
@@ -563,28 +559,7 @@ const DecryptionContainer = ({ id, key64 }) => {
 
         <MessagesList>
           {filteredMessages.map((message, index) => (
-            <MessageItem 
-              key={index} 
-              onClick={() => {
-                // If it's a report and it's a draft, navigate to edit mode
-                if (message.isReport && message.status === "draft" && message.isCurrentUser) {
-                  window.location.href = `/channel/${id}/report?edit=true&messageIndex=${message.index}#${key64}`;
-                }
-                // Otherwise if it's a report, navigate to view mode
-                else if (message.isReport) {
-                  window.location.href = `/channel/${id}/report?view=true#${key64}`;
-                }
-              }}
-              style={{
-                cursor: message.isReport ? 'pointer' : 'default',
-                transition: 'background-color 0.2s',
-                ...(message.isReport && {
-                  ':hover': {
-                    backgroundColor: '#f5f5f5'
-                  }
-                })
-              }}
-            >
+            <MessageItem key={index}>
               <MessageHeader>
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <MessageTitle>{message.title}</MessageTitle>
@@ -604,12 +579,6 @@ const DecryptionContainer = ({ id, key64 }) => {
                     !message.isCurrentUser && (
                       <MessageBadge>Other</MessageBadge>
                     )}
-                  {/* Add Draft badge if report is in draft status */}
-                  {message.isReport && message.status === "draft" && (
-                    <MessageBadge style={{ backgroundColor: '#f39c12', marginLeft: '0.5rem' }}>
-                      Draft
-                    </MessageBadge>
-                  )}
                 </div>
                 {message.timestamp && (
                   <MessageDate>{formatDate(message.timestamp)}</MessageDate>

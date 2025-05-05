@@ -288,7 +288,6 @@ const ReportForm = ({
   success,
   successMessage,
   teamMemberOptions = [],
-  isEditMode = false, // New prop for edit mode
 }) => {
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
@@ -878,11 +877,11 @@ const ReportForm = ({
                     border: '1px solid #d1d5db'
                   }}
                 >
-                  {isSubmitting ? "Saving..." : isEditMode ? "Save Changes as Draft" : "Save as Draft"}
+                  {isSubmitting ? "Saving..." : "Save as Draft"}
                 </ActionButton>
 
                 <SubmitButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : isEditMode ? "Finalize & Submit Report" : "Submit Report"}
+                  {isSubmitting ? "Submitting..." : "Submit Report"}
                 </SubmitButton>
               </div>
             </ButtonRow>

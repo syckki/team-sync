@@ -311,12 +311,16 @@ const DecryptionContainer = ({ id, key64 }) => {
                   ? content.entries[0].aiTool
                   : "AI Tool";
 
+              // Get the report status (if available) - default to "submitted" if not specified
+              const status = content.status || message.metadata?.status || "submitted";
+
               decryptedMessages.push({
                 index: message.index,
                 authorId: messageAuthorId,
                 isCreator: message.metadata?.isThreadCreator || false,
                 isCurrentUser: messageAuthorId === userAuthorId,
                 isReport: true,
+                status: status, // Include the status in message data 
                 title: `Report from ${content.teamMember} (${content.teamRole})`,
                 message: firstTool, // Show the AI tool used
                 timestamp: content.timestamp || message.metadata?.timestamp,

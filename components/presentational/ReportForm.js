@@ -882,7 +882,7 @@ const ReportForm = ({
                 </ActionButton>
 
                 <SubmitButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Report"}
+                  {isSubmitting ? "Submitting..." : isEditMode ? "Finalize & Submit Report" : "Submit Report"}
                 </SubmitButton>
               </div>
             </ButtonRow>

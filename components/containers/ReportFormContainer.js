@@ -15,11 +15,14 @@ const ReportFormContainer = ({
   keyFragment,
   teamName,
   teamMemberOptions = [],
+  reportData = null, // Default to null, passed when editing a report
+  messageIndex = null, // The message index for updating the report
+  isEditMode = false // Whether we're editing an existing report
 }) => {
   const router = useRouter();
   const { id } = router.query;
 
-  // Form state
+  // Form state initialized with default values
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
@@ -47,6 +50,44 @@ const ReportFormContainer = ({
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  
+  // Initialize form with report data if editing
+  useEffect(() => {
+    if (isEditMode && reportData) {
+      // Set team information
+      setTeamMember(reportData.teamMember || "");
+      setTeamRole(reportData.teamRole || "");
+      
+      // Initialize rows from entries
+      if (reportData.entries && reportData.entries.length > 0) {
+        const newRows = reportData.entries.map(entry => ({
+          id: entry.id || Date.now() + Math.random() * 1000, // Generate a unique ID if none exists
+          platform: entry.platform || "",
+          projectInitiative: entry.projectInitiative || "",
+          sdlcStep: entry.sdlcStep || "",
+          sdlcTask: entry.sdlcTask || "",
+          taskCategory: entry.taskCategory || "",
+          taskDetails: entry.taskDetails || "",
+          estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
+          actualTimeWithAI: entry.actualTimeWithAI || "",
+          aiToolUsed: entry.aiToolUsed || [],
+          complexity: entry.complexity || "",
+          qualityImpact: entry.qualityImpact || "",
+          notesHowAIHelped: entry.notesHowAIHelped || "",
+        }));
+        
+        setRows(newRows);
+        
+        // Set all rows to expanded by default in edit mode
+        const expandedState = {};
+        newRows.forEach(row => {
+          expandedState[row.id] = true;
+        });
+        
+        setExpandedRows(expandedState);
+      }
+    }
+  }, [isEditMode, reportData]);
 
   // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
   const roundToQuarterHour = (time) => {
@@ -230,6 +271,15 @@ const ReportFormContainer = ({
 
     try {
       const submitData = await prepareReportData("draft");
+      
+      // If we're in edit mode and have a messageIndex, we're updating an existing message
+      if (isEditMode && messageIndex !== null) {
+        // Update the index in submitData to match the original message
+        submitData.messageIndex = messageIndex;
+        
+        // Additional metadata to indicate this is an update
+        submitData.metadata.isUpdate = true;
+      }
 
       // Send to the server
       const response = await fetch("/api/upload", {
@@ -258,16 +308,24 @@ const ReportFormContainer = ({
         }
       }
 
+      const updatingMessage = isEditMode ? "updated" : "saved as a draft";
       setSuccessMessage(
-        "Your AI productivity report has been saved as a draft!",
+        `Your AI productivity report has been ${updatingMessage}!`,
       );
       setSuccess(true);
 
-      // Show success message but don't reset form
-      setTimeout(() => {
-        setSuccess(false);
-        setSuccessMessage("");
-      }, 3000);
+      // If we're in edit mode, redirect back to the channel after a delay
+      if (isEditMode) {
+        setTimeout(() => {
+          window.location.href = `/channel/${id}#${keyFragment}`;
+        }, 2000);
+      } else {
+        // Show success message but don't reset form if not in edit mode
+        setTimeout(() => {
+          setSuccess(false);
+          setSuccessMessage("");
+        }, 3000);
+      }
     } catch (err) {
       console.error("Error saving draft:", err);
       setError(err.message || "Error saving draft. Please try again.");
@@ -284,6 +342,15 @@ const ReportFormContainer = ({
 
     try {
       const submitData = await prepareReportData("submitted");
+      
+      // If we're in edit mode and have a messageIndex, we're updating an existing message
+      if (isEditMode && messageIndex !== null) {
+        // Update the index in submitData to match the original message
+        submitData.messageIndex = messageIndex;
+        
+        // Additional metadata to indicate this is an update
+        submitData.metadata.isUpdate = true;
+      }
 
       // Send to the server
       const response = await fetch("/api/upload", {
@@ -312,37 +379,46 @@ const ReportFormContainer = ({
         }
       }
 
-      setSuccessMessage(
-        "Your AI productivity report has been submitted successfully!",
-      );
+      const submittedMessage = isEditMode 
+        ? "Your draft has been finalized and submitted successfully!" 
+        : "Your AI productivity report has been submitted successfully!";
+        
+      setSuccessMessage(submittedMessage);
       setSuccess(true);
 
-      // Reset the form after a delay
-      setTimeout(() => {
-        setRows([
-          {
-            id: Date.now(),
-            platform: "",
-            projectInitiative: "",
-            sdlcStep: "",
-            sdlcTask: "",
-            taskCategory: "",
-            taskDetails: "",
-            estimatedTimeWithoutAI: "",
-            actualTimeWithAI: "",
-            hoursSaved: "",
-            aiToolUsed: [],
-            complexity: "",
-            qualityImpact: "",
-            notesHowAIHelped: "",
-          },
-        ]);
-        setExpandedRows({});
-        setTeamMember("");
-        setTeamRole("");
-        setSuccess(false);
-        setSuccessMessage("");
-      }, 3000);
+      // If we're in edit mode, redirect back to the channel after a delay
+      if (isEditMode) {
+        setTimeout(() => {
+          window.location.href = `/channel/${id}#${keyFragment}`;
+        }, 2000);
+      } else {
+        // Reset the form after a delay for new submissions
+        setTimeout(() => {
+          setRows([
+            {
+              id: Date.now(),
+              platform: "",
+              projectInitiative: "",
+              sdlcStep: "",
+              sdlcTask: "",
+              taskCategory: "",
+              taskDetails: "",
+              estimatedTimeWithoutAI: "",
+              actualTimeWithAI: "",
+              hoursSaved: "",
+              aiToolUsed: [],
+              complexity: "",
+              qualityImpact: "",
+              notesHowAIHelped: "",
+            },
+          ]);
+          setExpandedRows({});
+          setTeamMember("");
+          setTeamRole("");
+          setSuccess(false);
+          setSuccessMessage("");
+        }, 3000);
+      }
     } catch (err) {
       console.error("Error submitting report:", err);
       setError(err.message || "Error submitting report. Please try again.");
@@ -373,6 +449,7 @@ const ReportFormContainer = ({
       success={success}
       successMessage={successMessage}
       teamMemberOptions={teamMemberOptions}
+      isEditMode={isEditMode}
     />
   );
 };

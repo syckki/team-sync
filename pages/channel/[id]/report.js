@@ -102,14 +102,16 @@ const ContentContainer = styled.div`
 
 const ReportPage = () => {
   const router = useRouter();
-  const { id, view } = router.query;
+  const { id, view, edit, messageIndex } = router.query;
   const isViewMode = view === "true";
+  const isEditMode = edit === "true";
 
   const [key, setKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");
   const [teamName, setTeamName] = useState("");
   const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [error, setError] = useState(null);
+  const [reportToEdit, setReportToEdit] = useState(null);
 
   // Extract the key from URL fragment on mount
   useEffect(() => {
@@ -166,13 +168,82 @@ const ReportPage = () => {
     }
   }, [key, id]);
 
+  // Fetch and decrypt the report to edit if in edit mode
+  useEffect(() => {
+    const fetchReportToEdit = async () => {
+      if (!isEditMode || !key || !id || !messageIndex) return;
+
+      try {
+        // Generate or retrieve author ID from localStorage
+        let authorId = localStorage.getItem("encrypted-app-author-id");
+        if (!authorId) {
+          console.error("Author ID not found");
+          setError("Author ID not found. Cannot edit report.");
+          return;
+        }
+
+        // Fetch all thread messages to find the specific report
+        const response = await fetch(`/api/download?threadId=${id}&authorId=${authorId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch thread messages");
+        }
+
+        const threadData = await response.json();
+        
+        // Find the report with the matching index
+        const reportMessage = threadData.messages.find(msg => msg.index.toString() === messageIndex.toString());
+        
+        if (!reportMessage) {
+          throw new Error(`Report with index ${messageIndex} not found`);
+        }
+
+        // Import the key from the URL fragment
+        const { importKeyFromBase64, decryptData } = await import('../../../lib/cryptoUtils');
+        const cryptoKey = await importKeyFromBase64(key);
+
+        // Convert base64 data back to ArrayBuffer
+        const encryptedBytes = Uint8Array.from(atob(reportMessage.data), (c) => c.charCodeAt(0));
+
+        // Extract IV and ciphertext
+        const iv = encryptedBytes.slice(0, 12);
+        const ciphertext = encryptedBytes.slice(12);
+
+        // Decrypt the data
+        const decrypted = await decryptData(ciphertext, cryptoKey, iv);
+
+        // Parse the decrypted JSON
+        const content = JSON.parse(new TextDecoder().decode(decrypted));
+
+        // Make sure this is an AI productivity report
+        if (content.type !== "aiProductivityReport") {
+          throw new Error("The selected message is not an AI productivity report");
+        }
+
+        // Make sure this is a draft
+        if (content.status !== "draft") {
+          throw new Error("Only draft reports can be edited");
+        }
+
+        // Set the report data for editing
+        setReportToEdit(content);
+      } catch (err) {
+        console.error("Error fetching report to edit:", err);
+        setError(`Failed to load report for editing: ${err.message}`);
+      }
+    };
+
+    fetchReportToEdit();
+  }, [isEditMode, key, id, messageIndex]);
+
   return (
     <>
       <Head>
         <title>
           {isViewMode
             ? "View AI Productivity Reports"
-            : "Submit AI Productivity Report"}
+            : isEditMode
+              ? "Edit AI Productivity Report"
+              : "Submit AI Productivity Report"}
         </title>
         <meta
           name="description"
@@ -200,7 +271,9 @@ const ReportPage = () => {
             AI Productivity Report
           </PageTitle>
           <PageSubtitle>
-            Track and measure your productivity gains from using AI tools
+            {isEditMode 
+              ? "Edit your draft report before final submission" 
+              : "Track and measure your productivity gains from using AI tools"}
           </PageSubtitle>
         </HeaderBanner>
 
@@ -209,6 +282,19 @@ const ReportPage = () => {
 
           {isViewMode && threadTitle ? (
             <ReportViewer keyFragment={key} threadTitle={threadTitle} />
+          ) : isEditMode && reportToEdit ? (
+            <ReportFormContainer
+              keyFragment={key}
+              teamName={teamName}
+              teamMemberOptions={teamMemberOptions}
+              reportData={reportToEdit}
+              messageIndex={messageIndex}
+              isEditMode={true}
+            />
+          ) : isEditMode && !reportToEdit && !error ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              Loading report data for editing...
+            </div>
           ) : (
             <ReportFormContainer
               keyFragment={key}

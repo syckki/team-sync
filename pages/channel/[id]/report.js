@@ -7,6 +7,7 @@ import Link from "next/link";
 import ReportFormContainer from "../../../components/containers/ReportFormContainer";
 import ReportViewer from "../../../components/containers/ReportViewer";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
+import { Card, ErrorMessage } from "../../../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -40,7 +41,8 @@ const LoadingMessage = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-const ErrorMessage = styled.div`
+// Using ErrorMessage from UI components instead
+const StyledErrorMessage = styled.div`
   color: #e53e3e;
   padding: 0.75rem;
   background-color: #fff5f5;

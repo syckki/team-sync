@@ -1,6 +1,7 @@
 import Head from "next/head";
 import EncryptionContainer from "../components/containers/EncryptionContainer";
 import styled from "styled-components";
+import { Card } from "../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -85,7 +86,12 @@ const HomePage = ({ staticProps }) => {
           content="Start a secure channel for team collaboration."
         />
       </Head>
-      <Container>
+      <Card
+        noPadding
+        noPaddingHeader
+        className="home-container"
+        style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}
+      >
         <HeaderBanner>
           <PageTitle>
             <LockIcon>
@@ -110,7 +116,7 @@ const HomePage = ({ staticProps }) => {
         <ContentContainer>
           <EncryptionContainer />
         </ContentContainer>
-      </Container>
+      </Card>
     </>
   );
 };

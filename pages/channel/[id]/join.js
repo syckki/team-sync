@@ -2,6 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { Card, Button, Input, ErrorMessage } from "../../../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -76,7 +77,8 @@ const ContentContainer = styled.div`
   }
 `;
 
-const ErrorMessage = styled.div`
+// Using ErrorMessage from UI components instead
+const StyledErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
@@ -149,7 +151,12 @@ const JoinToThreadPage = () => {
         />
       </Head>
 
-      <Container>
+      <Card
+        noPadding
+        noPaddingHeader
+        className="join-container"
+        style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}
+      >
         <HeaderBanner>
           <PageTitle>
             <LockIcon>
@@ -174,18 +181,26 @@ const JoinToThreadPage = () => {
           <KeyInputForm onSubmit={handleKeySubmit}>
             {error && <ErrorMessage>{error}</ErrorMessage>}
 
-            <KeyInput
+            <Input
               type="text"
               value={manualKey}
               onChange={(e) => setManualKey(e.target.value)}
               placeholder="Paste the access key shared with you"
               required
+              style={{ fontFamily: 'monospace' }}
             />
 
-            <SubmitButton type="submit">Join Channel</SubmitButton>
+            <Button 
+              type="submit" 
+              variant="primary"
+              size="large"
+              style={{ marginTop: '1rem' }}
+            >
+              Join Channel
+            </Button>
           </KeyInputForm>
         </ContentContainer>
-      </Container>
+      </Card>
     </>
   );
 };

@@ -41,7 +41,6 @@ const TooltipContent = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 0.75rem;
   line-height: 1.4;
-  z-index: 10000000; /* Ultra high z-index to ensure it's above everything */
   opacity: ${props => (props.$visible ? 1 : 0)};
   transition: opacity 0.2s ease;
   max-height: 300px;
@@ -58,7 +57,6 @@ const TooltipArrow = styled.div`
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-bottom: 6px solid #ffffff;
-  z-index: 10000000; /* Match the tooltip content z-index */
   pointer-events: none;
   opacity: ${props => (props.$visible ? 1 : 0)};
   transition: opacity 0.2s ease;

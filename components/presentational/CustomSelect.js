@@ -140,10 +140,10 @@ const CustomSelect = ({
   disabled = false,
   readonly = false,
 }) => {
-  // If in readonly mode, render a simple display
-  if (readonly) {
+  // If in readonly or disabled mode, render a simple display
+  if (readonly || disabled) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
+      <ReadonlyField className={!value ? "empty" : ""}>{value || (placeholder ? `(${placeholder})` : "")}</ReadonlyField>
     );
   }
 

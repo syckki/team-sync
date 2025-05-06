@@ -3,11 +3,9 @@ import { useRouter } from "next/router";
 import {
   importKeyFromBase64,
   encryptData,
-  decryptData,
   exportKeyToBase64,
 } from "../../lib/cryptoUtils";
 import ReportForm from "../presentational/ReportForm";
-import TaskPredictionContainer from "./TaskPredictionContainer";
 
 /**
  * Container component for the Report Form
@@ -32,17 +30,6 @@ const ReportFormContainer = ({
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
-  
-  // Task prediction state
-  const [historicalReports, setHistoricalReports] = useState([]);
-  const [userPreferences, setUserPreferences] = useState({
-    startTime: new Date(),
-    availableHours: 8,
-    breakDuration: 15,
-    breakFrequency: 2,
-    prioritizeByCost: true,
-    preferConsistentTools: true
-  });
 
   const getNewRow = () => ({
     id: Date.now(),
@@ -109,77 +96,6 @@ const ReportFormContainer = ({
       processReportData(reportData);
     }
   }, [reportData]);
-  
-  // Fetch historical reports for task prediction
-  useEffect(() => {
-    const fetchHistoricalReports = async () => {
-      try {
-        if (!id || !keyFragment) return;
-        
-        // Fetch thread messages - this would typically be all messages in the thread
-        const response = await fetch(`/api/download?threadId=${id}`);
-        
-        if (!response.ok) {
-          console.error('Error fetching thread messages');
-          return;
-        }
-        
-        const threadData = await response.json();
-        
-        if (!threadData || !threadData.messages || !Array.isArray(threadData.messages)) {
-          return;
-        }
-        
-        // Filter to only include reports
-        const reportMessages = threadData.messages.filter(msg => 
-          msg.metadata && msg.metadata.isReport === true
-        );
-        
-        // Import key for decryption
-        const cryptoKey = await importKeyFromBase64(keyFragment);
-        
-        // Decrypt each report
-        const decryptedReports = await Promise.all(
-          reportMessages.map(async (message) => {
-            try {
-              // Data comes as array of bytes, convert to Uint8Array
-              const encryptedData = new Uint8Array(message.data);
-              
-              // Extract IV (first 12 bytes) and ciphertext
-              const iv = encryptedData.slice(0, 12);
-              const ciphertext = encryptedData.slice(12);
-              
-              // Decrypt the data
-              const decryptedData = await decryptData(ciphertext, cryptoKey, iv);
-              const reportData = JSON.parse(decryptedData);
-              
-              return {
-                id: message.id,
-                timestamp: message.metadata.timestamp,
-                authorId: message.metadata.authorId,
-                status: message.metadata.status || 'submitted',
-                data: reportData
-              };
-            } catch (error) {
-              console.error('Error decrypting report:', error);
-              return null;
-            }
-          })
-        );
-        
-        // Filter out any failed decryptions and only include submitted reports
-        const validReports = decryptedReports
-          .filter(report => report !== null)
-          .filter(report => report.status === 'submitted');
-        
-        setHistoricalReports(validReports);
-      } catch (error) {
-        console.error('Error fetching historical reports:', error);
-      }
-    };
-    
-    fetchHistoricalReports();
-  }, [id, keyFragment]);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -466,79 +382,30 @@ const ReportFormContainer = ({
     }
   };
 
-  // Handle adding a predicted task to the form
-  const handleAddPredictedTask = (task) => {
-    // Convert the prediction to a form row
-    const newRow = {
-      id: Date.now(),
-      platform: task.platform || "",
-      projectInitiative: "",
-      sdlcStep: "",
-      sdlcTask: "",
-      taskCategory: task.taskCategory || "",
-      estimatedTimeWithoutAI: task.estimatedTimeWithoutAI || "",
-      actualTimeWithAI: task.actualTimeWithAI || "",
-      timeSaved: task.timeSaving || "",
-      complexity: task.complexity || "Medium",
-      qualityImpact: "",
-      aiToolsUsed: task.aiToolsUsed || [],
-      taskDetails: "",
-      notesHowAIHelped: "",
-    };
-    
-    // Add the row to the form
-    setRows((prevRows) => [...prevRows, newRow]);
-    
-    // Automatically expand the new row
-    setExpandedRows((prev) => ({
-      ...prev,
-      [newRow.id]: true,
-    }));
-  };
-  
-  // Handle updating tasks based on schedule
-  const handleUpdateTasksFromSchedule = (scheduledTasks) => {
-    // This would rearrange existing tasks based on the schedule
-    // We'd need a more sophisticated implementation for a real app
-    console.log('Tasks updated from schedule:', scheduledTasks);
-  };
-  
-  // Return both the form and the task prediction container
+  // Pass all state and handlers to the presentation component
   return (
-    <>
-      {!isReadOnly && (
-        <TaskPredictionContainer
-          historicalReports={historicalReports}
-          currentTasks={rows}
-          userPreferences={userPreferences}
-          onAddTask={handleAddPredictedTask}
-          onUpdateTasks={handleUpdateTasksFromSchedule}
-        />
-      )}
-      
-      <ReportForm
-        teamName={teamName}
-        teamMember={teamMember}
-        setTeamMember={setTeamMember}
-        teamRole={teamRole}
-        setTeamRole={setTeamRole}
-        rows={rows}
-        expandedRows={expandedRows}
-        toggleRowExpansion={toggleRowExpansion}
-        handleRowChange={handleRowChange}
-        handleSDLCStepChange={handleSDLCStepChange}
-        addRow={addRow}
-        removeRow={removeRow}
-        handleSubmit={handleSubmit}
-        handleSaveAsDraft={handleSaveAsDraft}
-        isSubmitting={isSubmitting}
-        error={error}
-        success={success}
-        successMessage={successMessage}
-        teamMemberOptions={teamMemberOptions}
-        readOnly={isReadOnly} // Pass readOnly to the form
-      />
-    </>
+    <ReportForm
+      teamName={teamName}
+      teamMember={teamMember}
+      setTeamMember={setTeamMember}
+      teamRole={teamRole}
+      setTeamRole={setTeamRole}
+      rows={rows}
+      expandedRows={expandedRows}
+      toggleRowExpansion={toggleRowExpansion}
+      handleRowChange={handleRowChange}
+      handleSDLCStepChange={handleSDLCStepChange}
+      addRow={addRow}
+      removeRow={removeRow}
+      handleSubmit={handleSubmit}
+      handleSaveAsDraft={handleSaveAsDraft}
+      isSubmitting={isSubmitting}
+      error={error}
+      success={success}
+      successMessage={successMessage}
+      teamMemberOptions={teamMemberOptions}
+      readOnly={isReadOnly} // Pass readOnly to the form
+    />
   );
 };
 

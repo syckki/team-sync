@@ -77,16 +77,17 @@ const ContentContainer = styled.div`
   }
 `;
 
-// Using ErrorMessage from UI components instead
-const StyledErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: ${({ theme }) => theme.colors.error};
-  background: ${({ theme }) => theme.colors.errorBg};
-  border-radius: 8px;
-  margin-top: 2rem;
-`;
+// Using imported ErrorMessage from UI components instead
+// Keeping this for reference
+// const StyledErrorMessage = styled.div`
+//   text-align: center;
+//   padding: 2rem;
+//   font-size: 1.2rem;
+//   color: ${({ theme }) => theme.colors.error};
+//   background: ${({ theme }) => theme.colors.errorBg};
+//   border-radius: 8px;
+//   margin-top: 2rem;
+// `;
 
 const KeyInputForm = styled.form`
   margin: 2rem auto;
@@ -179,7 +180,7 @@ const JoinToThreadPage = () => {
 
         <ContentContainer>
           <KeyInputForm onSubmit={handleKeySubmit}>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+            {error && <ErrorMessage type="error">{error}</ErrorMessage>}
 
             <Input
               type="text"

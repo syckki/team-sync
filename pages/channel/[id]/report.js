@@ -41,15 +41,16 @@ const LoadingMessage = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-// Using ErrorMessage from UI components instead
-const StyledErrorMessage = styled.div`
-  color: #e53e3e;
-  padding: 0.75rem;
-  background-color: #fff5f5;
-  border: 1px solid #fed7d7;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-`;
+// Using imported ErrorMessage from UI components instead
+// Keeping this for reference
+// const StyledErrorMessage = styled.div`
+//   color: #e53e3e;
+//   padding: 0.75rem;
+//   background-color: #fff5f5;
+//   border: 1px solid #fed7d7;
+//   border-radius: 4px;
+//   margin-bottom: 1rem;
+// `;
 
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
@@ -232,7 +233,12 @@ const ReportPage = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 
-      <Container>
+      <Card
+        noPadding
+        noPaddingHeader
+        className="report-container"
+        style={{ maxWidth: '1240px', margin: '0 auto 2rem auto' }}
+      >
         <HeaderBanner>
           <PageTitle>
             <LockIcon>
@@ -256,7 +262,7 @@ const ReportPage = () => {
         </HeaderBanner>
 
         <ContentContainer>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {error && <ErrorMessage type="error">{error}</ErrorMessage>}
 
           {isLoading ? (
             <LoadingMessage>Loading...</LoadingMessage>
@@ -282,7 +288,7 @@ const ReportPage = () => {
             </>
           )}
         </ContentContainer>
-      </Container>
+      </Card>
     </>
   );
 };

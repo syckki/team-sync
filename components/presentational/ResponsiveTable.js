@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Breakpoint } from "../../lib/styles";
-import InfoTooltipPortal from "./InfoTooltipPortal";
+import InfoTooltip from "./InfoTooltip";
 
 // Flexbox-based responsive table container
 const TableContainer = styled.div`
@@ -387,7 +387,7 @@ const ResponsiveTable = ({
                 <div style={{ display: "flex", alignItems: "center" }}>
                   {column.header !== "Action" && column.header}
                   {column.tooltip && (
-                    <InfoTooltipPortal
+                    <InfoTooltip
                       title={column.header}
                       content={column.tooltip}
                       actionHint={column.actionHint}
@@ -469,7 +469,7 @@ const ResponsiveTable = ({
                         $isMobile={isMobile}
                       >
                         {isMobile && column.tooltip && (
-                          <InfoTooltipPortal
+                          <InfoTooltip
                             title={column.header}
                             content={column.tooltip}
                             actionHint={column.actionHint}

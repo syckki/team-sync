@@ -42,11 +42,7 @@ const SecureLink = styled.a`
   }
 `;
 
-const SuccessMessage = styled.p`
-  color: ${({ theme }) => theme.colors.success};
-  margin-bottom: 1rem;
-  font-weight: 600;
-`;
+// Using Message component from UI instead
 
 const ReplyBadge = styled.div`
   display: inline-block;
@@ -341,11 +337,11 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
 
       {encryptedResult && (
         <ResultContainer>
-          <SuccessMessage>
+          <Message type="success">
             {encryptedResult.queued
               ? "Content encrypted and queued for sending!"
               : "Content encrypted successfully!"}
-          </SuccessMessage>
+          </Message>
 
           {encryptedResult.queued ? (
             <>

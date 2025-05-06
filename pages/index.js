@@ -1,7 +1,6 @@
 import Head from "next/head";
 import EncryptionContainer from "../components/containers/EncryptionContainer";
 import styled from "styled-components";
-import { Card } from "../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -86,37 +85,32 @@ const HomePage = ({ staticProps }) => {
           content="Start a secure channel for team collaboration."
         />
       </Head>
-      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <Card
-          noPadding
-          noPaddingHeader
-        >
-          <HeaderBanner>
-            <PageTitle>
-              <LockIcon>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </LockIcon>
-              Create New Channel
-            </PageTitle>
-            <PageSubtitle>
-              Start a secure channel for team collaboration.
-            </PageSubtitle>
-          </HeaderBanner>
-          <ContentContainer>
-            <EncryptionContainer />
-          </ContentContainer>
-        </Card>
-      </div>
+      <Container>
+        <HeaderBanner>
+          <PageTitle>
+            <LockIcon>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </LockIcon>
+            Create New Channel
+          </PageTitle>
+          <PageSubtitle>
+            Start a secure channel for team collaboration.
+          </PageSubtitle>
+        </HeaderBanner>
+        <ContentContainer>
+          <EncryptionContainer />
+        </ContentContainer>
+      </Container>
     </>
   );
 };

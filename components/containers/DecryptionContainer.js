@@ -14,7 +14,18 @@ import {
 } from "../../lib/networkService";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
-import { Button, ErrorMessage, WarningMessage, InfoMessage, Card } from "../ui";
+import { Button, Message, ErrorMessage, WarningMessage, InfoMessage, Card } from "../ui";
+
+// Keeping styled component for backward compatibility
+// Will be replaced with Message components from UI library
+const ErrorContainer = styled.div`
+  padding: 1rem;
+  margin: 1rem 0;
+  background-color: ${({ theme }) => theme.colors.errorBg};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 4px;
+  border-left: 4px solid ${({ theme }) => theme.colors.error};
+`;
 
 const LoadingContainer = styled.div`
   padding: 2rem;
@@ -60,6 +71,32 @@ const MessagesList = styled.div`
   gap: 1rem;
 `;
 
+const MessageItem = styled.div`
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.colors.card};
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  ${(props) =>
+    props.$isEditable &&
+    `
+    cursor: pointer;
+    &:hover {
+      background-color: #f0f4ff;
+    }
+  `}
+`;
+
+const MessageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const MessageTitle = styled.h4`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
 const MessageDate = styled.span`
   font-size: 0.8rem;
   color: ${({ theme }) => theme.colors.textLight};
@@ -70,10 +107,49 @@ const MessageContent = styled.div`
   white-space: pre-wrap;
 `;
 
+const ToggleButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: calc(0.5rem - 2px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  background-color: hsl(217 91% 60%);
+  color: hsl(217 100% 99%);
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #3d6bf3;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
 const ViewControls = styled.div`
   display: flex;
   margin-bottom: 1rem;
   gap: 0.5rem;
+`;
+
+const ViewButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${(props) => (props.$active ? "#3498db" : "#e0e0e0")};
+  color: ${(props) => (props.$active ? "#fff" : "#333")};
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: ${(props) => (props.$active ? "bold" : "normal")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${(props) => (props.$active ? "#2980b9" : "#d0d0d0")};
+  }
 `;
 
 const MessageBadge = styled.span`
@@ -91,6 +167,31 @@ const MessageBadge = styled.span`
   font-size: 0.8rem;
   margin-left: 1rem;
   font-weight: bold;
+`;
+
+const OfflineNotification = styled.div`
+  padding: 0.75rem;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const OfflineStatus = styled.span`
+  font-weight: bold;
+`;
+
+const QueuedMessage = styled.div`
+  padding: 0.75rem;
+  background-color: #cce5ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  border-radius: 4px;
+  margin-bottom: 1rem;
 `;
 
 const DecryptionContainer = ({ id, key64 }) => {
@@ -438,8 +539,7 @@ const DecryptionContainer = ({ id, key64 }) => {
       {/* Show offline notification when needed */}
       {!networkStatus && (
         <WarningMessage title="You are offline">
-          Messages will be queued and sent automatically when your connection is
-          restored.
+          Messages will be queued and sent automatically when your connection is restored.
         </WarningMessage>
       )}
 
@@ -504,9 +604,7 @@ const DecryptionContainer = ({ id, key64 }) => {
               <Card
                 key={index}
                 clickable={isEditable}
-                onClick={() =>
-                  message.isReport ? handleReportClick(message) : null
-                }
+                onClick={() => message.isReport ? handleReportClick(message) : null}
                 headerRight={
                   message.timestamp && (
                     <MessageDate>{formatDate(message.timestamp)}</MessageDate>
@@ -540,17 +638,16 @@ const DecryptionContainer = ({ id, key64 }) => {
                 }
               >
                 <MessageContent>
-                  {message.message ||
-                    (message.reportData && message.reportData.entries
-                      ? [
-                          ...new Set(
-                            message.reportData.entries
-                              .map((entry) => entry.aiToolsUsed)
-                              .join(",")
-                              .split(","),
-                          ),
-                        ]
-                      : "")}
+                  {message.message || (
+                    message.reportData && message.reportData.entries ? 
+                    [...new Set(
+                      message.reportData.entries
+                        .map((entry) => entry.aiToolsUsed)
+                        .join(",")
+                        .split(","),
+                    )] : 
+                    ""
+                  )}
                   {isEditable && (
                     <div
                       style={{
@@ -571,7 +668,10 @@ const DecryptionContainer = ({ id, key64 }) => {
 
       <AddMessageForm>
         <ButtonRow>
-          <Button onClick={toggleAddForm} variant="primary">
+          <Button 
+            onClick={toggleAddForm}
+            variant="primary"
+          >
             {showAddForm ? "Hide Form" : "Add New Message"}
           </Button>
 

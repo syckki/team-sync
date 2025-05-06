@@ -732,7 +732,7 @@ const ReportForm = ({
                         ]}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
-                        disabled={readOnly}
+                        readonly={readOnly}
                       />
                     </div>
 
@@ -862,44 +862,47 @@ const ReportForm = ({
               />
             </div>
 
-            <ButtonRow>
-              <ActionButton type="button" onClick={addRow} disabled={readOnly}>
-                <AddIcon>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M8 12h8"></path>
-                    <path d="M12 8v8"></path>
-                  </svg>
-                </AddIcon>
-                Add Entry
-              </ActionButton>
-              
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <ActionButton 
-                  type="button" 
-                  onClick={handleSaveAsDraft} 
-                  disabled={isSubmitting || readOnly}
-                  style={{ 
-                    backgroundColor: '#f3f4f6', 
-                    color: '#4b5563',
-                    border: '1px solid #d1d5db'
-                  }}
-                >
-                  {isSubmitting ? "Saving..." : "Save as Draft"}
+            {/* Only show action buttons if not in read-only mode */}
+            {!readOnly && (
+              <ButtonRow>
+                <ActionButton type="button" onClick={addRow}>
+                  <AddIcon>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 12h8"></path>
+                      <path d="M12 8v8"></path>
+                    </svg>
+                  </AddIcon>
+                  Add Entry
                 </ActionButton>
+                
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <ActionButton 
+                    type="button" 
+                    onClick={handleSaveAsDraft} 
+                    disabled={isSubmitting}
+                    style={{ 
+                      backgroundColor: '#f3f4f6', 
+                      color: '#4b5563',
+                      border: '1px solid #d1d5db'
+                    }}
+                  >
+                    {isSubmitting ? "Saving..." : "Save as Draft"}
+                  </ActionButton>
 
-                <SubmitButton type="submit" disabled={isSubmitting || readOnly}>
-                  {isSubmitting ? "Submitting..." : "Submit Report"}
-                </SubmitButton>
-              </div>
-            </ButtonRow>
+                  <SubmitButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Submit Report"}
+                  </SubmitButton>
+                </div>
+              </ButtonRow>
+            )}
           </Form>
         )}
       </>

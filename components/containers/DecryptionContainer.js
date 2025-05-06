@@ -14,7 +14,7 @@ import {
 } from "../../lib/networkService";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
-import { Button, Message, ErrorMessage, WarningMessage, InfoMessage } from "../ui";
+import { Button, Message, ErrorMessage, WarningMessage, InfoMessage, Card } from "../ui";
 
 // Keeping styled component for backward compatibility
 // Will be replaced with Message components from UI library
@@ -601,16 +601,18 @@ const DecryptionContainer = ({ id, key64 }) => {
             const isEditable = message.isCurrentUser && message.isReport;
 
             return (
-              <MessageItem
+              <Card
                 key={index}
-                $isEditable={isEditable}
-                onClick={() =>
-                  message.isReport ? handleReportClick(message) : null
+                clickable={isEditable}
+                onClick={() => message.isReport ? handleReportClick(message) : null}
+                headerRight={
+                  message.timestamp && (
+                    <MessageDate>{formatDate(message.timestamp)}</MessageDate>
+                  )
                 }
-              >
-                <MessageHeader>
+                title={
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <MessageTitle>{message.title}</MessageTitle>
+                    {message.title}
                     {message.isQueued && (
                       <MessageBadge $isQueued={true}>Queued</MessageBadge>
                     )}
@@ -633,20 +635,19 @@ const DecryptionContainer = ({ id, key64 }) => {
                         <MessageBadge>Other</MessageBadge>
                       )}
                   </div>
-                  {message.timestamp && (
-                    <MessageDate>{formatDate(message.timestamp)}</MessageDate>
-                  )}
-                </MessageHeader>
+                }
+              >
                 <MessageContent>
-                  {console.log(message)}
-                  {message.message || [
-                    ...new Set(
+                  {message.message || (
+                    message.reportData && message.reportData.entries ? 
+                    [...new Set(
                       message.reportData.entries
                         .map((entry) => entry.aiToolsUsed)
                         .join(",")
                         .split(","),
-                    ),
-                  ]}
+                    )] : 
+                    ""
+                  )}
                   {isEditable && (
                     <div
                       style={{
@@ -659,7 +660,7 @@ const DecryptionContainer = ({ id, key64 }) => {
                     </div>
                   )}
                 </MessageContent>
-              </MessageItem>
+              </Card>
             );
           })}
         </MessagesList>

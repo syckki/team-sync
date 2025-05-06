@@ -51,13 +51,13 @@ const HeaderCell = styled.div`
   position: relative;
   min-width: 0; /* Allow cells to shrink below content size */
 
-  ${props => props.width && `
-    flex: 0 0 ${props.width};
-    min-width: ${props.width};
+  ${props => props.$width && `
+    flex: 0 0 ${props.$width};
+    min-width: ${props.$width};
   `}
 
   /* If it's the expansion column header cell */
-  ${props => props.isExpansion && `
+  ${props => props.$isExpansion && `
     flex: 0 0 40px;
     min-width: 40px;
   `}
@@ -82,11 +82,11 @@ const Row = styled.div`
   border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s ease;
 
-  ${props => props.isExpanded && `
+  ${props => props.$isExpanded && `
     background-color: rgba(78, 127, 255, 0.08);
   `}
 
-  ${props => props.isSummary && `
+  ${props => props.$isSummary && `
     background-color: #f8fafc;
     font-weight: 600;
     border-top: 2px solid #e2e8f0;
@@ -106,11 +106,11 @@ const Row = styled.div`
       background-color: #f8f9fa;
     }
 
-    ${props => props.isExpanded && `
+    ${props => props.$isExpanded && `
       background: none;
     `}
 
-    ${props => props.isSummary && `
+    ${props => props.$isSummary && `
       border: 2px solid #4e7fff;
     `}
   }
@@ -126,20 +126,20 @@ const Cell = styled.div`
   overflow: visible; /* Allow dropdowns to extend outside cells */
   min-width: 0; /* Allow cells to shrink below content size */
 
-  ${props => props.width && `
-    flex: 0 0 ${props.width};
-    min-width: ${props.width};
+  ${props => props.$width && `
+    flex: 0 0 ${props.$width};
+    min-width: ${props.$width};
   `}
 
   /* If it's the expansion column cell */
-  ${props => props.isExpansion && `
+  ${props => props.$isExpansion && `
     flex: 0 0 40px;
     min-width: 40px;
-    cursor: ${props.isMobile ? 'default' : 'pointer'};
+    cursor: ${props.$isMobile ? 'default' : 'pointer'};
   `}
 
   /* For action column */
-  ${props => props.isAction && props.isMobile && `
+  ${props => props.$isAction && props.$isMobile && `
     display: none !important;
   `}
 
@@ -164,7 +164,7 @@ const Cell = styled.div`
       flex-shrink: 0;
     }
 
-    ${props => props.isSummary && `
+    ${props => props.$isSummary && `
       &:before {
         color: #4e7fff;
       }
@@ -205,7 +205,7 @@ const ExpandIcon = styled.div`
   -moz-user-select: none;
   -ms-user-select: none;
 
-  ${props => props.isExpanded && `
+  ${props => props.$isExpanded && `
     transform: rotate(90deg);
   `}
 `;
@@ -308,13 +308,13 @@ const ResponsiveTable = ({
           <HeaderRow role="row">
             {/* Add expansion column if expandable rows are enabled */}
             {expandableRowRender && (
-              <HeaderCell isExpansion role="columnheader"></HeaderCell>
+              <HeaderCell $isExpansion role="columnheader"></HeaderCell>
             )}
 
             {columns.map((column, index) => (
               <HeaderCell
                 key={index}
-                width={column.width}
+                $width={column.width}
                 role="columnheader"
                 aria-label={column.header}
               >
@@ -343,13 +343,13 @@ const ResponsiveTable = ({
                 {/* Main Row */}
                 <Row 
                   role="row" 
-                  isExpanded={isExpanded}
+                  $isExpanded={isExpanded}
                 >
                   {/* Expansion toggle for desktop or sequence # for mobile */}
                   {expandableRowRender && (
                     <Cell
-                      isExpansion
-                      isMobile={isMobile}
+                      $isExpansion
+                      $isMobile={isMobile}
                       role="cell"
                       onClick={() =>
                         !isMobile && onRowToggle && onRowToggle(row[keyField])
@@ -369,7 +369,7 @@ const ResponsiveTable = ({
                         </MobileTitle>
                       ) : (
                         // Show expand/collapse icon on desktop
-                        <ExpandIcon isExpanded={isExpanded}>
+                        <ExpandIcon $isExpanded={isExpanded}>
                           <svg
                             width="16"
                             height="16"
@@ -431,7 +431,7 @@ const ResponsiveTable = ({
 
           {/* Summary row if provided */}
           {summaryRow && (
-            <Row role="row" isSummary>
+            <Row role="row" $isSummary>
               {/* Add empty cell for expansion column if expandable rows are enabled */}
               {expandableRowRender && (
                 <Cell isExpansion role="cell"></Cell>

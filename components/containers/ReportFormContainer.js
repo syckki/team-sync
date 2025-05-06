@@ -466,30 +466,79 @@ const ReportFormContainer = ({
     }
   };
 
-  // Pass all state and handlers to the presentation component
+  // Handle adding a predicted task to the form
+  const handleAddPredictedTask = (task) => {
+    // Convert the prediction to a form row
+    const newRow = {
+      id: Date.now(),
+      platform: task.platform || "",
+      projectInitiative: "",
+      sdlcStep: "",
+      sdlcTask: "",
+      taskCategory: task.taskCategory || "",
+      estimatedTimeWithoutAI: task.estimatedTimeWithoutAI || "",
+      actualTimeWithAI: task.actualTimeWithAI || "",
+      timeSaved: task.timeSaving || "",
+      complexity: task.complexity || "Medium",
+      qualityImpact: "",
+      aiToolsUsed: task.aiToolsUsed || [],
+      taskDetails: "",
+      notesHowAIHelped: "",
+    };
+    
+    // Add the row to the form
+    setRows((prevRows) => [...prevRows, newRow]);
+    
+    // Automatically expand the new row
+    setExpandedRows((prev) => ({
+      ...prev,
+      [newRow.id]: true,
+    }));
+  };
+  
+  // Handle updating tasks based on schedule
+  const handleUpdateTasksFromSchedule = (scheduledTasks) => {
+    // This would rearrange existing tasks based on the schedule
+    // We'd need a more sophisticated implementation for a real app
+    console.log('Tasks updated from schedule:', scheduledTasks);
+  };
+  
+  // Return both the form and the task prediction container
   return (
-    <ReportForm
-      teamName={teamName}
-      teamMember={teamMember}
-      setTeamMember={setTeamMember}
-      teamRole={teamRole}
-      setTeamRole={setTeamRole}
-      rows={rows}
-      expandedRows={expandedRows}
-      toggleRowExpansion={toggleRowExpansion}
-      handleRowChange={handleRowChange}
-      handleSDLCStepChange={handleSDLCStepChange}
-      addRow={addRow}
-      removeRow={removeRow}
-      handleSubmit={handleSubmit}
-      handleSaveAsDraft={handleSaveAsDraft}
-      isSubmitting={isSubmitting}
-      error={error}
-      success={success}
-      successMessage={successMessage}
-      teamMemberOptions={teamMemberOptions}
-      readOnly={isReadOnly} // Pass readOnly to the form
-    />
+    <>
+      {!isReadOnly && (
+        <TaskPredictionContainer
+          historicalReports={historicalReports}
+          currentTasks={rows}
+          userPreferences={userPreferences}
+          onAddTask={handleAddPredictedTask}
+          onUpdateTasks={handleUpdateTasksFromSchedule}
+        />
+      )}
+      
+      <ReportForm
+        teamName={teamName}
+        teamMember={teamMember}
+        setTeamMember={setTeamMember}
+        teamRole={teamRole}
+        setTeamRole={setTeamRole}
+        rows={rows}
+        expandedRows={expandedRows}
+        toggleRowExpansion={toggleRowExpansion}
+        handleRowChange={handleRowChange}
+        handleSDLCStepChange={handleSDLCStepChange}
+        addRow={addRow}
+        removeRow={removeRow}
+        handleSubmit={handleSubmit}
+        handleSaveAsDraft={handleSaveAsDraft}
+        isSubmitting={isSubmitting}
+        error={error}
+        success={success}
+        successMessage={successMessage}
+        teamMemberOptions={teamMemberOptions}
+        readOnly={isReadOnly} // Pass readOnly to the form
+      />
+    </>
   );
 };
 

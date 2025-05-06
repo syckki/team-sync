@@ -98,13 +98,15 @@ const CreatableMultiSelect = ({
   placeholder,
   storageKey,
   readonly = false,
+  disabled = false,
 }) => {
-  // If in readonly mode, render a simple display
-  if (readonly) {
+  // If in readonly or disabled mode, render a simple display
+  if (readonly || disabled) {
     return (
       <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
-        {value.length > 0 &&
-          value.map((item, index) => <span key={index}>{item}</span>)}
+        {value.length > 0 ?
+          value.map((item, index) => <span key={index}>{item}</span>) :
+          placeholder ? `(${placeholder})` : ""}
       </ReadonlyMultiField>
     );
   }

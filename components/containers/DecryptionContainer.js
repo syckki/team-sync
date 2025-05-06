@@ -14,8 +14,10 @@ import {
 } from "../../lib/networkService";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
-import { Button } from "../ui";
+import { Button, Message, ErrorMessage, WarningMessage, InfoMessage } from "../ui";
 
+// Keeping styled component for backward compatibility
+// Will be replaced with Message components from UI library
 const ErrorContainer = styled.div`
   padding: 1rem;
   margin: 1rem 0;
@@ -520,11 +522,11 @@ const DecryptionContainer = ({ id, key64 }) => {
   }
 
   if (error) {
-    return <ErrorContainer>{error}</ErrorContainer>;
+    return <ErrorMessage>{error}</ErrorMessage>;
   }
   /*
   if (!threadMessages || threadMessages.length === 0) {
-    return <ErrorContainer>No messages found in this thread.</ErrorContainer>;
+    return <InfoMessage>No messages found in this thread.</InfoMessage>;
   }
 */
   // Since filtering is now done on the backend, we can just use the messages directly
@@ -536,20 +538,17 @@ const DecryptionContainer = ({ id, key64 }) => {
     <>
       {/* Show offline notification when needed */}
       {!networkStatus && (
-        <OfflineNotification>
-          <div>
-            <OfflineStatus>You are offline.</OfflineStatus> Messages will be
-            queued and sent automatically when your connection is restored.
-          </div>
-        </OfflineNotification>
+        <WarningMessage title="You are offline">
+          Messages will be queued and sent automatically when your connection is restored.
+        </WarningMessage>
       )}
 
       {/* Show queued message notification */}
       {isMessageQueued && (
-        <QueuedMessage>
+        <InfoMessage title="Message Queued">
           Your message has been queued and will be sent automatically when your
           connection is restored.
-        </QueuedMessage>
+        </InfoMessage>
       )}
 
       <MessagesContainer>
@@ -591,15 +590,9 @@ const DecryptionContainer = ({ id, key64 }) => {
 
         {/* If user is not the creator, show info message about visibility */}
         {!isThreadCreator && (
-          <ErrorContainer
-            style={{
-              backgroundColor: "#f8f9fa",
-              color: "#495057",
-              borderLeft: "4px solid #6c757d",
-            }}
-          >
+          <InfoMessage>
             Note: You can only see messages you've created in this thread.
-          </ErrorContainer>
+          </InfoMessage>
         )}
 
         <MessagesList>

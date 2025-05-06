@@ -2,6 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { Card, Button, Input, ErrorMessage } from "../../../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -76,7 +77,8 @@ const ContentContainer = styled.div`
   }
 `;
 
-const ErrorMessage = styled.div`
+// Renamed to avoid conflict with imported ErrorMessage component
+const StyledErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
@@ -149,43 +151,51 @@ const JoinToThreadPage = () => {
         />
       </Head>
 
-      <Container>
-        <HeaderBanner>
-          <PageTitle>
-            <LockIcon>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-            </LockIcon>
-            Join an Existing Channel
-          </PageTitle>
-          <PageSubtitle>Enter the shared access key to continue.</PageSubtitle>
-        </HeaderBanner>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <Card
+          noPadding
+          noPaddingHeader
+        >
+          <HeaderBanner>
+            <PageTitle>
+              <LockIcon>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </LockIcon>
+              Join an Existing Channel
+            </PageTitle>
+            <PageSubtitle>Enter the shared access key to continue.</PageSubtitle>
+          </HeaderBanner>
 
-        <ContentContainer>
-          <KeyInputForm onSubmit={handleKeySubmit}>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+          <ContentContainer>
+            <KeyInputForm onSubmit={handleKeySubmit}>
+              {error && <ErrorMessage>{error}</ErrorMessage>}
 
-            <KeyInput
-              type="text"
-              value={manualKey}
-              onChange={(e) => setManualKey(e.target.value)}
-              placeholder="Paste the access key shared with you"
-              required
-            />
+              <Input
+                type="text"
+                value={manualKey}
+                onChange={(e) => setManualKey(e.target.value)}
+                placeholder="Paste the access key shared with you"
+                label="Access Key"
+                required
+              />
 
-            <SubmitButton type="submit">Join Channel</SubmitButton>
-          </KeyInputForm>
-        </ContentContainer>
-      </Container>
+              <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+                <Button type="submit" variant="primary">Join Channel</Button>
+              </div>
+            </KeyInputForm>
+          </ContentContainer>
+        </Card>
+      </div>
     </>
   );
 };

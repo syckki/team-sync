@@ -2,7 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import { Card, Button, Input, ErrorMessage } from "../../../components/ui";
+import { Card, Button, Input, ErrorMessage, ContentContainer } from "../../../components/ui";
 
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
@@ -56,13 +56,7 @@ const PageSubtitle = styled.p`
   }
 `;
 
-const ContentContainer = styled.div`
-  padding: 0 2rem 2rem;
-
-  @media (max-width: 768px) {
-    padding: 0 1rem 1.5rem;
-  }
-`;
+// Using ContentContainer from UI components
 
 const KeyInputForm = styled.form`
   margin: 2rem auto;

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import DecryptionContainer from "../../../components/containers/DecryptionContainer";
 import Head from "next/head";
 import styled from "styled-components";
+import { ContentContainer, ErrorMessage } from "../../../components/ui";
 
 const Container = styled.div`
   width: 100%;
@@ -69,29 +70,11 @@ const PageSubtitle = styled.p`
   }
 `;
 
-const ContentContainer = styled.div`
-  padding: 0 2rem 2rem;
-
-  @media (max-width: 768px) {
-    padding: 0 1rem 1.5rem;
-  }
-`;
-
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
   color: ${({ theme }) => theme.colors.text};
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: ${({ theme }) => theme.colors.error};
-  background: ${({ theme }) => theme.colors.errorBg};
-  border-radius: 8px;
-  margin-top: 2rem;
 `;
 
 const ViewPage = ({ pageProps }) => {

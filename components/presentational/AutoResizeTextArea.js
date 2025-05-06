@@ -20,7 +20,7 @@ const TextareaBase = styled.textarea`
 `;
 
 // Styled component for readonly display
-const ReadonlyField = styled.div`
+const ReadonlyField = styled.span`
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid #e5e7eb;
@@ -63,13 +63,13 @@ const AutoResizeTextArea = ({
   placeholder,
   ...props
 }) => {
-  const textAreaRef = useAutoResizeTextArea(value);
-
   if (readonly) {
     return (
       <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
+
+  const textAreaRef = useAutoResizeTextArea(value);
 
   return (
     <TextareaBase

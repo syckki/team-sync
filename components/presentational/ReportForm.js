@@ -2,7 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { Breakpoint } from "../../lib/styles";
 
-import CustomSelect from "./CustomSelect";
+import CustomSelect, { ReadonlyField } from "./CustomSelect";
+import CustomInput from "./CustomInput";
 import CreatableComboBox from "./CreatableComboBox";
 import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
@@ -457,7 +458,7 @@ const ReportForm = ({
       actionHint:
         "Enter your honest estimate of how long this would have taken without AI.",
       render: (value, row) => (
-        <Input
+        <CustomInput
           type="number"
           min="0"
           step="0.25"
@@ -474,7 +475,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
-          readOnly={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -486,7 +487,7 @@ const ReportForm = ({
         "Actual time the task took using AI tools. Shows real-time savings through color-coding (green when faster, red when slower).",
       actionHint: "Record the actual time spent including AI assistance.",
       render: (value, row) => (
-        <Input
+        <CustomInput
           type="number"
           min="0"
           step="0.25"
@@ -502,7 +503,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
-          readOnly={readOnly}
+          readonly={readOnly}
           style={{
             width: "100px",
             color:
@@ -537,7 +538,7 @@ const ReportForm = ({
           }
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -572,7 +573,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -613,7 +614,8 @@ const ReportForm = ({
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && (
         <SuccessMessage>
-          {successMessage || "Your AI productivity report has been submitted successfully!"}
+          {successMessage ||
+            "Your AI productivity report has been submitted successfully!"}
         </SuccessMessage>
       )}
       <>
@@ -629,13 +631,7 @@ const ReportForm = ({
                     actionHint="This field is pre-filled and cannot be edited."
                   />
                 </Label>
-                <Input
-                  type="text"
-                  id="teamName"
-                  value={teamName}
-                  readOnly
-                  required
-                />
+                <ReadonlyField>{teamName}</ReadonlyField>
               </FormGroup>
 
               <FormGroup>
@@ -658,7 +654,7 @@ const ReportForm = ({
                   autoCorrect="off"
                   autoCapitalize="off"
                   aria-autocomplete="none"
-                  disabled={readOnly}
+                  readonly={readOnly}
                 />
               </FormGroup>
 
@@ -671,7 +667,7 @@ const ReportForm = ({
                     actionHint="Enter your specific role within the team."
                   />
                 </Label>
-                <Input
+                <CustomInput
                   type="text"
                   id="teamRole"
                   value={teamRole}
@@ -684,7 +680,7 @@ const ReportForm = ({
                   autoCorrect="off"
                   autoCapitalize="off"
                   aria-autocomplete="none"
-                  readOnly={readOnly}
+                  readonly={readOnly}
                 />
               </FormGroup>
             </TeamFormSection>
@@ -773,7 +769,7 @@ const ReportForm = ({
                           autoCorrect="off"
                           autoCapitalize="off"
                           aria-autocomplete="none"
-                          readOnly={readOnly}
+                          readonly={readOnly}
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -816,7 +812,7 @@ const ReportForm = ({
                           autoCorrect="off"
                           autoCapitalize="off"
                           aria-autocomplete="none"
-                          readOnly={readOnly}
+                          readonly={readOnly}
                           style={{
                             width: "100%",
                             border: "1px solid #e2e8f0",
@@ -883,16 +879,16 @@ const ReportForm = ({
                   </AddIcon>
                   Add Entry
                 </ActionButton>
-                
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <ActionButton 
-                    type="button" 
-                    onClick={handleSaveAsDraft} 
+
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <ActionButton
+                    type="button"
+                    onClick={handleSaveAsDraft}
                     disabled={isSubmitting}
-                    style={{ 
-                      backgroundColor: '#f3f4f6', 
-                      color: '#4b5563',
-                      border: '1px solid #d1d5db'
+                    style={{
+                      backgroundColor: "#f3f4f6",
+                      color: "#4b5563",
+                      border: "1px solid #d1d5db",
                     }}
                   >
                     {isSubmitting ? "Saving..." : "Save as Draft"}

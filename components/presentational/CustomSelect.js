@@ -114,7 +114,7 @@ export const ComboBoxOption = styled.li`
 `;
 
 // Styled component for readonly display
-export const ReadonlyField = styled.div`
+export const ReadonlyField = styled.span`
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid #e5e7eb;
@@ -140,15 +140,15 @@ const CustomSelect = ({
   disabled = false,
   readonly = false,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectRef = useRef(null);
-
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
       <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
+
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {

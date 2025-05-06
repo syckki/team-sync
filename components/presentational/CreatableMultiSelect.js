@@ -99,12 +99,6 @@ const CreatableMultiSelect = ({
   storageKey,
   readonly = false,
 }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [filteredOptions, setFilteredOptions] = useState([]);
-  const containerRef = useRef(null);
-  const inputRef = useRef(null);
-
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
@@ -114,6 +108,12 @@ const CreatableMultiSelect = ({
       </ReadonlyMultiField>
     );
   }
+
+  const [inputValue, setInputValue] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Update filtered options when input changes
   useEffect(() => {

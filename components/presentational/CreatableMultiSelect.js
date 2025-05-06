@@ -105,8 +105,16 @@ const CreatableMultiSelect = ({
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
-  // All hooks must be called unconditionally before any conditional returns
-  
+  // If in readonly mode, render a simple display
+  if (readonly) {
+    return (
+      <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
+        {value.length > 0 &&
+          value.map((item, index) => <span key={index}>{item}</span>)}
+      </ReadonlyMultiField>
+    );
+  }
+
   // Update filtered options when input changes
   useEffect(() => {
     if (inputValue.trim() === "") {
@@ -209,16 +217,6 @@ const CreatableMultiSelect = ({
       setIsOpen(false);
     }
   };
-
-  // If in readonly mode, render a simple display (after all hooks have been called)
-  if (readonly) {
-    return (
-      <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
-        {value.length > 0 &&
-          value.map((item, index) => <span key={index}>{item}</span>)}
-      </ReadonlyMultiField>
-    );
-  }
 
   return (
     <MultiSelectContainer ref={containerRef}>

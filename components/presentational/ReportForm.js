@@ -537,7 +537,7 @@ const ReportForm = ({
           }
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
-          readonly={readOnly}
+          disabled={readOnly}
         />
       ),
     },
@@ -572,7 +572,7 @@ const ReportForm = ({
           autoCorrect="off"
           autoCapitalize="off"
           aria-autocomplete="none"
-          readonly={readOnly}
+          disabled={readOnly}
         />
       ),
     },
@@ -658,7 +658,7 @@ const ReportForm = ({
                   autoCorrect="off"
                   autoCapitalize="off"
                   aria-autocomplete="none"
-                  readonly={readOnly}
+                  disabled={readOnly}
                 />
               </FormGroup>
 

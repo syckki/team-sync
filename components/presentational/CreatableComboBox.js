@@ -43,17 +43,16 @@ const CreatableComboBox = ({
   const [filteredOptions, setFilteredOptions] = useState([]);
   const inputRef = useRef(null);
 
-  // We need to call hooks unconditionally
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-  
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
       <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
 
   // Update filtered options when input changes
   useEffect(() => {

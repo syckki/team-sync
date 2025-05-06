@@ -11,6 +11,7 @@ const TextareaBase = styled.textarea`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
+  min-height: 2.25rem;
 
   &:focus {
     outline: none;
@@ -21,14 +22,15 @@ const TextareaBase = styled.textarea`
 
 // Styled component for readonly display
 const ReadonlyField = styled.span`
+  display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
   background-color: #f9fafb;
   min-height: 2.25rem;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.25rem;
   color: #374151;
   white-space: pre-wrap;
 

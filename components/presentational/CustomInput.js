@@ -42,7 +42,7 @@ const CustomInput = ({
         className={!value ? "empty" : ""} 
         style={style}
       >
-        {value || (placeholder ? `(${placeholder})` : "")}
+        {value}
       </ReadonlyField>
     );
   }

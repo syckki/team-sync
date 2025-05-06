@@ -22,7 +22,8 @@ const TextareaBase = styled.textarea`
 
 // Styled component for readonly display
 const ReadonlyField = styled.span`
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid hsl(20 5.9% 90%);

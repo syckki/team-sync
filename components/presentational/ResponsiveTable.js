@@ -411,7 +411,7 @@ const ResponsiveTable = ({
                         $width={column.width}
                         data-label={column.header} // Important for mobile view labels
                         role="cell"
-                        $isAction={column.isAction}
+                        $isAction={column.header === "Action"}
                         $isMobile={isMobile}
                       >
                         {isMobile && column.tooltip && (

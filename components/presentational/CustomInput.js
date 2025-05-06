@@ -33,11 +33,16 @@ const CustomInput = ({
   step,
   id,
   className,
+  autoWrap = false,
   ...rest
 }) => {
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""} style={style}>
+      <ReadonlyField
+        $autoWrap={autoWrap}
+        className={!value ? "empty" : ""}
+        style={style}
+      >
         {value}
       </ReadonlyField>
     );

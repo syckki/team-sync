@@ -10,7 +10,6 @@ const TableContainer = styled.div`
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   font-size: 0.875rem;
 `;
 
@@ -52,7 +51,9 @@ const HeaderCell = styled.div`
   min-width: 0; /* Allow cells to shrink below content size */
   box-sizing: border-box;
 
-  ${props => props.$width && `
+  ${(props) =>
+    props.$width &&
+    `
     flex: 0 0 ${props.$width};
     width: ${props.$width};
     min-width: ${props.$width};
@@ -60,11 +61,24 @@ const HeaderCell = styled.div`
   `}
 
   /* If it's the expansion column header cell */
-  ${props => props.$isExpansion && `
+  ${(props) =>
+    props.$isExpansion &&
+    !props.$isMobile &&
+    `
     flex: 0 0 40px;
     width: 40px;
     min-width: 40px;
     max-width: 40px;
+  `}
+
+  /* For action column */
+  ${(props) =>
+    props.$isAction &&
+    `
+    flex: 0 0 64px;
+    width: 64px;
+    min-width: 64px;
+    max-width: 64px;
   `}
 
   @media (max-width: ${Breakpoint.LAPTOP}px) {
@@ -78,20 +92,34 @@ const TableBody = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+
+  div[role="row"] {
+    @media (max-width: ${Breakpoint.LAPTOP}px) {
+      /* Alternating row background for better readability */
+      &:nth-child(4n-1),
+      &:nth-child(4n) {
+        background-color: #f8f9fa;
+      }
+    }
+  }
 `;
 
 // Row (Replaces <tr>)
 const Row = styled.div`
   display: flex;
   width: 100%;
-  border-bottom: 1px solid #e2e8f0;
+  /*border-bottom: 1px solid #e2e8f0;*/
   transition: background-color 0.2s ease;
 
-  ${props => props.$isExpanded && `
+  ${(props) =>
+    props.$isExpanded &&
+    `
     background-color: rgba(78, 127, 255, 0.08);
   `}
 
-  ${props => props.$isSummary && `
+  ${(props) =>
+    props.$isSummary &&
+    `
     background-color: #f8fafc;
     font-weight: 600;
     border-top: 2px solid #e2e8f0;
@@ -99,23 +127,16 @@ const Row = styled.div`
 
   @media (max-width: ${Breakpoint.LAPTOP}px) {
     flex-direction: column;
-    margin-bottom: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-    /* Alternating row background for better readability */
-    &:nth-child(4n-1),
-    &:nth-child(4n) {
-      background-color: #f8f9fa;
-    }
-
-    ${props => props.$isExpanded && `
+    ${(props) =>
+      props.$isExpanded &&
+      `
       background: none;
     `}
 
-    ${props => props.$isSummary && `
+    ${(props) =>
+      props.$isSummary &&
+      `
       border: 2px solid #4e7fff;
     `}
   }
@@ -132,7 +153,10 @@ const Cell = styled.div`
   min-width: 0; /* Allow cells to shrink below content size */
   box-sizing: border-box;
 
-  ${props => props.$width && `
+  ${(props) =>
+    props.$width &&
+    !props.$isMobile &&
+    `
     flex: 0 0 ${props.$width};
     width: ${props.$width};
     min-width: ${props.$width};
@@ -140,16 +164,32 @@ const Cell = styled.div`
   `}
 
   /* If it's the expansion column cell */
-  ${props => props.$isExpansion && `
+  ${(props) =>
+    props.$isExpansion &&
+    !props.$isMobile &&
+    `
     flex: 0 0 40px;
     width: 40px;
     min-width: 40px;
     max-width: 40px;
-    cursor: ${props.$isMobile ? 'default' : 'pointer'};
+    cursor: ${props.$isMobile ? "default" : "pointer"};
   `}
 
   /* For action column */
-  ${props => props.$isAction && props.$isMobile && `
+  ${(props) =>
+    props.$isAction &&
+    !props.$isMobile &&
+    `
+    flex: 0 0 64px;
+    width: 64px;
+    min-width: 64px;
+    max-width: 64px;
+  `}
+  
+  ${(props) =>
+    props.$isAction &&
+    props.$isMobile &&
+    `
     display: none !important;
   `}
 
@@ -170,11 +210,24 @@ const Cell = styled.div`
       color: #444;
       font-size: 0.85rem;
       text-align: left;
-      margin-right: 0.5rem;
       flex-shrink: 0;
     }
 
-    ${props => props.$isSummary && `
+    > div:first-of-type {
+      margin-right: 0.5rem; /* Space between tooltip and content */
+    }
+
+    > * {
+      width: auto;
+
+      &:last-child {
+        margin-left: auto;
+      }
+    }
+
+    ${(props) =>
+      props.$isSummary &&
+      `
       &:before {
         color: #4e7fff;
       }
@@ -215,7 +268,9 @@ const ExpandIcon = styled.div`
   -moz-user-select: none;
   -ms-user-select: none;
 
-  ${props => props.$isExpanded && `
+  ${(props) =>
+    props.$isExpanded &&
+    `
     transform: rotate(90deg);
   `}
 `;
@@ -327,9 +382,10 @@ const ResponsiveTable = ({
                 $width={column.width}
                 role="columnheader"
                 aria-label={column.header}
+                $isAction={column.header === "Action"}
               >
                 <div style={{ display: "flex", alignItems: "center" }}>
-                  {column.header}
+                  {column.header !== "Action" && column.header}
                   {column.tooltip && (
                     <InfoTooltip
                       title={column.header}
@@ -346,15 +402,13 @@ const ResponsiveTable = ({
         {/* Table Body */}
         <TableBody role="rowgroup">
           {data.map((row, rowIndex) => {
-            const isExpanded = expandableRowRender && effectiveExpandedRows[row[keyField]];
-            
+            const isExpanded =
+              expandableRowRender && effectiveExpandedRows[row[keyField]];
+
             return (
               <React.Fragment key={row[keyField] || rowIndex}>
                 {/* Main Row */}
-                <Row 
-                  role="row" 
-                  $isExpanded={isExpanded}
-                >
+                <Row role="row" $isExpanded={isExpanded}>
                   {/* Expansion toggle for desktop or sequence # for mobile */}
                   {expandableRowRender && (
                     <Cell
@@ -443,9 +497,7 @@ const ResponsiveTable = ({
           {summaryRow && (
             <Row role="row" $isSummary>
               {/* Add empty cell for expansion column if expandable rows are enabled */}
-              {expandableRowRender && (
-                <Cell $isExpansion role="cell"></Cell>
-              )}
+              {expandableRowRender && <Cell $isExpansion role="cell"></Cell>}
 
               {columns.map((column, colIndex) => (
                 <Cell
@@ -462,7 +514,7 @@ const ResponsiveTable = ({
           )}
         </TableBody>
       </FlexTable>
-      
+
       {/* Custom summary row if provided */}
       {customSummaryRow && customSummaryRow()}
     </TableContainer>

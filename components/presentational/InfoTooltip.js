@@ -7,6 +7,7 @@ const TooltipContainer = styled.div`
   margin-left: 0.35rem;
   vertical-align: middle;
   cursor: pointer;
+  z-index: 5; /* Give it a z-index higher than normal content but lower than the tooltip content */
 `;
 
 const InfoIcon = styled.div`
@@ -40,7 +41,7 @@ const TooltipContent = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 0.75rem;
   line-height: 1.4;
-  z-index: 9999; /* Increased z-index to ensure it's above everything */
+  z-index: 99999; /* Extremely high z-index to ensure it's above all dropdowns */
   visibility: ${props => (props.$visible ? "visible" : "hidden")};
   opacity: ${props => (props.$visible ? 1 : 0)};
   transition: opacity 0.2s;
@@ -48,6 +49,7 @@ const TooltipContent = styled.div`
   overflow-y: auto; /* Allow scrolling for very long content */
   letter-spacing: normal;
   text-transform: none;
+  pointer-events: ${props => (props.$visible ? "auto" : "none")};
   
   /* Positions set dynamically with JavaScript */
 `;
@@ -59,9 +61,10 @@ const TooltipArrow = styled.div`
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-bottom: 6px solid #ffffff;
-  z-index: 10000;
+  z-index: 99999; /* Match tooltip content z-index */
   visibility: ${props => (props.$visible ? "visible" : "hidden")};
   opacity: ${props => (props.$visible ? 1 : 0)};
+  pointer-events: none;
   
   ${props => props.$position === 'top' && `
     transform: rotate(180deg);
@@ -129,20 +132,20 @@ const InfoTooltip = ({ title, content, actionHint, position = "auto" }) => {
     // Minimum space needed with padding
     const minSpaceNeeded = 10;
     
-    // Determine best position
-    let bestPosition = position !== "auto" ? position : "bottom";
+    // Determine best position - always prefer top position to avoid being hidden by dropdowns
+    let bestPosition = position !== "auto" ? position : "top";
     if (position === "auto") {
-      // Auto-detect best position
-      if (spaceBelow >= tooltipHeight + minSpaceNeeded) {
-        bestPosition = "bottom";
-      } else if (spaceAbove >= tooltipHeight + minSpaceNeeded) {
+      // Auto-detect best position, prioritizing 'top' if there's enough space
+      if (spaceAbove >= tooltipHeight + minSpaceNeeded) {
         bestPosition = "top";
+      } else if (spaceBelow >= tooltipHeight + minSpaceNeeded) {
+        bestPosition = "bottom";
       } else if (spaceRight >= tooltipWidth + minSpaceNeeded) {
         bestPosition = "right";
       } else if (spaceLeft >= tooltipWidth + minSpaceNeeded) {
         bestPosition = "left";
       }
-      // If no ideal position, fallback to bottom with scrolling
+      // If no ideal position, fallback to top with scrolling
     }
     
     // Calculate specific coordinates based on chosen position

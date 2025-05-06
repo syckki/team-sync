@@ -37,10 +37,13 @@ const CreatableComboBox = ({
   storageKey,
   disabled = false,
   readonly = false,
+  autoWrap = false,
 }) => {
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
+      <ReadonlyField $autoWrap={autoWrap} className={!value ? "empty" : ""}>
+        {value}
+      </ReadonlyField>
     );
   }
 

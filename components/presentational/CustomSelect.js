@@ -122,9 +122,17 @@ export const ReadonlyField = styled.span`
   border-radius: calc(0.5rem - 2px);
   background-color: #f9fafb;
   min-height: 2.25rem;
+
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: #374151;
+
+  ${(props) =>
+    props.$autoWrap &&
+    `
+    min-height: 100%;
+    hyphens: auto;
+  `}
 
   &.empty {
     font-style: italic;
@@ -140,10 +148,13 @@ const CustomSelect = ({
   placeholder,
   disabled = false,
   readonly = false,
+  autoWrap = false,
 }) => {
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
+      <ReadonlyField $autoWrap={autoWrap} className={!value ? "empty" : ""}>
+        {value}
+      </ReadonlyField>
     );
   }
 

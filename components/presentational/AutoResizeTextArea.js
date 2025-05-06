@@ -34,6 +34,13 @@ const ReadonlyField = styled.span`
   color: #374151;
   white-space: pre-wrap;
 
+  ${(props) =>
+    props.$autoWrap &&
+    `
+    min-height: 100%;
+    hyphens: auto;
+  `}
+
   &.empty {
     font-style: italic;
     color: #9ca3af;
@@ -63,11 +70,14 @@ const AutoResizeTextArea = ({
   onChange,
   readonly = false,
   placeholder,
+  autoWrap = false,
   ...props
 }) => {
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
+      <ReadonlyField $autoWrap={autoWrap} className={!value ? "empty" : ""}>
+        {value}
+      </ReadonlyField>
     );
   }
 

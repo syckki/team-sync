@@ -98,10 +98,14 @@ const CreatableMultiSelect = ({
   placeholder,
   storageKey,
   readonly = false,
+  autoWrap = false,
 }) => {
   if (readonly) {
     return (
-      <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
+      <ReadonlyMultiField
+        $autoWrap={autoWrap}
+        className={value.length === 0 ? "empty" : ""}
+      >
         {value.length > 0
           ? value.map((item, index) => <span key={index}>{item}</span>)
           : ""}

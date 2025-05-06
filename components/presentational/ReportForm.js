@@ -360,6 +360,7 @@ const ReportForm = ({
           storageKey="platformOptions"
           autoComplete="off"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -380,6 +381,7 @@ const ReportForm = ({
           storageKey="projectOptions"
           autoComplete="off"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -398,6 +400,7 @@ const ReportForm = ({
           storageKey="sdlcStepOptions"
           autoComplete="off"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -417,6 +420,7 @@ const ReportForm = ({
           readonly={readOnly}
           disabled={!row.sdlcStep && !readOnly}
           autoComplete="off"
+          autoWrap
         />
       ),
     },
@@ -447,6 +451,7 @@ const ReportForm = ({
           storageKey="taskCategoryOptions"
           autoComplete="off"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -469,7 +474,6 @@ const ReportForm = ({
           }
           required
           placeholder="Est (Hrs)"
-          style={{ width: "115px" }}
           autoComplete="new-password"
           data-lpignore="true"
           spellCheck="false"
@@ -477,6 +481,7 @@ const ReportForm = ({
           autoCapitalize="off"
           aria-autocomplete="none"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -505,8 +510,8 @@ const ReportForm = ({
           autoCapitalize="off"
           aria-autocomplete="none"
           readonly={readOnly}
+          autoWrap
           style={{
-            width: "115px",
             color:
               row.estimatedTimeWithoutAI && row.actualTimeWithAI
                 ? parseFloat(row.actualTimeWithAI) <
@@ -540,6 +545,7 @@ const ReportForm = ({
           options={["Low", "Medium", "High"]}
           placeholder="Complexity"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -575,6 +581,7 @@ const ReportForm = ({
           autoCapitalize="off"
           aria-autocomplete="none"
           readonly={readOnly}
+          autoWrap
         />
       ),
     },
@@ -585,7 +592,7 @@ const ReportForm = ({
     tableColumns.push({
       header: "Action",
       field: "action",
-      render: (value, row) =>
+      render: (_, row) =>
         rows.length > 1 ? (
           <DeleteButton
             className="delete-action-button"

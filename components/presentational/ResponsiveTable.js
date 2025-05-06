@@ -45,21 +45,26 @@ const HeaderCell = styled.div`
   letter-spacing: 0.05em;
   padding: 0.75rem;
   text-align: left;
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   position: relative;
   min-width: 0; /* Allow cells to shrink below content size */
+  box-sizing: border-box;
 
   ${props => props.$width && `
     flex: 0 0 ${props.$width};
+    width: ${props.$width};
     min-width: ${props.$width};
+    max-width: ${props.$width};
   `}
 
   /* If it's the expansion column header cell */
   ${props => props.$isExpansion && `
     flex: 0 0 40px;
+    width: 40px;
     min-width: 40px;
+    max-width: 40px;
   `}
 
   @media (max-width: ${Breakpoint.LAPTOP}px) {
@@ -119,22 +124,27 @@ const Row = styled.div`
 // Cell (Replaces <td>)
 const Cell = styled.div`
   padding: 0.75rem;
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   position: relative;
   overflow: visible; /* Allow dropdowns to extend outside cells */
   min-width: 0; /* Allow cells to shrink below content size */
+  box-sizing: border-box;
 
   ${props => props.$width && `
     flex: 0 0 ${props.$width};
+    width: ${props.$width};
     min-width: ${props.$width};
+    max-width: ${props.$width};
   `}
 
   /* If it's the expansion column cell */
   ${props => props.$isExpansion && `
     flex: 0 0 40px;
+    width: 40px;
     min-width: 40px;
+    max-width: 40px;
     cursor: ${props.$isMobile ? 'default' : 'pointer'};
   `}
 
@@ -398,11 +408,11 @@ const ResponsiveTable = ({
                     return (
                       <Cell
                         key={colIndex}
-                        width={column.width}
+                        $width={column.width}
                         data-label={column.header} // Important for mobile view labels
                         role="cell"
-                        isAction={column.header === "Action"}
-                        isMobile={isMobile}
+                        $isAction={column.header === "Action"}
+                        $isMobile={isMobile}
                       >
                         {isMobile && column.tooltip && (
                           <InfoTooltip
@@ -434,16 +444,16 @@ const ResponsiveTable = ({
             <Row role="row" $isSummary>
               {/* Add empty cell for expansion column if expandable rows are enabled */}
               {expandableRowRender && (
-                <Cell isExpansion role="cell"></Cell>
+                <Cell $isExpansion role="cell"></Cell>
               )}
 
               {columns.map((column, colIndex) => (
                 <Cell
                   key={colIndex}
-                  width={column.width}
+                  $width={column.width}
                   role="cell"
                   data-label={`Summary: ${column.header}`}
-                  isSummary
+                  $isSummary
                 >
                   {summaryRow[column.field] || ""}
                 </Cell>

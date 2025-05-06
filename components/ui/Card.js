@@ -1,162 +1,174 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 
-// Base card styles
-const baseCardStyles = css`
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-// Card container
+// Card container with common styling
 const CardContainer = styled.div`
-  ${baseCardStyles}
-  border: 1px solid ${props => props.$borderColor || '#e2e8f0'};
   display: flex;
   flex-direction: column;
-  ${props => props.$padding && `padding: ${props.$padding}`};
-  ${props => props.$margin && `margin: ${props.$margin}`};
-  ${props => props.$width && `width: ${props.$width}`};
-  ${props => props.$height && `height: ${props.$height}`};
-  ${props => props.$highlight && css`
-    border-left: 4px solid ${props.$highlight};
+  background-color: hsl(0, 0%, 100%);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(0, 0%, 90%);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  
+  ${props => props.$noPadding ? '' : `
+    ${!props.$noPaddingHeader ? 'padding: 1.25rem;' : ''}
+  `}
+  
+  ${props => props.$fullHeight && `
+    height: 100%;
+  `}
+  
+  ${props => props.$clickable && `
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
   `}
 `;
 
-// Card header
+// Card header with bottom border
 const CardHeader = styled.div`
-  padding: ${props => props.$padding || '1rem'};
-  background-color: ${props => props.$background || '#f8fafc'};
-  border-bottom: 1px solid ${props => props.$borderColor || '#e2e8f0'};
   display: flex;
-  justify-content: ${props => props.$justifyContent || 'space-between'};
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  justify-content: ${props => props.$align || 'space-between'};
+  padding: ${props => props.$noPadding ? '0' : '0 0 1rem 0'};
+  margin-bottom: ${props => props.$noPadding ? '0' : '1rem'};
+  border-bottom: ${props => props.$noBorder ? 'none' : '1px solid hsl(0, 0%, 90%)'};
+  
+  ${props => props.$compact && `
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+  `}
 `;
 
-// Card title
+// Title component with size variants
 const CardTitle = styled.h3`
   margin: 0;
-  font-size: ${props => props.$fontSize || '1rem'};
-  font-weight: 600;
-  color: #2d3748;
+  font-size: ${props => {
+    switch (props.$size) {
+      case 'large': return '1.25rem';
+      case 'small': return '0.875rem';
+      default: return '1rem';
+    }
+  }};
+  font-weight: ${props => props.$weight || '600'};
+  color: hsl(0, 0%, 20%);
+  line-height: 1.5;
 `;
 
-// Card content
+// Card content area
 const CardContent = styled.div`
-  padding: ${props => props.$padding || '1rem'};
   flex: 1;
+  ${props => props.$padding && `padding: ${props.$padding};`}
 `;
 
-// Card footer
+// Card footer with top border
 const CardFooter = styled.div`
-  padding: ${props => props.$padding || '1rem'};
-  background-color: ${props => props.$background || '#f8fafc'};
-  border-top: 1px solid ${props => props.$borderColor || '#e2e8f0'};
   display: flex;
-  justify-content: ${props => props.$justifyContent || 'flex-end'};
   align-items: center;
+  justify-content: ${props => props.$align || 'flex-end'};
+  padding: ${props => props.$noPadding ? '0' : '1rem 0 0 0'};
+  margin-top: ${props => props.$noPadding ? '0' : '1rem'};
+  border-top: ${props => props.$noBorder ? 'none' : '1px solid hsl(0, 0%, 90%)'};
   gap: 0.75rem;
+  
+  ${props => props.$compact && `
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  `}
 `;
 
 /**
- * Card component with optional header, content, and footer
+ * Card component with header, content, and footer sections
  * 
- * @param {Object} props - Component props
- * @param {React.ReactNode} [props.header] - Card header content
- * @param {React.ReactNode} props.children - Card content
+ * @param {object} props - Card props
+ * @param {React.ReactNode} [props.children] - Card content
+ * @param {React.ReactNode} [props.title] - Card title
+ * @param {React.ReactNode} [props.headerRight] - Content to show on the right side of the header
  * @param {React.ReactNode} [props.footer] - Card footer content
- * @param {string} [props.padding] - Custom padding for the card
- * @param {string} [props.margin] - Custom margin for the card
- * @param {string} [props.width] - Custom width for the card
- * @param {string} [props.height] - Custom height for the card
- * @param {string} [props.borderColor] - Custom border color
- * @param {string} [props.highlight] - Highlight color for the left border
- * @param {string} [props.headerPadding] - Custom padding for the header
- * @param {string} [props.contentPadding] - Custom padding for the content
- * @param {string} [props.footerPadding] - Custom padding for the footer
- * @param {string} [props.headerBackground] - Custom background color for the header
- * @param {string} [props.footerBackground] - Custom background color for the footer
- * @param {string} [props.headerJustifyContent] - Custom justify-content for the header
- * @param {string} [props.footerJustifyContent] - Custom justify-content for the footer
- * @param {string} [props.titleFontSize] - Custom font size for the title
- * @returns {React.ReactElement} Styled card component
+ * @param {string} [props.titleSize='medium'] - Title size ('small', 'medium', 'large')
+ * @param {string} [props.titleWeight='600'] - Title font weight 
+ * @param {boolean} [props.fullHeight=false] - Whether card should take full height of its container
+ * @param {boolean} [props.clickable=false] - Whether card is clickable
+ * @param {boolean} [props.noPadding=false] - Whether to remove all padding 
+ * @param {boolean} [props.noPaddingHeader=false] - Whether to remove padding from header
+ * @param {boolean} [props.compact=false] - Whether to use compact spacing
+ * @param {function} [props.onClick] - Click handler for clickable cards
+ * @returns {React.ReactElement} - Rendered Card component
  */
-const Card = ({ 
-  header,
+const Card = ({
   children,
+  title,
+  headerRight,
   footer,
-  padding,
-  margin,
-  width,
-  height,
-  borderColor,
-  highlight,
-  headerPadding,
-  contentPadding,
-  footerPadding,
-  headerBackground,
-  footerBackground,
-  headerJustifyContent,
-  footerJustifyContent,
-  titleFontSize,
-  ...rest 
+  titleSize = 'medium',
+  titleWeight = '600',
+  fullHeight = false,
+  clickable = false,
+  noPadding = false,
+  noPaddingHeader = false,
+  compact = false,
+  footerAlign = 'flex-end',
+  headerAlign = 'space-between',
+  className,
+  onClick,
+  ...props
 }) => {
+  
+  // Only create header if title or headerRight is provided
+  const headerContent = (title || headerRight) && (
+    <CardHeader 
+      $noPadding={noPadding} 
+      $noBorder={!title && !headerRight}
+      $compact={compact}
+      $align={headerAlign}
+    >
+      {title && (
+        <CardTitle $size={titleSize} $weight={titleWeight}>
+          {title}
+        </CardTitle>
+      )}
+      {headerRight}
+    </CardHeader>
+  );
+  
+  // Only create footer if footer content is provided
+  const footerContent = footer && (
+    <CardFooter 
+      $noPadding={noPadding} 
+      $compact={compact}
+      $align={footerAlign}
+    >
+      {footer}
+    </CardFooter>
+  );
+  
   return (
     <CardContainer 
-      $padding={padding} 
-      $margin={margin}
-      $width={width}
-      $height={height}
-      $borderColor={borderColor}
-      $highlight={highlight}
-      {...rest}
+      $fullHeight={fullHeight}
+      $clickable={clickable}
+      $noPadding={noPadding}
+      $noPaddingHeader={noPaddingHeader}
+      onClick={clickable ? onClick : undefined}
+      className={className}
+      {...props}
     >
-      {header && (
-        typeof header === 'string' ? (
-          <CardHeader 
-            $padding={headerPadding} 
-            $background={headerBackground}
-            $borderColor={borderColor}
-            $justifyContent={headerJustifyContent}
-          >
-            <CardTitle $fontSize={titleFontSize}>{header}</CardTitle>
-          </CardHeader>
-        ) : (
-          <CardHeader 
-            $padding={headerPadding} 
-            $background={headerBackground}
-            $borderColor={borderColor}
-            $justifyContent={headerJustifyContent}
-          >
-            {header}
-          </CardHeader>
-        )
-      )}
-      <CardContent $padding={contentPadding}>
+      {headerContent}
+      <CardContent $padding={noPadding ? '0' : undefined}>
         {children}
       </CardContent>
-      {footer && (
-        <CardFooter 
-          $padding={footerPadding} 
-          $background={footerBackground}
-          $borderColor={borderColor}
-          $justifyContent={footerJustifyContent}
-        >
-          {footer}
-        </CardFooter>
-      )}
+      {footerContent}
     </CardContainer>
   );
 };
-
-// Also export the sub-components for more flexible usage
-Card.Container = CardContainer;
-Card.Header = CardHeader;
-Card.Title = CardTitle;
-Card.Content = CardContent;
-Card.Footer = CardFooter;
 
 export default Card;

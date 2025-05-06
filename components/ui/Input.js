@@ -1,191 +1,203 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import styled, { css } from 'styled-components';
 
-// Base input styles
-const baseInputStyles = css`
+// Shared styles for all input types
+const inputStyles = css`
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
+  padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
-  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-
+  color: hsl(0, 0%, 20%);
+  background-color: hsl(0, 0%, 100%);
+  border: 1px solid hsl(0, 0%, 80%);
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  
   &:focus {
-    outline: none;
-    border-color: #4e7fff;
-    background-color: #fff;
-    box-shadow: 0 0 0 2px rgba(78, 127, 255, 0.1);
+    border-color: hsl(217, 91%, 60%);
+    outline: 0;
+    box-shadow: 0 0 0 3px hsla(217, 91%, 60%, 0.25);
   }
-
-  &:read-only {
-    background-color: rgb(243 244 246);
-    cursor: not-allowed;
+  
+  &:disabled, &[readonly] {
+    background-color: hsl(0, 0%, 97%);
+    opacity: 1;
   }
-
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    background-color: #f8f9fa;
+  
+  &::placeholder {
+    color: hsl(0, 0%, 60%);
+    opacity: 1;
+  }
+  
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox */
+  &[type=number] {
+    -moz-appearance: textfield;
+  }
+  
+  /* Reset browser autocomplete styles */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: hsl(0, 0%, 20%);
+    transition: background-color 5000s ease-in-out 0s;
   }
 `;
 
-// Styled input component
-const StyledInput = styled.input`
-  ${baseInputStyles}
-  height: ${props => props.$size === 'large' ? '2.5rem' : '2.25rem'};
-`;
-
-// Text area component that shares the same base styles
-const StyledTextArea = styled.textarea`
-  ${baseInputStyles}
-  resize: ${props => props.$resize || 'vertical'};
-  min-height: ${props => props.$minHeight || '5rem'};
-  font-family: inherit;
-`;
-
-// Input wrapper with optional label
-const InputWrapper = styled.div`
+// Input container for layout and label positioning
+const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: ${props => props.$noMargin ? '0' : '1rem'};
   width: 100%;
 `;
 
-// Label component
+// Styled label for inputs
 const Label = styled.label`
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(20 14.3% 4.1%);
-  font-size: 0.875rem;
-  line-height: 1;
+  color: hsl(0, 0%, 25%);
 `;
 
-// Required indicator
-const RequiredIndicator = styled.span`
-  color: #e53e3e;
-  margin-left: 0.25rem;
+// Basic input component
+const StyledInput = styled.input`
+  ${inputStyles}
+  height: 2.5rem;
 `;
 
-// Error message styling
-const ErrorMessage = styled.div`
-  color: #e53e3e;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
+// Textarea component
+const StyledTextArea = styled.textarea`
+  ${inputStyles}
+  min-height: 5rem;
+  resize: vertical;
+`;
+
+// Read-only field
+const StyledReadOnlyField = styled.div`
+  ${inputStyles}
+  cursor: default;
+  min-height: ${props => props.$multiline ? '5rem' : '2.5rem'};
+  white-space: ${props => props.$multiline ? 'pre-wrap' : 'nowrap'};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: ${props => props.$multiline ? 'block' : 'flex'};
+  align-items: ${props => props.$multiline ? 'initial' : 'center'};
 `;
 
 /**
- * Input component with consistent styling
+ * Input component for text entry
  * 
- * @param {Object} props - Component props
+ * @param {object} props - Input props
+ * @param {string} [props.label] - Label for the input
+ * @param {string} [props.id] - Input id (auto-generated if not provided)
+ * @param {boolean} [props.noMargin=false] - Whether to remove bottom margin
  * @param {string} [props.type='text'] - Input type
- * @param {string} [props.label] - Input label
- * @param {boolean} [props.required=false] - Whether the input is required
- * @param {string} [props.error] - Error message
- * @param {boolean} [props.noMargin=false] - Whether to remove bottom margin
- * @param {string} [props.size='medium'] - Input size (medium, large)
- * @param {React.InputHTMLAttributes} props.rest - Additional input attributes
- * @returns {React.ReactElement} Styled input component
+ * @param {boolean} [props.required=false] - Whether input is required
+ * @param {boolean} [props.disabled=false] - Whether input is disabled
+ * @param {string} [props.placeholder] - Placeholder text
+ * @param {string} [props.value] - Input value
+ * @param {function} [props.onChange] - Change handler
+ * @returns {React.ReactElement} - Rendered Input component
  */
-export const Input = ({ 
-  type = 'text', 
-  label, 
-  required = false,
-  error,
+const Input = forwardRef(({
+  label,
+  id,
   noMargin = false,
-  size = 'medium',
-  ...rest 
-}) => {
+  className,
+  ...props
+}, ref) => {
+  // Generate a unique ID if one is not provided
+  const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
+  
   return (
-    <InputWrapper $noMargin={noMargin}>
-      {label && (
-        <Label htmlFor={rest.id || rest.name}>
-          {label}
-          {required && <RequiredIndicator>*</RequiredIndicator>}
-        </Label>
-      )}
-      <StyledInput 
-        type={type} 
-        $hasValue={!!rest.value} 
-        $size={size}
-        required={required}
-        {...rest} 
-      />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-    </InputWrapper>
+    <InputContainer $noMargin={noMargin} className={className}>
+      {label && <Label htmlFor={inputId}>{label}</Label>}
+      <StyledInput id={inputId} ref={ref} {...props} />
+    </InputContainer>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 /**
- * TextArea component with consistent styling
+ * TextArea component for multiline text entry
  * 
- * @param {Object} props - Component props
- * @param {string} [props.label] - TextArea label
- * @param {boolean} [props.required=false] - Whether the textarea is required
- * @param {string} [props.error] - Error message
- * @param {string} [props.resize='vertical'] - Resize behavior (none, vertical, horizontal, both)
- * @param {string} [props.minHeight='5rem'] - Minimum height of the textarea
+ * @param {object} props - TextArea props
+ * @param {string} [props.label] - Label for the textarea
+ * @param {string} [props.id] - TextArea id (auto-generated if not provided)
  * @param {boolean} [props.noMargin=false] - Whether to remove bottom margin
- * @param {React.TextareaHTMLAttributes} props.rest - Additional textarea attributes
- * @returns {React.ReactElement} Styled textarea component
+ * @param {boolean} [props.required=false] - Whether textarea is required
+ * @param {boolean} [props.disabled=false] - Whether textarea is disabled
+ * @param {string} [props.placeholder] - Placeholder text
+ * @param {string} [props.value] - TextArea value
+ * @param {function} [props.onChange] - Change handler
+ * @returns {React.ReactElement} - Rendered TextArea component
  */
-export const TextArea = ({ 
-  label, 
-  required = false,
-  error,
-  resize = 'vertical',
-  minHeight = '5rem',
+const TextArea = forwardRef(({
+  label,
+  id,
   noMargin = false,
-  ...rest 
-}) => {
+  className,
+  ...props
+}, ref) => {
+  // Generate a unique ID if one is not provided
+  const textareaId = id || `textarea-${Math.random().toString(36).substring(2, 9)}`;
+  
   return (
-    <InputWrapper $noMargin={noMargin}>
-      {label && (
-        <Label htmlFor={rest.id || rest.name}>
-          {label}
-          {required && <RequiredIndicator>*</RequiredIndicator>}
-        </Label>
-      )}
-      <StyledTextArea 
-        $hasValue={!!rest.value} 
-        $resize={resize}
-        $minHeight={minHeight}
-        required={required}
-        {...rest} 
-      />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-    </InputWrapper>
+    <InputContainer $noMargin={noMargin} className={className}>
+      {label && <Label htmlFor={textareaId}>{label}</Label>}
+      <StyledTextArea id={textareaId} ref={ref} {...props} />
+    </InputContainer>
+  );
+});
+
+TextArea.displayName = 'TextArea';
+
+/**
+ * ReadOnlyField component for displaying read-only data
+ * 
+ * @param {object} props - ReadOnlyField props
+ * @param {string} [props.label] - Label for the field
+ * @param {boolean} [props.multiline=false] - Whether field should support multiple lines
+ * @param {string} [props.id] - Field id (auto-generated if not provided)
+ * @param {boolean} [props.noMargin=false] - Whether to remove bottom margin
+ * @param {React.ReactNode} [props.children] - Field content
+ * @returns {React.ReactElement} - Rendered ReadOnlyField component
+ */
+const ReadOnlyField = ({
+  label,
+  multiline = false,
+  id,
+  noMargin = false,
+  children,
+  className,
+  ...props
+}) => {
+  // Generate a unique ID if one is not provided
+  const fieldId = id || `field-${Math.random().toString(36).substring(2, 9)}`;
+  
+  return (
+    <InputContainer $noMargin={noMargin} className={className}>
+      {label && <Label htmlFor={fieldId}>{label}</Label>}
+      <StyledReadOnlyField
+        id={fieldId}
+        $multiline={multiline}
+        tabIndex={0}
+        readOnly
+        {...props}
+      >
+        {children}
+      </StyledReadOnlyField>
+    </InputContainer>
   );
 };
 
-/**
- * ReadOnly field styling for consistent display of non-editable values
- */
-export const ReadOnlyField = styled.div`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  background-color: rgb(243 244 246);
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  cursor: not-allowed;
-  color: #4b5563;
-  min-height: 2.25rem;
-  display: flex;
-  align-items: center;
-  white-space: ${props => props.$autoWrap ? 'normal' : 'nowrap'};
-  overflow: ${props => props.$autoWrap ? 'visible' : 'hidden'};
-  text-overflow: ${props => props.$autoWrap ? 'clip' : 'ellipsis'};
-
-  &.empty::after {
-    content: attr(data-placeholder);
-    color: #9ca3af;
-  }
-`;
-
-// Export components
+export { TextArea, ReadOnlyField };
 export default Input;

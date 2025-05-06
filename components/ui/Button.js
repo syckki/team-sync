@@ -1,120 +1,147 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 
-// Shared styles for all button variants
-const baseStyles = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-
-  &:disabled {
-    background-color: #cccccc;
-    color: rgba(0, 0, 0, 0.4);
-    cursor: not-allowed;
-  }
-`;
-
-// Style variants
+// Button variants
 const variants = {
   primary: css`
-    background-color: hsl(217 91% 60%);
-    color: hsl(217 100% 99%);
-    
-    &:hover:not(:disabled) {
-      background-color: #3d6bf3;
+    background-color: hsl(217, 91%, 60%);
+    color: hsl(217, 100%, 99%);
+    &:hover {
+      background-color: hsl(217, 91%, 55%);
     }
   `,
   secondary: css`
-    background-color: #f3f4f6;
-    color: #4b5563;
-    border: 1px solid #d1d5db;
-    
-    &:hover:not(:disabled) {
-      background-color: #e5e7eb;
+    background-color: hsl(0, 0%, 87%);
+    color: hsl(0, 0%, 20%);
+    &:hover {
+      background-color: hsl(0, 0%, 82%);
     }
   `,
   success: css`
-    background-color: #4caf50;
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background-color: #43a047;
+    background-color: hsl(142, 69%, 45%);
+    color: hsl(0, 0%, 100%);
+    &:hover {
+      background-color: hsl(142, 69%, 40%);
     }
   `,
   danger: css`
-    background-color: #ef4444;
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background-color: #dc2626;
+    background-color: hsl(354, 70%, 54%);
+    color: hsl(0, 0%, 100%);
+    &:hover {
+      background-color: hsl(354, 70%, 49%);
     }
   `,
   text: css`
     background-color: transparent;
-    color: hsl(217 91% 60%);
-    padding: 0.25rem 0.5rem;
-    
-    &:hover:not(:disabled) {
-      background-color: #f3f4f6;
+    color: hsl(217, 91%, 60%);
+    padding: 0;
+    &:hover {
+      color: hsl(217, 91%, 55%);
+      background-color: transparent;
+      text-decoration: underline;
     }
-  `,
+  `
 };
 
-// Size variants
+// Button sizes
 const sizes = {
   small: css`
-    padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.375rem 0.75rem;
   `,
   medium: css`
-    padding: 0.5rem 1rem;
     font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 0.5rem 1rem;
   `,
   large: css`
-    padding: 0.75rem 1.25rem;
     font-size: 1rem;
+    line-height: 1.5rem;
+    padding: 0.625rem 1.25rem;
   `,
 };
 
 const StyledButton = styled.button`
-  ${baseStyles}
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: calc(0.5rem - 2px);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  
+  /* Apply variants */
   ${props => variants[props.$variant || 'primary']}
+  
+  /* Apply sizes */
   ${props => sizes[props.$size || 'medium']}
-  width: ${props => props.$fullWidth ? '100%' : 'auto'};
+  
+  /* Full width option */
+  ${props => props.$fullWidth && css`
+    width: 100%;
+  `}
+  
+  /* Disabled state */
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    &:hover {
+      /* Override any hover styles when disabled */
+      ${props => variants[props.$variant || 'primary']}
+      opacity: 0.6;
+    }
+  }
+
+  /* Focus state */
+  &:focus {
+    outline: 2px solid hsl(217, 91%, 60%, 0.3);
+    outline-offset: 2px;
+  }
+
+  /* Active state */
+  &:active {
+    transform: scale(0.98);
+  }
 `;
 
 /**
- * Button component with several variants
+ * Button component with various styles and sizes
  * 
- * @param {Object} props - Component props
- * @param {string} [props.variant='primary'] - Button variant (primary, secondary, success, danger, text)
- * @param {string} [props.size='medium'] - Button size (small, medium, large)
- * @param {boolean} [props.fullWidth=false] - Whether the button should take full width
- * @param {React.ReactNode} props.children - Button content
- * @param {React.ButtonHTMLAttributes} props.rest - Additional button attributes
- * @returns {React.ReactElement} Styled button component
+ * @param {object} props - Button props
+ * @param {string} [props.variant='primary'] - Button style variant ('primary', 'secondary', 'success', 'danger', 'text')
+ * @param {string} [props.size='medium'] - Button size ('small', 'medium', 'large')
+ * @param {boolean} [props.fullWidth=false] - Whether button should take full width of its container
+ * @param {boolean} [props.disabled=false] - Whether button is disabled
+ * @param {React.ReactNode} [props.children] - Button content
+ * @param {function} [props.onClick] - Click handler
+ * @param {string} [props.type='button'] - Button type ('button', 'submit', 'reset')
+ * @param {string} [props.className] - Additional CSS classes
+ * @returns {React.ReactElement} - Rendered Button component
  */
 const Button = ({ 
-  variant = 'primary', 
-  size = 'medium', 
-  fullWidth = false, 
-  children, 
-  ...rest 
+  variant = 'primary',
+  size = 'medium',
+  fullWidth = false,
+  disabled = false,
+  type = 'button',
+  children,
+  onClick,
+  className,
+  ...restProps
 }) => {
   return (
-    <StyledButton 
-      $variant={variant} 
-      $size={size} 
-      $fullWidth={fullWidth} 
-      {...rest}
+    <StyledButton
+      $variant={variant}
+      $size={size}
+      $fullWidth={fullWidth}
+      disabled={disabled}
+      type={type}
+      onClick={onClick}
+      className={className}
+      {...restProps}
     >
       {children}
     </StyledButton>

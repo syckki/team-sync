@@ -14,6 +14,7 @@ import {
 } from "../../lib/networkService";
 import styled from "styled-components";
 import EncryptForm from "../presentational/EncryptForm";
+import { Button } from "../ui";
 
 const ErrorContainer = styled.div`
   padding: 1rem;
@@ -562,26 +563,29 @@ const DecryptionContainer = ({ id, key64 }) => {
         {/* View controls - only show to thread creator */}
         {isThreadCreator && (
           <ViewControls>
-            <ViewButton
-              $active={viewMode === "all"}
+            <Button
+              variant={viewMode === "all" ? "primary" : "secondary"}
+              size="small"
               onClick={() => setViewMode("all")}
             >
               All Messages
-            </ViewButton>
-            <ViewButton
-              $active={viewMode === "mine"}
+            </Button>
+            <Button
+              variant={viewMode === "mine" ? "primary" : "secondary"}
+              size="small"
               onClick={() => setViewMode("mine")}
             >
               My Messages
-            </ViewButton>
-            <ViewButton
+            </Button>
+            <Button
+              variant="success"
+              size="small"
               onClick={() =>
                 (window.location.href = `/channel/${id}/report?view=true#${key64}`)
               }
-              style={{ backgroundColor: "#4caf50", color: "white" }}
             >
               View Reports
-            </ViewButton>
+            </Button>
           </ViewControls>
         )}
 
@@ -670,18 +674,21 @@ const DecryptionContainer = ({ id, key64 }) => {
 
       <AddMessageForm>
         <ButtonRow>
-          <ToggleButton onClick={toggleAddForm}>
+          <Button 
+            onClick={toggleAddForm}
+            variant="primary"
+          >
             {showAddForm ? "Hide Form" : "Add New Message"}
-          </ToggleButton>
+          </Button>
 
-          <ToggleButton
+          <Button
             onClick={() =>
               (window.location.href = `/channel/${id}/report#${key64}`)
             }
-            style={{ backgroundColor: "#4caf50" }}
+            variant="success"
           >
             Submit AI Productivity Report
-          </ToggleButton>
+          </Button>
         </ButtonRow>
 
         {showAddForm && (

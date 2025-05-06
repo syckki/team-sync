@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import CustomSelect from "./CustomSelect";
 import ResponsiveTable from "./ResponsiveTable";
+import { Button } from "../ui";
 
 // Styled components for the report viewer
 const Container = styled.div`
@@ -269,54 +270,61 @@ const ReportViewerPresentation = ({
         <Title>Team Reports for: {threadTitle}</Title>
 
         <ReportTypesContainer>
-          <ReportTypeButton 
-            $active={selectedReport === 'raw'} 
+          <Button 
+            variant={selectedReport === 'raw' ? 'primary' : 'secondary'}
+            size="small"
             onClick={() => onReportChange('raw')}
           >
             Raw Reports
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'aiImpactSummary'} 
+          <Button 
+            variant={selectedReport === 'aiImpactSummary' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('aiImpactSummary')}
           >
             AI Impact Summary
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'toolEffectiveness'} 
+          <Button 
+            variant={selectedReport === 'toolEffectiveness' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('toolEffectiveness')}
           >
             Tool Effectiveness
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'roleTeamAnalysis'} 
+          <Button 
+            variant={selectedReport === 'roleTeamAnalysis' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('roleTeamAnalysis')}
           >
             Role & Team Analysis
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'sdlcAnalysis'} 
+          <Button 
+            variant={selectedReport === 'sdlcAnalysis' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('sdlcAnalysis')}
           >
             SDLC Analysis
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'complexityQuality'} 
+          <Button 
+            variant={selectedReport === 'complexityQuality' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('complexityQuality')}
           >
             Complexity & Quality
-          </ReportTypeButton>
+          </Button>
 
-          <ReportTypeButton 
-            $active={selectedReport === 'qualitativeInsights'} 
+          <Button 
+            variant={selectedReport === 'qualitativeInsights' ? 'primary' : 'secondary'} 
+            size="small"
             onClick={() => onReportChange('qualitativeInsights')}
           >
             Qualitative Insights
-          </ReportTypeButton>
+          </Button>
         </ReportTypesContainer>
       </ViewerHeader>
 
@@ -383,9 +391,13 @@ const ReportViewerPresentation = ({
           </FilterGroup>
         )}
 
-        <ClearFiltersButton onClick={clearFilters}>
+        <Button 
+          variant="secondary"
+          size="small"
+          onClick={clearFilters}
+        >
           Clear Filters
-        </ClearFiltersButton>
+        </Button>
       </FiltersContainer>
 
       {/* Render custom report if selected */}

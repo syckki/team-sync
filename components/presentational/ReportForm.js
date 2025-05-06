@@ -44,27 +44,6 @@ const Label = styled.label`
   line-height: 1;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid hsl(20 5.9% 90%);
-  border-radius: calc(0.5rem - 2px);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  background-color: #f8f9fa;
-
-  &:focus {
-    outline: none;
-    border-color: #4e7fff;
-    background-color: #fff;
-  }
-
-  &:read-only {
-    background-color: rgb(243 244 246);
-    cursor: not-allowed;
-  }
-`;
-
 const InnerLabel = styled.div`
   font-weight: 500;
   font-size: 0.75rem;
@@ -80,28 +59,6 @@ const InnerLabel = styled.div`
     color: #444;
     font-size: 0.85rem;
     text-align: left;
-  }
-`;
-
-const SubmitButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: hsl(217 91% 60%);
-  color: hsl(217 100% 99%);
-  border: none;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #3d6bf3;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
   }
 `;
 
@@ -131,32 +88,6 @@ const ButtonRow = styled.div`
   @media (max-width: 480px) {
     flex-direction: column;
     gap: 0.75rem;
-  }
-`;
-
-const ActionButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: calc(0.5rem - 2px);
-  cursor: pointer;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  background-color: ${(props) =>
-    props.primary ? "#4e7fff" : "hsl(60 4.8% 95.9%)"};
-  color: hsl(24 9.8% 10%;);
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${(props) =>
-      props.primary ? "#3d6bf3" : "hsl(60 4.8% 95.9%)"};
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
   }
 `;
 
@@ -862,11 +793,7 @@ const ReportForm = ({
             {/* Only show action buttons if not in read-only mode */}
             {!readOnly && (
               <ButtonRow>
-                <Button 
-                  type="button" 
-                  onClick={addRow} 
-                  variant="secondary"
-                >
+                <Button type="button" onClick={addRow} variant="secondary">
                   <AddIcon>
                     <svg
                       viewBox="0 0 24 24"
@@ -894,8 +821,8 @@ const ReportForm = ({
                     {isSubmitting ? "Saving..." : "Save as Draft"}
                   </Button>
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={isSubmitting}
                     variant="primary"
                   >

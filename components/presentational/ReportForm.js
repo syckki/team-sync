@@ -357,7 +357,7 @@ const ReportForm = ({
           placeholder="Platform"
           storageKey="platformOptions"
           autoComplete="off"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -377,7 +377,7 @@ const ReportForm = ({
           placeholder="Initiative"
           storageKey="projectOptions"
           autoComplete="off"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -395,7 +395,7 @@ const ReportForm = ({
           placeholder="SDLC Step"
           storageKey="sdlcStepOptions"
           autoComplete="off"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },
@@ -412,7 +412,8 @@ const ReportForm = ({
           options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
           placeholder="SDLC Task"
           storageKey="sdlcTaskOptions"
-          disabled={!row.sdlcStep || readOnly}
+          readonly={readOnly}
+          disabled={!row.sdlcStep && !readOnly}
           autoComplete="off"
         />
       ),
@@ -443,7 +444,7 @@ const ReportForm = ({
           placeholder="Task Category"
           storageKey="taskCategoryOptions"
           autoComplete="off"
-          disabled={readOnly}
+          readonly={readOnly}
         />
       ),
     },

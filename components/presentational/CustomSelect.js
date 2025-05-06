@@ -141,8 +141,7 @@ const CustomSelect = ({
   disabled = false,
   readonly = false,
 }) => {
-  // If in readonly or disabled mode, render a simple display
-  if (readonly || disabled) {
+  if (readonly) {
     return (
       <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
@@ -219,15 +218,10 @@ const CustomSelect = ({
           autoCapitalize="off"
           aria-autocomplete="none"
         />
-        {value.length > 0 && !disabled && (
-          <ClearButton onClick={handleClearValue} type="button" title="Clear">
-            ×
-          </ClearButton>
-        )}
         <div
           style={{
             position: "absolute",
-            right: value.length > 0 ? "2rem" : "0.5rem",
+            right: "0.5rem",
             top: "50%",
             transform: "translateY(-50%)",
             transition: "transform 0.2s",

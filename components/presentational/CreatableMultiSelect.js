@@ -98,15 +98,13 @@ const CreatableMultiSelect = ({
   placeholder,
   storageKey,
   readonly = false,
-  disabled = false,
 }) => {
-  // If in readonly or disabled mode, render a simple display
-  if (readonly || disabled) {
+  if (readonly) {
     return (
       <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
-        {value.length > 0 ?
-          value.map((item, index) => <span key={index}>{item}</span>) :
-          ""}
+        {value.length > 0
+          ? value.map((item, index) => <span key={index}>{item}</span>)
+          : ""}
       </ReadonlyMultiField>
     );
   }
@@ -230,7 +228,11 @@ const CreatableMultiSelect = ({
             {item}
             <RemoveItemButton
               type="button"
-              onClick={(e) => {
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleRemoveItem(item);
+              }}
+              onTouchStart={(e) => {
                 e.stopPropagation();
                 handleRemoveItem(item);
               }}
@@ -271,7 +273,10 @@ const CreatableMultiSelect = ({
               ))
             : inputValue.trim() !== "" &&
               !value.includes(inputValue) && (
-                <ComboBoxCreateOption onClick={handleCreateOption}>
+                <ComboBoxCreateOption
+                  onMouseDown={handleCreateOption}
+                  onTouchStart={handleCreateOption}
+                >
                   Create "{inputValue}"
                 </ComboBoxCreateOption>
               )}
@@ -280,7 +285,10 @@ const CreatableMultiSelect = ({
             inputValue.trim() !== "" &&
             !filteredOptions.includes(inputValue) &&
             !value.includes(inputValue) && (
-              <ComboBoxCreateOption onClick={handleCreateOption}>
+              <ComboBoxCreateOption
+                onMouseDown={handleCreateOption}
+                onTouchStart={handleCreateOption}
+              >
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}

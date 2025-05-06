@@ -6,6 +6,7 @@ import { Breakpoint } from "../../lib/styles";
 const Main = styled.main`
   margin: 0 auto;
   padding: 2rem;
+  width: 100%;
   
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     padding: 1rem;

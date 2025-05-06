@@ -38,8 +38,7 @@ const CreatableComboBox = ({
   disabled = false,
   readonly = false,
 }) => {
-  // If in readonly or disabled mode, render a simple display
-  if (readonly || disabled) {
+  if (readonly) {
     return (
       <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
@@ -162,7 +161,12 @@ const CreatableComboBox = ({
           $hasValue={inputValue.length > 0}
         />
         {inputValue.length > 0 && !disabled && (
-          <ClearButton onClick={handleClearValue} type="button" title="Clear">
+          <ClearButton
+            onMouseDown={handleClearValue}
+            onTouchStart={handleClearValue}
+            type="button"
+            title="Clear"
+          >
             ×
           </ClearButton>
         )}
@@ -193,7 +197,10 @@ const CreatableComboBox = ({
           {filteredOptions.length > 0 &&
             !filteredOptions.includes(inputValue) &&
             inputValue.trim() !== "" && (
-              <ComboBoxCreateOption onClick={handleCreateOption}>
+              <ComboBoxCreateOption
+                onMouseDown={handleCreateOption}
+                onTouchStart={handleCreateOption}
+              >
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}

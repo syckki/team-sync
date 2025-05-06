@@ -453,7 +453,7 @@ const ReportForm = ({
     {
       header: "Est (hrs)",
       field: "estimatedTimeWithoutAI",
-      width: "100px",
+      width: "115px",
       tooltip:
         "Time the task would have taken without AI tools. Establishes the baseline for measuring time savings.",
       actionHint:
@@ -469,7 +469,7 @@ const ReportForm = ({
           }
           required
           placeholder="Est (Hrs)"
-          style={{ width: "100px" }}
+          style={{ width: "115px" }}
           autoComplete="new-password"
           data-lpignore="true"
           spellCheck="false"
@@ -483,7 +483,7 @@ const ReportForm = ({
     {
       header: "Act (hrs)",
       field: "actualTimeWithAI",
-      width: "100px",
+      width: "115px",
       tooltip:
         "Actual time the task took using AI tools. Shows real-time savings through color-coding (green when faster, red when slower).",
       actionHint: "Record the actual time spent including AI assistance.",
@@ -506,7 +506,7 @@ const ReportForm = ({
           aria-autocomplete="none"
           readonly={readOnly}
           style={{
-            width: "100px",
+            width: "115px",
             color:
               row.estimatedTimeWithoutAI && row.actualTimeWithAI
                 ? parseFloat(row.actualTimeWithAI) <
@@ -579,7 +579,7 @@ const ReportForm = ({
       ),
     },
   ];
-  
+
   // Add Action column only when not in read-only mode
   if (!readOnly) {
     tableColumns.push({

@@ -11,7 +11,7 @@ export const StyledInput = styled.input`
   font-size: 0.875rem;
   line-height: 1.25rem;
   background-color: #fff;
-  
+
   &:focus {
     outline: none;
     border-color: #4e7fff;
@@ -35,13 +35,9 @@ const CustomInput = ({
   className,
   ...rest
 }) => {
-  // If in readonly mode, render a simple display
   if (readonly) {
     return (
-      <ReadonlyField 
-        className={!value ? "empty" : ""} 
-        style={style}
-      >
+      <ReadonlyField className={!value ? "empty" : ""} style={style}>
         {value}
       </ReadonlyField>
     );

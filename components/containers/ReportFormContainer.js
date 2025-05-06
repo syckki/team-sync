@@ -56,7 +56,7 @@ const ReportFormContainer = ({
     if (existingReport.status === "submitted") {
       setIsReadOnly(true);
     }
-console.log(existingReport);
+
     // Set team member and role
     setTeamMember(existingReport.teamMember || "");
     setTeamRole(existingReport.teamRole || "");

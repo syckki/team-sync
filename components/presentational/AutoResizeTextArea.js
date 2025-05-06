@@ -31,7 +31,7 @@ const ReadonlyField = styled.div`
   line-height: 1.5;
   color: #374151;
   white-space: pre-wrap;
-  
+
   &.empty {
     font-style: italic;
     color: #9ca3af;
@@ -56,14 +56,18 @@ const useAutoResizeTextArea = (value) => {
 };
 
 // Auto-resizing textarea component with readonly support
-const AutoResizeTextArea = ({ value, onChange, readonly = false, placeholder, ...props }) => {
+const AutoResizeTextArea = ({
+  value,
+  onChange,
+  readonly = false,
+  placeholder,
+  ...props
+}) => {
   const textAreaRef = useAutoResizeTextArea(value);
 
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? 'empty' : ''}>
-        {value || placeholder}
-      </ReadonlyField>
+      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
 

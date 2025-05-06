@@ -26,14 +26,15 @@ export const ComboBoxInput = styled.input`
   border-radius: calc(0.5rem - 2px);
   font-size: 0.875rem;
   line-height: 1.25rem;
-  background-color: ${props => props.$hasValue ? '#fff' : '#f8f9fa'};
-  opacity: ${props => props.disabled ? 0.7 : 1};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'text'};
+  background-color: ${(props) => (props.$hasValue ? "#fff" : "#f8f9fa")};
+  opacity: ${(props) => (props.disabled ? 0.7 : 1)};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "text")};
 
   &:focus {
     outline: none;
-    border-color: ${props => props.disabled ? 'hsl(20 5.9% 90%)' : '#4e7fff'};
-    background-color: ${props => props.disabled ? '#f8f9fa' : '#fff'};
+    border-color: ${(props) =>
+      props.disabled ? "hsl(20 5.9% 90%)" : "#4e7fff"};
+    background-color: ${(props) => (props.disabled ? "#f8f9fa" : "#fff")};
   }
 `;
 
@@ -83,7 +84,7 @@ export const ComboBoxDropdown = styled.ul`
   margin-top: -1px; // Slightly overlap with input to avoid gap
   overflow-x: visible;
   text-align: left; // Ensure items are left-aligned
-  
+
   @media (max-width: 1200px) {
     right: 0; // Align with the right edge of the container on mobile
     left: auto; // Override left:0 on mobile
@@ -123,7 +124,7 @@ export const ReadonlyField = styled.div`
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: #374151;
-  
+
   &.empty {
     font-style: italic;
     color: #9ca3af;
@@ -145,9 +146,7 @@ const CustomSelect = ({
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? 'empty' : ''}>
-        {value || placeholder}
-      </ReadonlyField>
+      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
 
@@ -170,7 +169,7 @@ const CustomSelect = ({
     onChange(option);
     setIsOpen(false);
   };
-  
+
   // Handle key presses
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
@@ -231,7 +230,9 @@ const CustomSelect = ({
             top: "50%",
             transform: "translateY(-50%)",
             transition: "transform 0.2s",
-            transform: isOpen ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+            transform: isOpen
+              ? "translateY(-50%) rotate(180deg)"
+              : "translateY(-50%)",
           }}
         >
           <svg

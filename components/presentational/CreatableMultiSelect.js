@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { 
-  ComboBoxDropdown, 
+import {
+  ComboBoxDropdown,
   ComboBoxOption,
-  ReadonlyField
+  ReadonlyField,
 } from "./CustomSelect";
 import { ComboBoxCreateOption } from "./CreatableComboBox";
 
@@ -79,7 +79,7 @@ const ReadonlyMultiField = styled(ReadonlyField)`
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  
+
   span {
     display: inline-block;
     background-color: #e2e8f0;
@@ -104,18 +104,13 @@ const CreatableMultiSelect = ({
   const [filteredOptions, setFilteredOptions] = useState([]);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
-  
+
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
-      <ReadonlyMultiField className={value.length === 0 ? 'empty' : ''}>
-        {value.length > 0 ? (
-          value.map((item, index) => (
-            <span key={index}>{item}</span>
-          ))
-        ) : (
-          placeholder
-        )}
+      <ReadonlyMultiField className={value.length === 0 ? "empty" : ""}>
+        {value.length > 0 &&
+          value.map((item, index) => <span key={index}>{item}</span>)}
       </ReadonlyMultiField>
     );
   }
@@ -215,11 +210,13 @@ const CreatableMultiSelect = ({
   // Handle blur events on the input
   const handleBlur = (e) => {
     // Don't close if the related target is within the same component
-    if (containerRef.current && !containerRef.current.contains(e.relatedTarget)) {
+    if (
+      containerRef.current &&
+      !containerRef.current.contains(e.relatedTarget)
+    ) {
       setIsOpen(false);
     }
   };
-
 
   return (
     <MultiSelectContainer ref={containerRef}>

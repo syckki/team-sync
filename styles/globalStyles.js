@@ -19,6 +19,12 @@ export const GlobalStyles = createGlobalStyle`
     line-height: 1.5;
     font-size: 16px;
   }
+
+  body > div[id*="next"] {
+    display: flex;
+    flex-flow: column nowrap;
+    min-height: 100dvh;
+  }
   
   a {
     color: ${({ theme }) => theme.colors.primary};

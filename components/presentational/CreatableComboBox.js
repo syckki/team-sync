@@ -38,7 +38,7 @@ const CreatableComboBox = ({
   disabled = false,
   readonly = false,
 }) => {
-  const [inputValue, setInputValue] = useState(value || "");
+  const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const inputRef = useRef(null);
@@ -46,11 +46,13 @@ const CreatableComboBox = ({
   // If in readonly mode, render a simple display
   if (readonly) {
     return (
-      <ReadonlyField className={!value ? "empty" : ""}>
-        {value || placeholder}
-      </ReadonlyField>
+      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
     );
   }
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
 
   // Update filtered options when input changes
   useEffect(() => {

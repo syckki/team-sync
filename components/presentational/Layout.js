@@ -4,13 +4,9 @@ import MinWidthWarning from "./MinWidthWarning";
 import { Breakpoint } from "../../lib/styles";
 
 const Main = styled.main`
-  /*max-width: 1200px;*/
   margin: 0 auto;
   padding: 2rem;
-  min-height: calc(
-    100vh - 120px
-  ); /* Adjust based on header and footer height */
-
+  
   @media (max-width: ${Breakpoint.MOBILE_LANDSCAPE}px) {
     padding: 1rem;
   }
@@ -23,6 +19,7 @@ const Footer = styled.footer`
   font-size: 0.9rem;
   color: ${({ theme }) => theme.colors.textLight};
   border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin-top: auto;
 `;
 
 const Layout = ({ children }) => {

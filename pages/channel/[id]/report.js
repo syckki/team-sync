@@ -9,18 +9,7 @@ import ReportViewer from "../../../components/containers/ReportViewer";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, Button, ErrorMessage, InfoMessage } from "../../../components/ui";
 
-const Container = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 2rem;
-  max-width: 1240px;
-`;
+// Removed Container styled component in favor of Card component
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -34,22 +23,9 @@ const BackLinkText = styled.span`
   }
 `;
 
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.2rem;
-  color: ${({ theme }) => theme.colors.text};
-`;
+// Removed styled LoadingMessage in favor of InfoMessage component
 
-// Renamed to avoid conflict with imported ErrorMessage component
-const StyledErrorMessage = styled.div`
-  color: #e53e3e;
-  padding: 0.75rem;
-  background-color: #fff5f5;
-  border: 1px solid #fed7d7;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-`;
+// Removed StyledErrorMessage as we're using the ErrorMessage component
 
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
@@ -232,57 +208,62 @@ const ReportPage = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 
-      <Container>
-        <HeaderBanner>
-          <PageTitle>
-            <LockIcon>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-            </LockIcon>
-            AI Productivity Report
-          </PageTitle>
-          <PageSubtitle>
-            Track and measure your productivity gains from using AI tools
-          </PageSubtitle>
-        </HeaderBanner>
+      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+        <Card
+          noPadding
+          noPaddingHeader
+        >
+          <HeaderBanner>
+            <PageTitle>
+              <LockIcon>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </LockIcon>
+              AI Productivity Report
+            </PageTitle>
+            <PageSubtitle>
+              Track and measure your productivity gains from using AI tools
+            </PageSubtitle>
+          </HeaderBanner>
 
-        <ContentContainer>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          <ContentContainer>
+            {error && <ErrorMessage message={error} />}
 
-          {isLoading ? (
-            <LoadingMessage>Loading...</LoadingMessage>
-          ) : (
-            <>
-              {isViewMode ? (
-                <ReportViewer keyFragment={key} threadTitle={threadTitle} />
-              ) : (
-                <>
-                  <ReportFormContainer
-                    keyFragment={key}
-                    teamName={teamName}
-                    teamMemberOptions={teamMemberOptions}
-                    reportData={reportData}
-                    readOnly={readOnly}
-                    messageIndex={messageIndex}
-                  />
-                </>
-              )}
-              <Link href={`/channel/${id}#${key}`}>
-                <BackLinkText>← Back to Channel Inbox</BackLinkText>
-              </Link>
-            </>
-          )}
-        </ContentContainer>
-      </Container>
+            {isLoading ? (
+              <InfoMessage message="Loading report data..." />
+            ) : (
+              <>
+                {isViewMode ? (
+                  <ReportViewer keyFragment={key} threadTitle={threadTitle} />
+                ) : (
+                  <>
+                    <ReportFormContainer
+                      keyFragment={key}
+                      teamName={teamName}
+                      teamMemberOptions={teamMemberOptions}
+                      reportData={reportData}
+                      readOnly={readOnly}
+                      messageIndex={messageIndex}
+                    />
+                  </>
+                )}
+                <Link href={`/channel/${id}#${key}`}>
+                  <BackLinkText>← Back to Channel Inbox</BackLinkText>
+                </Link>
+              </>
+            )}
+          </ContentContainer>
+        </Card>
+      </div>
     </>
   );
 };

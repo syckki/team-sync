@@ -9,6 +9,7 @@ import CreatableMultiSelect from "./CreatableMultiSelect";
 import AutoResizeTextArea from "./AutoResizeTextArea";
 import ResponsiveTable from "./ResponsiveTable";
 import InfoTooltip from "./InfoTooltip";
+import { Button } from "../ui";
 
 const Form = styled.form`
   margin-bottom: 1.5rem;
@@ -861,7 +862,11 @@ const ReportForm = ({
             {/* Only show action buttons if not in read-only mode */}
             {!readOnly && (
               <ButtonRow>
-                <ActionButton type="button" onClick={addRow}>
+                <Button 
+                  type="button" 
+                  onClick={addRow} 
+                  variant="secondary"
+                >
                   <AddIcon>
                     <svg
                       viewBox="0 0 24 24"
@@ -877,25 +882,25 @@ const ReportForm = ({
                     </svg>
                   </AddIcon>
                   Add Entry
-                </ActionButton>
+                </Button>
 
                 <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <ActionButton
+                  <Button
                     type="button"
                     onClick={handleSaveAsDraft}
                     disabled={isSubmitting}
-                    style={{
-                      backgroundColor: "#f3f4f6",
-                      color: "#4b5563",
-                      border: "1px solid #d1d5db",
-                    }}
+                    variant="secondary"
                   >
                     {isSubmitting ? "Saving..." : "Save as Draft"}
-                  </ActionButton>
+                  </Button>
 
-                  <SubmitButton type="submit" disabled={isSubmitting}>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    variant="primary"
+                  >
                     {isSubmitting ? "Submitting..." : "Submit Report"}
-                  </SubmitButton>
+                  </Button>
                 </div>
               </ButtonRow>
             )}

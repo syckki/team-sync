@@ -4,19 +4,6 @@ import styled from "styled-components";
 import { useRouter } from "next/router";
 import { Card, Button, Input, ErrorMessage } from "../../../components/ui";
 
-const Container = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 2rem;
-  max-width: 600px;
-`;
-
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
   color: white;
@@ -77,51 +64,8 @@ const ContentContainer = styled.div`
   }
 `;
 
-// Using imported ErrorMessage from UI components instead
-// Keeping this for reference
-// const StyledErrorMessage = styled.div`
-//   text-align: center;
-//   padding: 2rem;
-//   font-size: 1.2rem;
-//   color: ${({ theme }) => theme.colors.error};
-//   background: ${({ theme }) => theme.colors.errorBg};
-//   border-radius: 8px;
-//   margin-top: 2rem;
-// `;
-
 const KeyInputForm = styled.form`
   margin: 2rem auto;
-`;
-
-const KeyInput = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  margin: 1rem 0;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 1rem;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
-  }
-`;
-
-const SubmitButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
-  }
 `;
 
 const JoinToThreadPage = () => {
@@ -156,7 +100,7 @@ const JoinToThreadPage = () => {
         noPadding
         noPaddingHeader
         className="join-container"
-        style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}
+        style={{ maxWidth: "600px", margin: "0 auto 2rem auto" }}
       >
         <HeaderBanner>
           <PageTitle>
@@ -188,14 +132,14 @@ const JoinToThreadPage = () => {
               onChange={(e) => setManualKey(e.target.value)}
               placeholder="Paste the access key shared with you"
               required
-              style={{ fontFamily: 'monospace' }}
+              style={{ fontFamily: "monospace" }}
             />
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="primary"
               size="large"
-              style={{ marginTop: '1rem' }}
+              style={{ marginTop: "1rem" }}
             >
               Join Channel
             </Button>

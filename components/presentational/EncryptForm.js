@@ -41,52 +41,6 @@ const TextArea = styled.textarea`
   }
 `;
 
-// Using imported UI components instead
-// const StyledInput = styled.input`
-//   width: 100%;
-//   padding: 0.75rem;
-//   border: 1px solid ${({ theme }) => theme.colors.border};
-//   border-radius: 4px;
-//   font-family: inherit;
-//   font-size: 1rem;
-//   transition: border-color 0.3s;
-//
-//   &:focus {
-//     outline: none;
-//     border-color: ${({ theme }) => theme.colors.primary};
-//     box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primaryLight};
-//   }
-// `;
-//
-// const StyledButton = styled.button`
-//   padding: 0.75rem 1.5rem;
-//   background-color: ${({ theme }) => theme.colors.primary};
-//   color: white;
-//   border: none;
-//   border-radius: 4px;
-//   font-size: 1rem;
-//   font-weight: 600;
-//   cursor: pointer;
-//   transition: background-color 0.2s;
-//
-//   &:hover {
-//     background-color: ${({ theme }) => theme.colors.primaryDark};
-//   }
-//
-//   &:disabled {
-//     background-color: ${({ theme }) => theme.colors.disabled};
-//     cursor: not-allowed;
-//   }
-// `;
-//
-// const StyledErrorMessage = styled.div`
-//   color: ${({ theme }) => theme.colors.error};
-//   background-color: ${({ theme }) => theme.colors.errorBg};
-//   padding: 0.75rem;
-//   border-radius: 4px;
-//   margin-bottom: 1rem;
-// `;
-
 const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   const [formValues, setFormValues] = useState({
     title: "",

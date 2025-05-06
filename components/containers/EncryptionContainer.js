@@ -42,21 +42,6 @@ const SecureLink = styled.a`
   }
 `;
 
-const CopyButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
-  }
-`;
-
 const SuccessMessage = styled.p`
   color: ${({ theme }) => theme.colors.success};
   margin-bottom: 1rem;
@@ -74,31 +59,6 @@ const ReplyBadge = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const OfflineNotification = styled.div`
-  padding: 0.75rem;
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const OfflineStatus = styled.span`
-  font-weight: bold;
-`;
-
-const QueuedMessage = styled.div`
-  padding: 0.75rem;
-  background-color: #cce5ff;
-  color: #004085;
-  border: 1px solid #b8daff;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-`;
-
 const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [encryptedResult, setEncryptedResult] = useState(null);
@@ -106,9 +66,6 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [networkStatus, setNetworkStatus] = useState(true); // Default to online
   const [isQueued, setIsQueued] = useState(false);
-
-  // Use a longer delay for replies to ensure user sees the confirmation
-  const redirectDelay = isReply ? 2500 : 1500;
 
   const router = useRouter();
 

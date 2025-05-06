@@ -9,19 +9,6 @@ import ReportViewer from "../../../components/containers/ReportViewer";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, ErrorMessage } from "../../../components/ui";
 
-const Container = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 2rem;
-  max-width: 1240px;
-`;
-
 const BackLinkText = styled.span`
   display: inline-block;
   margin-top: 1rem;
@@ -40,17 +27,6 @@ const LoadingMessage = styled.div`
   font-size: 1.2rem;
   color: ${({ theme }) => theme.colors.text};
 `;
-
-// Using imported ErrorMessage from UI components instead
-// Keeping this for reference
-// const StyledErrorMessage = styled.div`
-//   color: #e53e3e;
-//   padding: 0.75rem;
-//   background-color: #fff5f5;
-//   border: 1px solid #fed7d7;
-//   border-radius: 4px;
-//   margin-bottom: 1rem;
-// `;
 
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
@@ -206,7 +182,7 @@ const ReportPage = () => {
             setReportData(parsedData);
 
             // Set read-only mode based on report status
-            setReadOnly(parsedData.status === "submitted");
+            setReadOnly(data.isCreator || parsedData.status === "submitted");
           }
         })
         .catch((err) => {
@@ -237,7 +213,7 @@ const ReportPage = () => {
         noPadding
         noPaddingHeader
         className="report-container"
-        style={{ maxWidth: '1240px', margin: '0 auto 2rem auto' }}
+        style={{ maxWidth: "1240px", margin: "0 auto 2rem auto" }}
       >
         <HeaderBanner>
           <PageTitle>

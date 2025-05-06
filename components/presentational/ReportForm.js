@@ -333,7 +333,8 @@ const ReportForm = ({
     };
   });
 
-  const tableColumns = [
+  // Define base columns without Action column
+  let tableColumns = [
     {
       header: "Platform",
       field: "platform",
@@ -577,7 +578,11 @@ const ReportForm = ({
         />
       ),
     },
-    {
+  ];
+  
+  // Add Action column only when not in read-only mode
+  if (!readOnly) {
+    tableColumns.push({
       header: "Action",
       field: "action",
       render: (value, row) =>
@@ -588,7 +593,6 @@ const ReportForm = ({
               e.stopPropagation(); // Prevent row expansion
               removeRow(row.id);
             }}
-            disabled={readOnly}
           >
             <svg
               viewBox="0 0 24 24"
@@ -606,8 +610,8 @@ const ReportForm = ({
             </svg>
           </DeleteButton>
         ) : null,
-    },
-  ];
+    });
+  }
 
   return (
     <>

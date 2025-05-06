@@ -15,6 +15,7 @@ import {
 import EncryptForm from "../presentational/EncryptForm";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { Button, Message } from "../ui";
 
 const ResultContainer = styled.div`
   margin-top: 2rem;
@@ -358,12 +359,12 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
 
       {/* Network status indicator */}
       {!networkStatus && (
-        <OfflineNotification>
+        <Message type="warning">
           <div>
-            <OfflineStatus>You are offline.</OfflineStatus> Messages will be
+            <strong>You are offline.</strong> Messages will be
             queued and sent automatically when your connection is restored.
           </div>
-        </OfflineNotification>
+        </Message>
       )}
 
       <EncryptForm
@@ -375,10 +376,10 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
 
       {/* Show queued message notification */}
       {isQueued && (
-        <QueuedMessage>
+        <Message type="info">
           Your message has been queued and will be sent automatically when your
           connection is restored.
-        </QueuedMessage>
+        </Message>
       )}
 
       {encryptedResult && (
@@ -416,9 +417,13 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
               >
                 {encryptedResult.url}
               </SecureLink>
-              <CopyButton onClick={copyToClipboard}>
+              <Button 
+                variant="primary" 
+                size="medium" 
+                onClick={copyToClipboard}
+              >
                 {copySuccess ? "Copied!" : "Copy Secure Link"}
-              </CopyButton>
+              </Button>
               <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
                 Note: The encryption key is only included in the URL fragment
                 (after the #) and is never sent to the server.

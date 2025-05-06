@@ -3,19 +3,6 @@ import EncryptionContainer from "../components/containers/EncryptionContainer";
 import styled from "styled-components";
 import { Card } from "../components/ui";
 
-const Container = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 2rem;
-  max-width: 600px;
-`;
-
 const HeaderBanner = styled.div`
   background-color: hsl(217 91% 60%);
   color: white;
@@ -90,7 +77,7 @@ const HomePage = ({ staticProps }) => {
         noPadding
         noPaddingHeader
         className="home-container"
-        style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}
+        style={{ maxWidth: "600px", margin: "0 auto 2rem auto" }}
       >
         <HeaderBanner>
           <PageTitle>

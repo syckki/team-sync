@@ -41,6 +41,18 @@ const AddMessageForm = styled.div`
   border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
+const ButtonRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
 const ThreadTitle = styled.h3`
   margin-bottom: 1rem;
   color: ${({ theme }) => theme.colors.primary};
@@ -93,18 +105,26 @@ const MessageContent = styled.div`
 `;
 
 const ToggleButton = styled.button`
-  padding: 0.6rem 1.2rem;
-  background-color: ${({ theme }) => theme.colors.secondary};
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: calc(0.5rem - 2px);
   cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  background-color: hsl(217 91% 60%);
+  color: hsl(217 100% 99%);
+  transition: background-color 0.2s;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.secondaryDark};
+    background-color: #3d6bf3;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
   }
 `;
 
@@ -649,9 +669,7 @@ const DecryptionContainer = ({ id, key64 }) => {
       </MessagesContainer>
 
       <AddMessageForm>
-        <ThreadTitle>Add to this Channel</ThreadTitle>
-
-        <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <ButtonRow>
           <ToggleButton onClick={toggleAddForm}>
             {showAddForm ? "Hide Form" : "Add New Message"}
           </ToggleButton>
@@ -664,7 +682,7 @@ const DecryptionContainer = ({ id, key64 }) => {
           >
             Submit AI Productivity Report
           </ToggleButton>
-        </div>
+        </ButtonRow>
 
         {showAddForm && (
           <EncryptForm

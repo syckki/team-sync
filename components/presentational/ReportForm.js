@@ -469,7 +469,6 @@ const ReportForm = ({
           }
           required
           placeholder="Est (Hrs)"
-          style={{ width: "115px" }}
           autoComplete="new-password"
           data-lpignore="true"
           spellCheck="false"
@@ -506,7 +505,6 @@ const ReportForm = ({
           aria-autocomplete="none"
           readonly={readOnly}
           style={{
-            width: "115px",
             color:
               row.estimatedTimeWithoutAI && row.actualTimeWithAI
                 ? parseFloat(row.actualTimeWithAI) <
@@ -583,7 +581,7 @@ const ReportForm = ({
   // Add Action column only when not in read-only mode
   if (!readOnly) {
     tableColumns.push({
-      header: "Action",
+      isAction: true,
       field: "action",
       render: (value, row) =>
         rows.length > 1 ? (

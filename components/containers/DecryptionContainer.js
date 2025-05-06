@@ -61,7 +61,9 @@ const MessageItem = styled.div`
   background-color: ${({ theme }) => theme.colors.card};
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  ${props => props.$isEditable && `
+  ${(props) =>
+    props.$isEditable &&
+    `
     cursor: pointer;
     &:hover {
       background-color: #f0f4ff;
@@ -315,7 +317,7 @@ const DecryptionContainer = ({ id, key64 }) => {
                 content.entries && content.entries.length > 0
                   ? content.entries[0].aiTool
                   : "AI Tool";
-              
+
               // Get report status (default to "submitted" for backward compatibility)
               const reportStatus = content.status || "submitted";
 
@@ -362,7 +364,7 @@ const DecryptionContainer = ({ id, key64 }) => {
     };
 
     fetchAndDecryptMessages();
-  }, [id, key64, viewMode]); // Added viewMode as dependency so it refetches when view changes
+  }, [viewMode]); // Added viewMode as dependency so it refetches when view changes
 
   // Add a new message to the thread
   const handleAddMessage = async (formData) => {
@@ -482,7 +484,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
   };
-  
+
   // Handle click on a report message - navigate to appropriate route
   const handleReportClick = (message) => {
     // Use the standard view=false parameter for all reports
@@ -579,13 +581,15 @@ const DecryptionContainer = ({ id, key64 }) => {
         <MessagesList>
           {filteredMessages.map((message, index) => {
             // Determine if message should be clickable/editable (user's own draft reports)
-            const isEditable = message.isCurrentUser && message.isReport && message.reportStatus === "draft";
-            
+            const isEditable = message.isCurrentUser && message.isReport;
+
             return (
-              <MessageItem 
-                key={index} 
+              <MessageItem
+                key={index}
                 $isEditable={isEditable}
-                onClick={() => message.isReport ? handleReportClick(message) : null}
+                onClick={() =>
+                  message.isReport ? handleReportClick(message) : null
+                }
               >
                 <MessageHeader>
                   <div style={{ display: "flex", alignItems: "center" }}>
@@ -594,7 +598,9 @@ const DecryptionContainer = ({ id, key64 }) => {
                       <MessageBadge $isQueued={true}>Queued</MessageBadge>
                     )}
                     {message.isReport && message.reportStatus === "draft" && (
-                      <MessageBadge style={{ backgroundColor: "#F59E0B" }}>Draft</MessageBadge>
+                      <MessageBadge style={{ backgroundColor: "#F59E0B" }}>
+                        Draft
+                      </MessageBadge>
                     )}
                     {!message.isQueued && message.isCurrentUser && (
                       <MessageBadge $isCurrentUser={true}>You</MessageBadge>
@@ -617,7 +623,13 @@ const DecryptionContainer = ({ id, key64 }) => {
                 <MessageContent>
                   {message.message}
                   {isEditable && (
-                    <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", color: "#4CAF50" }}>
+                    <div
+                      style={{
+                        marginTop: "0.5rem",
+                        fontSize: "0.9rem",
+                        color: "#4CAF50",
+                      }}
+                    >
                       Click to edit this draft report
                     </div>
                   )}

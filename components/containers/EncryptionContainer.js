@@ -279,7 +279,10 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
 
         // Create a complete URL with the key as a fragment
         const secureUrl = `${responseUrl}#${keyBase64}`;
-
+        sessionStorage.setItem(
+          "secureUrl",
+          `${window.location.origin}${secureUrl}`,
+        );
         setEncryptedResult({ url: `${window.location.origin}${secureUrl}` });
 
         router.push(secureUrl);

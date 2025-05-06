@@ -17,95 +17,85 @@ const ReportFormContainer = ({
   teamMemberOptions = [],
   reportData = null,
   readOnly = false,
-  messageIndex = null
+  messageIndex = null,
 }) => {
   const router = useRouter();
-  const { id, reportData: reportDataParam } = router.query;
+  const { id } = router.query;
 
   // Set up state for read-only mode (for submitted reports)
   // Allow override from props (for messageIndex-based loading)
   const [isReadOnly, setIsReadOnly] = useState(readOnly);
-  
+
   // Form state
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
-  const [rows, setRows] = useState([
-    {
-      id: Date.now(),
-      platform: "",
-      projectInitiative: "",
-      sdlcStep: "",
-      sdlcTask: "",
-      taskCategory: "",
-      taskDetails: "",
-      estimatedTimeWithoutAI: "",
-      actualTimeWithAI: "",
-      // timeSaved is calculated
-      aiToolUsed: [],
-      complexity: "",
-      qualityImpact: "",
-      notesHowAIHelped: "",
-    },
-  ]);
-  
+
+  const getNewRow = () => ({
+    id: Date.now(),
+    platform: "",
+    projectInitiative: "",
+    sdlcStep: "",
+    sdlcTask: "",
+    taskCategory: "",
+    estimatedTimeWithoutAI: "",
+    actualTimeWithAI: "",
+    timeSaved: "", // is calculated
+    complexity: "",
+    qualityImpact: "",
+    aiToolsUsed: [],
+    taskDetails: "",
+    notesHowAIHelped: "",
+  });
+
+  const [rows, setRows] = useState([getNewRow()]);
+
   // Function to process report data (whether from URL param or direct props)
   const processReportData = (existingReport) => {
     // Check report status - if submitted, set read-only mode
     if (existingReport.status === "submitted") {
       setIsReadOnly(true);
     }
-    
+console.log(existingReport);
     // Set team member and role
     setTeamMember(existingReport.teamMember || "");
     setTeamRole(existingReport.teamRole || "");
-    
+
     // Load rows data if available
     if (existingReport.entries && existingReport.entries.length > 0) {
       // Map the entries to row format with unique IDs
-      const loadedRows = existingReport.entries.map(entry => ({
+      const loadedRows = existingReport.entries.map((entry) => ({
         id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
-        platform: entry.platform || "",
-        projectInitiative: entry.projectInitiative || "",
-        sdlcStep: entry.sdlcStep || "",
-        sdlcTask: entry.sdlcTask || "",
-        taskCategory: entry.taskCategory || "",
-        taskDetails: entry.taskDetails || "",
+        platform: entry.platform,
+        projectInitiative: entry.projectInitiative,
+        sdlcStep: entry.sdlcStep,
+        sdlcTask: entry.sdlcTask,
+        taskCategory: entry.taskCategory,
         estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
         actualTimeWithAI: entry.actualTimeWithAI || "",
-        aiToolUsed: entry.aiTool ? 
-          (Array.isArray(entry.aiTool) ? entry.aiTool : 
-           (entry.aiTool.includes(',') ? entry.aiTool.split(',').map(t => t.trim()) : [entry.aiTool])) 
-          : [],
         complexity: entry.complexity || "",
         qualityImpact: entry.qualityImpact || "",
+        aiToolsUsed: entry.aiToolsUsed
+          ? Array.isArray(entry.aiToolsUsed)
+            ? entry.aiToolsUsed
+            : entry.aiToolsUsed.includes(",")
+              ? entry.aiToolsUsed.split(",").map((t) => t.trim())
+              : [entry.aiToolsUsed]
+          : [],
+        taskDetails: entry.taskDetails,
         notesHowAIHelped: entry.notesHowAIHelped || "",
       }));
-      
+
       setRows(loadedRows);
     }
   };
-  
+
   // Load report data from props (passed from page component)
   useEffect(() => {
     if (reportData) {
       processReportData(reportData);
     }
   }, [reportData]);
-  
-  // Load existing report data if editing a draft (from URL parameter)
-  useEffect(() => {
-    if (reportDataParam && !reportData) { // Only use URL param if no direct props
-      try {
-        // Parse the report data from URL parameter
-        const existingReport = JSON.parse(decodeURIComponent(reportDataParam));
-        processReportData(existingReport);
-      } catch (error) {
-        console.error("Error parsing report data:", error);
-        // Continue with empty form if there's an error
-      }
-    }
-  }, [reportDataParam, reportData]);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,9 +145,9 @@ const ReportFormContainer = ({
 
             if (!isNaN(estimatedTime) && !isNaN(actualTime)) {
               const timeSaved = Math.max(0, estimatedTime - actualTime);
-              updatedRow.hoursSaved = roundToQuarterHour(timeSaved);
+              updatedRow.timeSaved = roundToQuarterHour(timeSaved);
             } else {
-              updatedRow.hoursSaved = "";
+              updatedRow.timeSaved = "";
             }
           }
 
@@ -178,22 +168,7 @@ const ReportFormContainer = ({
 
   // Add a new row to the form
   const addRow = () => {
-    const newRow = {
-      id: Date.now(),
-      platform: "",
-      projectInitiative: "",
-      sdlcStep: "",
-      sdlcTask: "",
-      taskCategory: "",
-      taskDetails: "",
-      estimatedTimeWithoutAI: "",
-      actualTimeWithAI: "",
-      hoursSaved: "",
-      aiToolUsed: [],
-      complexity: "",
-      qualityImpact: "",
-      notesHowAIHelped: "",
-    };
+    const newRow = getNewRow();
     setRows((prevRows) => [...prevRows, newRow]);
     // Automatically expand the new row
     setExpandedRows((prev) => ({
@@ -230,21 +205,22 @@ const ReportFormContainer = ({
 
     // Process the form data
     const reportEntries = rows.map((row) => ({
-      sdlcStep: row.sdlcStep,
-      sdlcTask: row.sdlcTask,
       platform: row.platform,
       projectInitiative: row.projectInitiative,
+      sdlcStep: row.sdlcStep,
+      sdlcTask: row.sdlcTask,
       taskCategory: row.taskCategory,
-      taskDetails: row.taskDetails,
-      hours: roundToQuarterHour(row.actualTimeWithAI),
-      aiTool:
-        Array.isArray(row.aiToolUsed) && row.aiToolUsed.length > 0
-          ? row.aiToolUsed.join(", ")
-          : "",
-      aiProductivity: row.notesHowAIHelped,
-      hoursSaved: row.hoursSaved,
+      estimatedTimeWithoutAI: roundToQuarterHour(row.estimatedTimeWithoutAI),
+      actualTimeWithAI: roundToQuarterHour(row.actualTimeWithAI),
+      timeSaved: row.timeSaved,
       complexity: row.complexity,
       qualityImpact: row.qualityImpact,
+      aiToolsUsed:
+        Array.isArray(row.aiToolsUsed) && row.aiToolsUsed.length > 0
+          ? row.aiToolsUsed.join(", ")
+          : "",
+      taskDetails: row.taskDetails,
+      notesHowAIHelped: row.notesHowAIHelped,
     }));
 
     // Add author ID if available (for multi-user identification)
@@ -285,12 +261,12 @@ const ReportFormContainer = ({
         status, // Add status to metadata
       },
     };
-    
+
     // If we're editing an existing message, include the messageIndex
     if (messageIndex !== null) {
       submitData.messageIndex = messageIndex;
     }
-    
+
     return submitData;
   };
 
@@ -391,24 +367,7 @@ const ReportFormContainer = ({
 
       // Reset the form after a delay
       setTimeout(() => {
-        setRows([
-          {
-            id: Date.now(),
-            platform: "",
-            projectInitiative: "",
-            sdlcStep: "",
-            sdlcTask: "",
-            taskCategory: "",
-            taskDetails: "",
-            estimatedTimeWithoutAI: "",
-            actualTimeWithAI: "",
-            hoursSaved: "",
-            aiToolUsed: [],
-            complexity: "",
-            qualityImpact: "",
-            notesHowAIHelped: "",
-          },
-        ]);
+        setRows([getNewRow()]);
         setExpandedRows({});
         setTeamMember("");
         setTeamRole("");

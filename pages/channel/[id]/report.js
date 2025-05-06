@@ -158,56 +158,48 @@ const ReportPage = () => {
         localStorage.setItem("encrypted-app-author-id", authorId);
       }
 
+      const loadReport = messageIndex !== null && !isViewMode;
+      const messageParam = loadReport ? `&messageIndex=${messageIndex}` : "";
+
       // First fetch thread metadata
-      fetch(`/api/download?threadId=${id}&authorId=${authorId}`)
+      fetch(`/api/download?threadId=${id}&authorId=${authorId}${messageParam}`)
         .then((response) => response.json())
-        .then((data) => {
+        .then(async (data) => {
           setThreadTitle(data.threadTitle || id);
           setTeamName(data.threadTitle || id);
+
+          if (loadReport) {
+            const message = data.messages[0];
+
+            if (!message.metadata?.isReport) return;
+
+            const cryptoKey = await importKeyFromBase64(key);
+
+            // Convert base64 data back to ArrayBuffer
+            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
+              c.charCodeAt(0),
+            );
+
+            // Extract IV and ciphertext
+            const iv = encryptedBytes.slice(0, 12);
+            const ciphertext = encryptedBytes.slice(12);
+
+            // Decrypt the data
+            const decrypted = await decryptData(ciphertext, cryptoKey, iv);
+
+            // Parse the decrypted JSON
+            const parsedData = JSON.parse(new TextDecoder().decode(decrypted));
+
+            // Set report data for editing
+            setReportData(parsedData);
+
+            // Set read-only mode based on report status
+            setReadOnly(parsedData.status === "submitted");
+          }
         })
         .catch((err) => {
           console.error("Error fetching thread data:", err);
         });
-
-      // If messageIndex is provided and we're not in view mode, fetch the specific message
-      if (messageIndex !== null && !isViewMode) {
-        fetch(`/api/download?threadId=${id}&authorId=${authorId}&messageIndex=${messageIndex}`)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('Failed to fetch message data');
-            }
-            return response.arrayBuffer();
-          })
-          .then(async (buffer) => {
-            try {
-              // Import the key for decryption
-              const cryptoKey = await importKeyFromBase64(key);
-              
-              // Extract IV and ciphertext
-              const data = new Uint8Array(buffer);
-              const iv = data.slice(0, 12);
-              const ciphertext = data.slice(12);
-              
-              // Decrypt the data
-              const decryptedBuffer = await decryptData(ciphertext, cryptoKey, iv);
-              const decryptedText = new TextDecoder().decode(decryptedBuffer);
-              const parsedData = JSON.parse(decryptedText);
-              
-              // Set report data for editing
-              setReportData(parsedData);
-              
-              // Set read-only mode based on report status
-              setReadOnly(parsedData.status === "submitted");
-            } catch (err) {
-              console.error('Error decrypting message data:', err);
-              setError('Failed to decrypt message data. Please try again.');
-            }
-          })
-          .catch((err) => {
-            console.error('Error fetching message:', err);
-            setError(`Failed to load report: ${err.message}`);
-          });
-      }
     }
   }, [key, id, messageIndex, isViewMode]);
 

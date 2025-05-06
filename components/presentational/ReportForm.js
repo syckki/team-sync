@@ -714,9 +714,9 @@ const ReportForm = ({
                         />
                       </div>
                       <CreatableMultiSelect
-                        value={row.aiToolUsed}
+                        value={row.aiToolsUsed}
                         onChange={(value) =>
-                          handleRowChange(row.id, "aiToolUsed", value)
+                          handleRowChange(row.id, "aiToolsUsed", value)
                         }
                         options={[
                           "ChatGPT",

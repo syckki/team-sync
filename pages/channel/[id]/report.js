@@ -33,6 +33,13 @@ const BackLinkText = styled.span`
   }
 `;
 
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
 const ErrorMessage = styled.div`
   color: #e53e3e;
   padding: 0.75rem;
@@ -115,6 +122,7 @@ const ReportPage = () => {
   const [error, setError] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Extract the key from URL fragment on mount
   useEffect(() => {
@@ -200,6 +208,9 @@ const ReportPage = () => {
         })
         .catch((err) => {
           console.error("Error fetching thread data:", err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [key, id, messageIndex, isViewMode]);
@@ -245,21 +256,29 @@ const ReportPage = () => {
         <ContentContainer>
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          {isViewMode && threadTitle ? (
-            <ReportViewer keyFragment={key} threadTitle={threadTitle} />
+          {isLoading ? (
+            <LoadingMessage>Loading...</LoadingMessage>
           ) : (
-            <ReportFormContainer
-              keyFragment={key}
-              teamName={teamName}
-              teamMemberOptions={teamMemberOptions}
-              reportData={reportData}
-              readOnly={readOnly}
-              messageIndex={messageIndex}
-            />
+            <>
+              {isViewMode ? (
+                <ReportViewer keyFragment={key} threadTitle={threadTitle} />
+              ) : (
+                <>
+                  <ReportFormContainer
+                    keyFragment={key}
+                    teamName={teamName}
+                    teamMemberOptions={teamMemberOptions}
+                    reportData={reportData}
+                    readOnly={readOnly}
+                    messageIndex={messageIndex}
+                  />
+                </>
+              )}
+              <Link href={`/channel/${id}#${key}`}>
+                <BackLinkText>← Back to Channel Inbox</BackLinkText>
+              </Link>
+            </>
           )}
-          <Link href={`/channel/${id}#${key}`}>
-            <BackLinkText>← Back to Channel Inbox</BackLinkText>
-          </Link>
         </ContentContainer>
       </Container>
     </>

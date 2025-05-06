@@ -25,7 +25,7 @@ const SelectedItemsContainer = styled.div`
   min-height: 2.5rem;
   border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
-  background-color: #f8f9fa;
+  background-color: ${(props) => (props.$hasValue ? "#fff" : "#f8f9fa")};
   align-items: center;
 
   &:focus-within {
@@ -226,6 +226,7 @@ const CreatableMultiSelect = ({
     <MultiSelectContainer ref={containerRef}>
       <SelectedItemsContainer
         onClick={() => inputRef.current && inputRef.current.focus()}
+        $hasValue={value.length > 0}
       >
         {value.map((item, index) => (
           <SelectedItem key={index}>

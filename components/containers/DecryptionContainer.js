@@ -621,7 +621,15 @@ const DecryptionContainer = ({ id, key64 }) => {
                   )}
                 </MessageHeader>
                 <MessageContent>
-                  {message.message}
+                  {console.log(message)}
+                  {message.message || [
+                    ...new Set(
+                      message.reportData.entries
+                        .map((entry) => entry.aiToolsUsed)
+                        .join(",")
+                        .split(","),
+                    ),
+                  ]}
                   {isEditable && (
                     <div
                       style={{

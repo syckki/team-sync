@@ -112,17 +112,16 @@ const ViewPage = ({ pageProps }) => {
       // Handle the case where no key is provided in the URL
       if (!fragment) {
         router.push(`/channel/${id}/join`);
-        setIsLoading(false);
         return;
       }
 
       setKey(fragment);
-      setIsLoading(false);
     } catch (err) {
       console.error("Error parsing key from URL:", err);
       setError(
         "Could not retrieve encryption key from URL. Make sure you have the complete link.",
       );
+    } finally {
       setIsLoading(false);
     }
   }, [router.isReady]);

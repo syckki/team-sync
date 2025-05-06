@@ -4,7 +4,7 @@ import styled from "styled-components";
 // Styled component for the textarea
 const TextareaBase = styled.textarea`
   width: 100%;
-  background-color: #f8f9fa;
+  background-color: ${(props) => (props.$hasValue ? "#fff" : "#f8f9fa")};
   resize: vertical;
   padding: 0.5rem 0.75rem;
   border: 1px solid hsl(20 5.9% 90%);
@@ -89,6 +89,7 @@ const AutoResizeTextArea = ({
       value={value}
       onChange={onChange}
       placeholder={placeholder}
+      $hasValue={value.length > 0}
       {...props}
     />
   );

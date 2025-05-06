@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import {
-  importKeyFromBase64,
-  encryptData,
-  exportKeyToBase64,
-} from "../../lib/cryptoUtils";
+import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 import ReportForm from "../presentational/ReportForm";
 
 /**

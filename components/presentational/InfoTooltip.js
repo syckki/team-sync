@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 
 const TooltipContainer = styled.div`
@@ -7,7 +8,6 @@ const TooltipContainer = styled.div`
   margin-left: 0.35rem;
   vertical-align: middle;
   cursor: pointer;
-  z-index: 5; /* Give it a z-index higher than normal content but lower than the tooltip content */
 `;
 
 const InfoIcon = styled.div`
@@ -24,7 +24,7 @@ const InfoIcon = styled.div`
   border: 1px solid #4e7fff;
   letter-spacing: normal;
   text-transform: none;
-  
+
   &:hover {
     background-color: #4e7fff;
     color: white;
@@ -32,7 +32,7 @@ const InfoIcon = styled.div`
 `;
 
 const TooltipContent = styled.div`
-  position: fixed; /* Changed from absolute to fixed for better positioning */
+  position: fixed;
   width: 280px;
   background-color: #ffffff;
   color: #333;
@@ -41,40 +41,43 @@ const TooltipContent = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 0.75rem;
   line-height: 1.4;
-  z-index: 99999; /* Extremely high z-index to ensure it's above all dropdowns */
-  visibility: ${props => (props.$visible ? "visible" : "hidden")};
-  opacity: ${props => (props.$visible ? 1 : 0)};
-  transition: opacity 0.2s;
+  opacity: ${(props) => (props.$visible ? 1 : 0)};
+  transition: opacity 0.2s ease;
   max-height: 300px;
   overflow-y: auto; /* Allow scrolling for very long content */
   letter-spacing: normal;
   text-transform: none;
-  pointer-events: ${props => (props.$visible ? "auto" : "none")};
-  
-  /* Positions set dynamically with JavaScript */
+  pointer-events: ${(props) => (props.$visible ? "auto" : "none")};
+  z-index: 10000;
 `;
 
 const TooltipArrow = styled.div`
-  position: absolute;
+  position: fixed;
   width: 0;
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-bottom: 6px solid #ffffff;
-  z-index: 99999; /* Match tooltip content z-index */
-  visibility: ${props => (props.$visible ? "visible" : "hidden")};
-  opacity: ${props => (props.$visible ? 1 : 0)};
   pointer-events: none;
-  
-  ${props => props.$position === 'top' && `
+  opacity: ${(props) => (props.$visible ? 1 : 0)};
+  transition: opacity 0.2s ease;
+  z-index: 10000;
+
+  ${(props) =>
+    props.$position === "top" &&
+    `
     transform: rotate(180deg);
   `}
-  
-  ${props => props.$position === 'right' && `
+
+  ${(props) =>
+    props.$position === "right" &&
+    `
     transform: rotate(90deg);
   `}
-  
-  ${props => props.$position === 'left' && `
+
+  ${(props) =>
+    props.$position === "left" &&
+    `
     transform: rotate(270deg);
   `}
 `;
@@ -98,37 +101,61 @@ const TooltipParagraph = styled.p`
 `;
 
 /**
+ * This helper component creates a Portal for tooltips
+ */
+const TooltipPortal = ({ children, isVisible }) => {
+  // Only create the portal if the tooltip is visible
+  if (!isVisible) return null;
+
+  // Use createPortal to render the tooltip at the end of the document body
+  return typeof document !== "undefined"
+    ? createPortal(children, document.body)
+    : null;
+};
+
+/**
  * InfoTooltip component displays a tooltip with information about a field when hovering over the info icon
+ * Uses React Portal to render the tooltip outside of the DOM hierarchy for better positioning
+ *
  * @param {Object} props
  * @param {string} props.title - Title of the tooltip (usually the field name)
  * @param {string} props.content - Explanation text for the tooltip
  * @param {string} [props.actionHint] - Optional hint about what the user can do with this field
  * @param {string} [props.position] - Preferred position ('top', 'bottom', 'left', 'right'). Default is auto-detect.
  */
-const InfoTooltip = ({ title, content, actionHint, position = "auto" }) => {
+const InfoTooltipPortal = ({
+  title,
+  content,
+  actionHint,
+  position = "auto",
+}) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState("bottom");
+  const [tooltipPosition, setTooltipPosition] = useState("top");
   const [tooltipStyle, setTooltipStyle] = useState({});
   const [arrowStyle, setArrowStyle] = useState({});
-  
-  const tooltipRef = useRef(null);
+
   const containerRef = useRef(null);
+  const tooltipRef = useRef(null);
   const arrowRef = useRef(null);
-  
+
   // Calculate tooltip position based on available space and container position
   const calculatePosition = () => {
-    if (!containerRef.current || !tooltipRef.current) return;
-    
+    if (!containerRef.current) return;
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const tooltipWidth = 280; // Fixed width from styling
-    const tooltipHeight = Math.min(tooltipRef.current.scrollHeight, 300); // Max height with scrolling
-    
+
+    // Get tooltip height if available, otherwise estimate
+    const tooltipHeight = tooltipRef.current
+      ? Math.min(tooltipRef.current.scrollHeight, 300)
+      : 150; // Fallback height estimate
+
     // Available space in each direction
     const spaceAbove = containerRect.top;
     const spaceBelow = window.innerHeight - containerRect.bottom;
     const spaceLeft = containerRect.left;
     const spaceRight = window.innerWidth - containerRect.right;
-    
+
     // Minimum space needed with padding
     const minSpaceNeeded = 10;
 
@@ -147,117 +174,165 @@ const InfoTooltip = ({ title, content, actionHint, position = "auto" }) => {
       }
       // If no ideal position, fallback to bottom with scrolling
     }
-    
+
     // Calculate specific coordinates based on chosen position
     let tooltipStyles = {};
     let arrowStyles = {};
-    
+
     switch (bestPosition) {
       case "bottom":
         // Position below the icon
         tooltipStyles = {
-          top: `${containerRect.bottom + 8}px`, 
-          left: `${containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2)}px`
+          top: `${containerRect.bottom + 8}px`,
+          left: `${containerRect.left - tooltipWidth / 2 + containerRect.width / 2}px`,
         };
-        
+
         arrowStyles = {
           top: `${containerRect.bottom + 2}px`,
-          left: `${containerRect.left + (containerRect.width / 2)}px`,
+          left: `${containerRect.left + containerRect.width / 2}px`,
           marginLeft: "-6px",
-          marginTop: "0"
         };
-        
+
         // Adjust if tooltip goes off-screen
-        if (containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2) < minSpaceNeeded) {
+        if (
+          containerRect.left - tooltipWidth / 2 + containerRect.width / 2 <
+          minSpaceNeeded
+        ) {
           // Too far left, align with left edge
           tooltipStyles.left = `${minSpaceNeeded}px`;
-        } else if (containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2) + tooltipWidth > window.innerWidth - minSpaceNeeded) {
+        } else if (
+          containerRect.left -
+            tooltipWidth / 2 +
+            containerRect.width / 2 +
+            tooltipWidth >
+          window.innerWidth - minSpaceNeeded
+        ) {
           // Too far right, align with right edge
           tooltipStyles.left = `${window.innerWidth - tooltipWidth - minSpaceNeeded}px`;
         }
         break;
-        
+
       case "top":
         // Position above the icon
         tooltipStyles = {
           bottom: `${window.innerHeight - containerRect.top + 8}px`,
-          left: `${containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2)}px`
+          left: `${containerRect.left - tooltipWidth / 2 + containerRect.width / 2}px`,
         };
-        
+
         arrowStyles = {
           bottom: `${window.innerHeight - containerRect.top + 2}px`,
-          left: `${containerRect.left + (containerRect.width / 2)}px`,
+          left: `${containerRect.left + containerRect.width / 2}px`,
           marginLeft: "-6px",
-          marginBottom: "0"
         };
-        
+
         // Adjust if tooltip goes off-screen (similar logic to bottom)
-        if (containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2) < minSpaceNeeded) {
+        if (
+          containerRect.left - tooltipWidth / 2 + containerRect.width / 2 <
+          minSpaceNeeded
+        ) {
           tooltipStyles.left = `${minSpaceNeeded}px`;
-        } else if (containerRect.left - (tooltipWidth / 2) + (containerRect.width / 2) + tooltipWidth > window.innerWidth - minSpaceNeeded) {
+        } else if (
+          containerRect.left -
+            tooltipWidth / 2 +
+            containerRect.width / 2 +
+            tooltipWidth >
+          window.innerWidth - minSpaceNeeded
+        ) {
           tooltipStyles.left = `${window.innerWidth - tooltipWidth - minSpaceNeeded}px`;
         }
         break;
-        
+
       case "right":
         // Position to the right of the icon
         tooltipStyles = {
-          top: `${containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2)}px`,
-          left: `${containerRect.right + 8}px`
+          top: `${containerRect.top - tooltipHeight / 2 + containerRect.height / 2}px`,
+          left: `${containerRect.right + 8}px`,
         };
-        
+
         arrowStyles = {
-          top: `${containerRect.top + (containerRect.height / 2)}px`,
+          top: `${containerRect.top + containerRect.height / 2}px`,
           left: `${containerRect.right + 2}px`,
           marginTop: "-6px",
-          marginLeft: "0"
         };
-        
+
         // Adjust if tooltip goes off-screen
-        if (containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2) < minSpaceNeeded) {
+        if (
+          containerRect.top - tooltipHeight / 2 + containerRect.height / 2 <
+          minSpaceNeeded
+        ) {
           tooltipStyles.top = `${minSpaceNeeded}px`;
-        } else if (containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2) + tooltipHeight > window.innerHeight - minSpaceNeeded) {
+        } else if (
+          containerRect.top -
+            tooltipHeight / 2 +
+            containerRect.height / 2 +
+            tooltipHeight >
+          window.innerHeight - minSpaceNeeded
+        ) {
           tooltipStyles.top = `${window.innerHeight - tooltipHeight - minSpaceNeeded}px`;
         }
         break;
-        
+
       case "left":
         // Position to the left of the icon
         tooltipStyles = {
-          top: `${containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2)}px`,
-          right: `${window.innerWidth - containerRect.left + 8}px`
+          top: `${containerRect.top - tooltipHeight / 2 + containerRect.height / 2}px`,
+          right: `${window.innerWidth - containerRect.left + 8}px`,
         };
-        
+
         arrowStyles = {
-          top: `${containerRect.top + (containerRect.height / 2)}px`,
+          top: `${containerRect.top + containerRect.height / 2}px`,
           right: `${window.innerWidth - containerRect.left + 2}px`,
           marginTop: "-6px",
-          marginRight: "0"
         };
-        
+
         // Adjust if tooltip goes off-screen (similar logic to right)
-        if (containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2) < minSpaceNeeded) {
+        if (
+          containerRect.top - tooltipHeight / 2 + containerRect.height / 2 <
+          minSpaceNeeded
+        ) {
           tooltipStyles.top = `${minSpaceNeeded}px`;
-        } else if (containerRect.top - (tooltipHeight / 2) + (containerRect.height / 2) + tooltipHeight > window.innerHeight - minSpaceNeeded) {
+        } else if (
+          containerRect.top -
+            tooltipHeight / 2 +
+            containerRect.height / 2 +
+            tooltipHeight >
+          window.innerHeight - minSpaceNeeded
+        ) {
           tooltipStyles.top = `${window.innerHeight - tooltipHeight - minSpaceNeeded}px`;
         }
         break;
     }
-    
+
     setTooltipPosition(bestPosition);
     setTooltipStyle(tooltipStyles);
     setArrowStyle(arrowStyles);
   };
-  
-  // Recalculate position when showing tooltip
+
+  // Handler for mouse enter
+  const handleMouseEnter = () => {
+    setIsVisible(true);
+  };
+
+  // Handler for mouse leave
+  const handleMouseLeave = () => {
+    setIsVisible(false);
+  };
+
+  // Handler for click (useful for mobile)
+  const handleClick = () => {
+    setIsVisible(!isVisible);
+  };
+
+  // Calculate position when visibility changes
   useEffect(() => {
     if (isVisible) {
+      // Initial calculation
       calculatePosition();
-      
-      // Also add window resize listener to adjust if needed
+
+      // Add listeners for window resize and scroll
       window.addEventListener("resize", calculatePosition);
       window.addEventListener("scroll", calculatePosition, true);
-      
+
       return () => {
         window.removeEventListener("resize", calculatePosition);
         window.removeEventListener("scroll", calculatePosition, true);
@@ -266,38 +341,44 @@ const InfoTooltip = ({ title, content, actionHint, position = "auto" }) => {
   }, [isVisible]);
 
   return (
-    <TooltipContainer 
-      ref={containerRef}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onClick={() => setIsVisible(!isVisible)} // Toggle on click for mobile
-      aria-label={`Info about ${title}`}
-    >
-      <InfoIcon aria-hidden="true">i</InfoIcon>
-      
-      <TooltipArrow
-        ref={arrowRef}
-        $visible={isVisible}
-        $position={tooltipPosition}
-        style={arrowStyle}
-      />
-      
-      <TooltipContent 
-        ref={tooltipRef}
-        $visible={isVisible} 
-        style={tooltipStyle}
-        role="tooltip"
+    <>
+      <TooltipContainer
+        ref={containerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        aria-label={`Info about ${title}`}
       >
-        <TooltipTitle>{title}</TooltipTitle>
-        <TooltipParagraph>{content}</TooltipParagraph>
-        {actionHint && (
-          <TooltipParagraph>
-            <strong>Tip:</strong> {actionHint}
-          </TooltipParagraph>
-        )}
-      </TooltipContent>
-    </TooltipContainer>
+        <InfoIcon aria-hidden="true">i</InfoIcon>
+      </TooltipContainer>
+
+      <TooltipPortal isVisible={isVisible}>
+        <TooltipContainer>
+          <TooltipArrow
+            ref={arrowRef}
+            $visible={isVisible}
+            $position={tooltipPosition}
+            style={arrowStyle}
+          />
+
+          <TooltipContent
+            ref={tooltipRef}
+            $visible={isVisible}
+            style={tooltipStyle}
+            role="tooltip"
+          >
+            <TooltipTitle>{title}</TooltipTitle>
+            <TooltipParagraph>{content}</TooltipParagraph>
+            {actionHint && (
+              <TooltipParagraph>
+                <strong>Tip:</strong> {actionHint}
+              </TooltipParagraph>
+            )}
+          </TooltipContent>
+        </TooltipContainer>
+      </TooltipPortal>
+    </>
   );
 };
 
-export default InfoTooltip;
+export default InfoTooltipPortal;

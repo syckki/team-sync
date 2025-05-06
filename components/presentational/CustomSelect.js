@@ -143,13 +143,6 @@ const CustomSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
 
-  // If in readonly mode, render a simple display
-  if (readonly) {
-    return (
-      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
-    );
-  }
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -197,6 +190,13 @@ const CustomSelect = ({
       setIsOpen(false);
     }
   };
+
+  // If in readonly mode, render a simple display (after all hooks have been called)
+  if (readonly) {
+    return (
+      <ReadonlyField className={!value ? "empty" : ""}>{value}</ReadonlyField>
+    );
+  }
 
   return (
     <ComboBoxContainer ref={selectRef}>

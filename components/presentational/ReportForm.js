@@ -770,12 +770,6 @@ const ReportForm = ({
                           autoCapitalize="off"
                           aria-autocomplete="none"
                           readonly={readOnly}
-                          style={{
-                            width: "100%",
-                            border: "1px solid #e2e8f0",
-                            borderRadius: "4px",
-                            padding: "0.75rem",
-                          }}
                         />
                       </div>
 
@@ -813,12 +807,6 @@ const ReportForm = ({
                           autoCapitalize="off"
                           aria-autocomplete="none"
                           readonly={readOnly}
-                          style={{
-                            width: "100%",
-                            border: "1px solid #e2e8f0",
-                            borderRadius: "4px",
-                            padding: "0.75rem",
-                          }}
                         />
                       </div>
                     </TextAreaWrapper>

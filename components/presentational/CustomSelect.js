@@ -115,9 +115,10 @@ export const ComboBoxOption = styled.li`
 
 // Styled component for readonly display
 export const ReadonlyField = styled.span`
+  display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(20 5.9% 90%);
   border-radius: calc(0.5rem - 2px);
   background-color: #f9fafb;
   min-height: 2.25rem;

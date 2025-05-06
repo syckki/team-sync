@@ -106,6 +106,7 @@ const DecryptionContainer = ({ id, key64 }) => {
   const [networkStatus, setNetworkStatus] = useState(true); // Default to online
   const [isMessageQueued, setIsMessageQueued] = useState(false);
   const [threadTitle, setThreadTitle] = useState("");
+  const [secureShareLink, setSecureShareLink] = useState("");
 
   // Initialize network monitoring
   useEffect(() => {
@@ -202,6 +203,13 @@ const DecryptionContainer = ({ id, key64 }) => {
         setIsThreadCreator(threadData.isCreator);
         const title = threadData.threadTitle || id;
         setThreadTitle(title);
+
+        // Generate the secure sharing link with the current key
+        if (threadData.isCreator && key64) {
+          const origin = typeof window !== 'undefined' ? window.location.origin : '';
+          const secureUrl = `${origin}/channel/${id}#${key64}`;
+          setSecureShareLink(secureUrl);
+        }
 
         // Update document title in the browser if available
         if (typeof document !== "undefined") {
@@ -492,6 +500,36 @@ const DecryptionContainer = ({ id, key64 }) => {
         {!isThreadCreator && (
           <InfoMessage>
             Note: You can only see messages you've created in this thread.
+          </InfoMessage>
+        )}
+
+        {/* Show SecureLink for thread creator only */}
+        {isThreadCreator && secureShareLink && (
+          <InfoMessage title="Share this secure link with your team:">
+            <div style={{ 
+              padding: '0.75rem',
+              marginTop: '0.5rem',
+              background: '#f8fafc', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '0.375rem', 
+              wordBreak: 'break-all',
+              fontSize: '0.875rem',
+              fontFamily: 'monospace'
+            }}>
+              {secureShareLink}
+            </div>
+            <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                variant="primary"
+                size="small"
+                onClick={() => {
+                  navigator.clipboard.writeText(secureShareLink);
+                  alert('Secure Link copied to clipboard!');
+                }}
+              >
+                Copy Secure Link
+              </Button>
+            </div>
           </InfoMessage>
         )}
 

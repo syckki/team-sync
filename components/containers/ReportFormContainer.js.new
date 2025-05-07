@@ -473,10 +473,10 @@ const ReportFormContainer = ({
           // Non-critical error, continue
         }
       }
-      // Save the team role for future use if it's new
+      // Save the team role for future use if its new
       if (teamRole) {
         try {
-          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || '[]');
+          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || "[]");
           if (!storedRoles.includes(teamRole)) {
             const updatedRoles = [...storedRoles, teamRole];
             localStorage.setItem(
@@ -543,22 +543,6 @@ const ReportFormContainer = ({
           );
         } catch (localStorageErr) {
           console.error("Error saving team member option:", localStorageErr);
-          // Non-critical error, continue
-        }
-      }
-      // Save the team role for future use if it's new
-      if (teamRole) {
-        try {
-          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || '[]');
-          if (!storedRoles.includes(teamRole)) {
-            const updatedRoles = [...storedRoles, teamRole];
-            localStorage.setItem(
-              "teamRoleOptions",
-              JSON.stringify(updatedRoles)
-            );
-          }
-        } catch (localStorageErr) {
-          console.error("Error saving team role option:", localStorageErr);
           // Non-critical error, continue
         }
       }

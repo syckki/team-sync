@@ -178,7 +178,9 @@ const ReportForm = ({
     taskCategories: [],
     complexityLevels: [],
     qualityImpacts: [],
-    aiTools: []
+    aiTools: [],
+    teamRoles: [],
+    teamMembers: []
   } // Add reference data with default empty values
 }) => {
   // Function to handle row expansion for display purposes
@@ -537,16 +539,15 @@ const ReportForm = ({
                   <InfoTooltip
                     title="Role on the Team"
                     content="Identifies the collaborator's role. Helps analyze which roles benefit most from which tools or task types."
-                    actionHint="Enter your specific role within the team."
+                    actionHint="Select an existing role or create a new one."
                   />
                 </Label>
-                <CustomInput
-                  type="text"
-                  id="teamRole"
+                <CreatableComboBox
                   value={teamRole}
-                  onChange={(e) => setTeamRole(e.target.value)}
-                  required
-                  placeholder="Your role (e.g., Developer, Designer, Project Manager)"
+                  onChange={setTeamRole}
+                  options={referenceData.teamRoles}
+                  placeholder="Your role (e.g., Software Engineer, UX/UI Designer)"
+                  storageKey="teamRoleOptions"
                   autoComplete="new-password"
                   data-lpignore="true"
                   spellCheck="false"

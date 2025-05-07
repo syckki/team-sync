@@ -69,6 +69,23 @@ const CreatableComboBox = ({
       setFilteredOptions(filtered);
     }
   }, [inputValue, options]);
+  
+  // Load options from localStorage on mount to ensure we have the latest options
+  useEffect(() => {
+    try {
+      const key = storageKey || "teamMemberOptions";
+      const storedOptions = JSON.parse(localStorage.getItem(key) || '[]');
+      if (storedOptions.length > 0) {
+        // Update filtered options with stored options 
+        setFilteredOptions(prev => {
+          const combined = [...new Set([...prev, ...storedOptions])];
+          return combined;
+        });
+      }
+    } catch (error) {
+      console.error("Error loading options from localStorage:", error);
+    }
+  }, [storageKey]);
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -88,14 +105,21 @@ const CreatableComboBox = ({
   // Handle create option
   const handleCreateOption = () => {
     onChange(inputValue);
-    setIsOpen(false);
-
+    
     // Add to local storage if it's a new option
     if (!options.includes(inputValue) && inputValue.trim() !== "") {
       const updatedOptions = [...options, inputValue];
       const key = storageKey || "teamMemberOptions";
       localStorage.setItem(key, JSON.stringify(updatedOptions));
+      
+      // Force update the filtered options to include the new option
+      setFilteredOptions(prev => [...prev, inputValue]);
     }
+    
+    // Close the dropdown after a small delay to allow the state to update
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 50);
   };
   
   // Handle edit option - replaces the original value with the new one in localStorage
@@ -108,10 +132,20 @@ const CreatableComboBox = ({
       }
       const key = storageKey || "teamMemberOptions";
       localStorage.setItem(key, JSON.stringify(updatedOptions));
+      
+      // Force update the filtered options to include the new option and remove the old one
+      setFilteredOptions(prev => {
+        const withoutOld = prev.filter(opt => opt !== originalValue);
+        return [...withoutOld, inputValue];
+      });
     }
     
     onChange(inputValue);
-    setIsOpen(false);
+    
+    // Close the dropdown after a small delay to allow the state to update
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 50);
   };
 
   // Close dropdown when clicking outside

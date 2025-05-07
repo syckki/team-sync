@@ -19,18 +19,20 @@ args = "NextJS Server"
 name = "NextJS Server"
 author = "agent"
 
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npx next dev -p 5000"
 waitForPort = 5000
 
 [deployment]
-run = ["sh", "-c", "yarn && yarn dev"]
+run = ["sh", "-c", "npm install && npm run dev"]
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5055
-externalPort = 3000

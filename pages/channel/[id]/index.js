@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import DecryptionContainer from "../../../components/containers/DecryptionContainer";
+import DecryptionViewModel from "../../../viewModels/DecryptionViewModel";
 import Head from "next/head";
 import styled from "styled-components";
 import { Card, ContentContainer, ErrorMessage, PageHeader } from "../../../components/ui";
@@ -77,7 +77,7 @@ const ViewPage = ({ pageProps }) => {
         />
 
         <ContentContainer>
-          <DecryptionContainer id={id} key64={key} />
+          <DecryptionViewModel id={id} key64={key} />
         </ContentContainer>
       </Card>
     </>

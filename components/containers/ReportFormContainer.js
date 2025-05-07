@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
-import { getAllReferenceData } from "../../lib/referenceDataClient";
+import { getAllReferenceData, updateReferenceDataCategory } from "../../lib/referenceDataClient";
 import ReportForm from "../presentational/ReportForm";
 
 /**
@@ -40,13 +40,55 @@ const ReportFormContainer = ({
     aiTools: []
   });
   
-  // Fetch reference data on component mount
+  // Synchronize localStorage data with API
+  const syncReferenceDataFromLocalStorage = async () => {
+    try {
+      // Map of localStorage keys to API category names
+      const storageKeyMap = {
+        "platformOptions": "platforms",
+        "projectOptions": "projectInitiatives",
+        "sdlcStepOptions": "sdlcSteps",
+        "taskCategoryOptions": "taskCategories",
+        "qualityImpactOptions": "qualityImpacts",
+        "aiToolOptions": "aiTools"
+      };
+      
+      // For each storage key, check if there are additional items to sync
+      for (const [storageKey, categoryName] of Object.entries(storageKeyMap)) {
+        const storedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        
+        if (storedItems.length === 0) continue;
+        
+        // Check if there are any items in localStorage that are not in the API data
+        const apiItems = referenceData[categoryName] || [];
+        const newItems = storedItems.filter(item => !apiItems.includes(item));
+        
+        // If there are new items, update the API
+        if (newItems.length > 0) {
+          const updatedItems = [...apiItems, ...newItems];
+          await updateReferenceDataCategory(categoryName, updatedItems);
+          
+          // Update local reference data state
+          setReferenceData(prev => ({
+            ...prev,
+            [categoryName]: updatedItems
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error synchronizing reference data:", error);
+    }
+  };
+  
+  // Fetch reference data on component mount and synchronize with localStorage
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
         const data = await getAllReferenceData();
         if (data) {
           setReferenceData(data);
+          // After fetching, synchronize any new items from localStorage
+          await syncReferenceDataFromLocalStorage();
         }
       } catch (error) {
         console.error("Error fetching reference data:", error);
@@ -302,6 +344,9 @@ const ReportFormContainer = ({
     setError(null);
 
     try {
+      // Synchronize reference data from localStorage to the backend
+      await syncReferenceDataFromLocalStorage();
+      
       const submitData = await prepareReportData("draft");
 
       // Send to the server

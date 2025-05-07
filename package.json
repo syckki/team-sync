@@ -1,22 +1,20 @@
 {
-  "name": "workspace",
+  "name": "team-sync",
   "version": "1.0.0",
-  "main": "next.config.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prebuild": "rm -rf .next"
   },
-  "keywords": [],
-  "author": "",
+  "author": "jmorales0786@gmail.com",
   "license": "ISC",
-  "description": "",
+  "description": "Secure collaboration channels for updates, reports, and team insights.",
   "dependencies": {
-    "@ducanh2912/next-pwa": "^10.2.9",
-    "next": "^15.3.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "styled-components": "^6.1.17"
+    "@ducanh2912/next-pwa": "10.2.9",
+    "next": "15.3.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "styled-components": "6.1.17"
   }
 }

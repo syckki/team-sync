@@ -1,6 +1,0 @@
-#!/bin/bash
-
-# Simple Yarn emulation script for Replit
-# This will pass commands to our wrapper script
-
-node ./yarn-wrapper.js "$@"

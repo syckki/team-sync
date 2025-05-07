@@ -13,15 +13,21 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Yarn Dev Server"
+args = "NextJS Server"
 
 [[workflows.workflow]]
-name = "Yarn Dev Server"
+name = "NextJS Server"
 author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./yarn dev"
+args = "npx next dev -p 5000"
 waitForPort = 5000
 
 [deployment]

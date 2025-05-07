@@ -121,6 +121,53 @@ const ReportFormContainer = ({
     }
   };
   
+  // Update localStorage from API reference data
+  const updateLocalStorageFromAPI = (data) => {
+    try {
+      // Map of API category names to localStorage keys
+      const categoryKeyMap = {
+        "platforms": "platformOptions",
+        "projectInitiatives": "projectOptions",
+        "sdlcSteps": "sdlcStepOptions",
+        "taskCategories": "taskCategoryOptions",
+        "qualityImpacts": "qualityImpactOptions",
+        "aiTools": "aiToolOptions"
+      };
+      
+      // For each API category, update localStorage
+      Object.entries(categoryKeyMap).forEach(([categoryName, storageKey]) => {
+        const apiItems = data[categoryName] || [];
+        if (apiItems.length === 0) return;
+        
+        // Get existing items from localStorage
+        const storedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        
+        // Merge items, ensuring uniqueness
+        const mergedItems = [...new Set([...storedItems, ...apiItems])];
+        
+        // Update localStorage
+        localStorage.setItem(storageKey, JSON.stringify(mergedItems));
+      });
+      
+      // Handle sdlcTasksMap separately
+      if (data.sdlcTasksMap) {
+        const existingTaskMap = JSON.parse(localStorage.getItem("sdlcTaskOptionsMap") || '{}');
+        const updatedTaskMap = { ...existingTaskMap };
+        
+        // Merge each step's tasks
+        Object.entries(data.sdlcTasksMap).forEach(([step, tasks]) => {
+          const existingTasks = updatedTaskMap[step] || [];
+          updatedTaskMap[step] = [...new Set([...existingTasks, ...tasks])];
+        });
+        
+        // Update localStorage
+        localStorage.setItem("sdlcTaskOptionsMap", JSON.stringify(updatedTaskMap));
+      }
+    } catch (error) {
+      console.error("Error updating localStorage from API:", error);
+    }
+  };
+
   // Fetch reference data on component mount and synchronize with localStorage
   useEffect(() => {
     const fetchReferenceData = async () => {
@@ -128,7 +175,11 @@ const ReportFormContainer = ({
         const data = await getAllReferenceData();
         if (data) {
           setReferenceData(data);
-          // After fetching, synchronize any new items from localStorage
+          
+          // First update localStorage with API data
+          updateLocalStorageFromAPI(data);
+          
+          // Then synchronize any new items from localStorage back to the API
           await syncReferenceDataFromLocalStorage();
         }
       } catch (error) {

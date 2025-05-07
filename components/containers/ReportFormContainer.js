@@ -37,7 +37,9 @@ const ReportFormContainer = ({
     taskCategories: [],
     complexityLevels: [],
     qualityImpacts: [],
-    aiTools: []
+    aiTools: [],
+    teamRoles: [],
+    teamMembers: []
   });
   
   // Synchronize localStorage data with API
@@ -50,7 +52,9 @@ const ReportFormContainer = ({
         "sdlcStepOptions": "sdlcSteps",
         "taskCategoryOptions": "taskCategories",
         "qualityImpactOptions": "qualityImpacts",
-        "aiToolOptions": "aiTools"
+        "aiToolOptions": "aiTools",
+        "teamRoleOptions": "teamRoles",
+        "teamMemberOptions": "teamMembers"
       };
       
       // For each storage key, check if there are additional items to sync
@@ -131,7 +135,9 @@ const ReportFormContainer = ({
         "sdlcSteps": "sdlcStepOptions",
         "taskCategories": "taskCategoryOptions",
         "qualityImpacts": "qualityImpactOptions",
-        "aiTools": "aiToolOptions"
+        "aiTools": "aiToolOptions",
+        "teamRoles": "teamRoleOptions",
+        "teamMembers": "teamMemberOptions"
       };
       
       // For each API category, update localStorage

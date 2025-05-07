@@ -55,13 +55,13 @@ The application follows a client-centric architecture where most of the processi
 
 ### Frontend Components
 
-The frontend is organized using the Model-View-ViewModel (MVVM) pattern:
+The frontend is organized into a component-based architecture with a clear separation between container and presentational components:
 
-1. **ViewModels**: Handle business logic, state management, and data preparation
-   - `EncryptionViewModel`: Manages encryption processes
-   - `DecryptionViewModel`: Manages decryption processes
-   - `ReportFormViewModel`: Handles form submission logic
-   - Report-specific ViewModels for different types of analyses
+1. **Container Components**: Handle business logic, state management, and data fetching
+   - `EncryptionContainer`: Manages encryption processes
+   - `DecryptionContainer`: Manages decryption processes
+   - `ReportFormContainer`: Handles form submission logic
+   - Report-specific containers for different types of analyses
 
 2. **Presentational Components**: Responsible for rendering UI elements
    - `Layout`: Overall page layout

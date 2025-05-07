@@ -1,5 +1,5 @@
 import Head from "next/head";
-import EncryptionViewModel from "../viewModels/EncryptionViewModel";
+import EncryptionContainer from "../components/containers/EncryptionContainer";
 import { Card, ContentContainer, PageHeader } from "../components/ui";
 
 // Using ContentContainer from UI components
@@ -26,7 +26,7 @@ const HomePage = ({ staticProps }) => {
           showLock={true}
         />
         <ContentContainer>
-          <EncryptionViewModel />
+          <EncryptionContainer />
         </ContentContainer>
       </Card>
     </>

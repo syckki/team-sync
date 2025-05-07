@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportFormViewModel from "../../../viewModels/reports/ReportFormViewModel";
-import ReportViewerViewModel from "../../../viewModels/reports/ReportViewerViewModel";
+import ReportFormContainer from "../../../components/containers/ReportFormContainer";
+import ReportViewer from "../../../components/containers/ReportViewer";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../components/ui";
 
@@ -173,10 +173,10 @@ const ReportPage = () => {
           ) : (
             <>
               {isViewMode ? (
-                <ReportViewerViewModel keyFragment={key} threadTitle={threadTitle} />
+                <ReportViewer keyFragment={key} threadTitle={threadTitle} />
               ) : (
                 <>
-                  <ReportFormViewModel
+                  <ReportFormContainer
                     keyFragment={key}
                     teamName={teamName}
                     teamMemberOptions={teamMemberOptions}

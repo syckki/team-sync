@@ -433,16 +433,7 @@ const ReportForm = ({
           onChange={(newValue) =>
             handleRowChange(row.id, "qualityImpact", newValue)
           }
-          options={[
-            "Improved Readability",
-            "Better Performance",
-            "More Comprehensive",
-            "More Accurate",
-            "Higher Consistency",
-            "More Secure",
-            "Better UX",
-            "More Scalable",
-          ]}
+          options={referenceData.qualityImpacts}
           placeholder="Quality Impact"
           storageKey="qualityImpactOptions"
           autoComplete="new-password"
@@ -597,18 +588,7 @@ const ReportForm = ({
                         onChange={(value) =>
                           handleRowChange(row.id, "aiToolsUsed", value)
                         }
-                        options={[
-                          "ChatGPT",
-                          "GitHub Copilot",
-                          "Claude",
-                          "DALL-E",
-                          "Midjourney",
-                          "Jasper",
-                          "Hugging Face",
-                          "Leonardo AI",
-                          "Bard",
-                          "GPT-4",
-                        ]}
+                        options={referenceData.aiTools}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
                         readonly={readOnly}

@@ -75,6 +75,47 @@ const ReportFormContainer = ({
           }));
         }
       }
+      
+      // Handle sdlcTasksMap separately (it's an object mapping SDLC steps to arrays of tasks)
+      try {
+        const sdlcTaskOptionsMap = JSON.parse(localStorage.getItem("sdlcTaskOptionsMap") || '{}');
+        let hasUpdates = false;
+        const updatedTasksMap = { ...referenceData.sdlcTasksMap };
+        
+        // Check for each step if there are new tasks
+        Object.entries(sdlcTaskOptionsMap).forEach(([step, tasks]) => {
+          if (!Array.isArray(tasks) || tasks.length === 0) return;
+          
+          // If the step doesn't exist in the API data, create it
+          if (!updatedTasksMap[step]) {
+            updatedTasksMap[step] = tasks;
+            hasUpdates = true;
+            return;
+          }
+          
+          // Check for new tasks for this step
+          const apiTasks = updatedTasksMap[step] || [];
+          const newTasks = tasks.filter(task => !apiTasks.includes(task));
+          
+          if (newTasks.length > 0) {
+            updatedTasksMap[step] = [...apiTasks, ...newTasks];
+            hasUpdates = true;
+          }
+        });
+        
+        // If there were updates, save to the API
+        if (hasUpdates) {
+          await updateReferenceDataCategory("sdlcTasksMap", updatedTasksMap);
+          
+          // Update local reference data state
+          setReferenceData(prev => ({
+            ...prev,
+            sdlcTasksMap: updatedTasksMap
+          }));
+        }
+      } catch (taskMapError) {
+        console.error("Error synchronizing SDLC task map:", taskMapError);
+      }
     } catch (error) {
       console.error("Error synchronizing reference data:", error);
     }
@@ -401,6 +442,9 @@ const ReportFormContainer = ({
     setError(null);
 
     try {
+      // Synchronize reference data from localStorage to the backend
+      await syncReferenceDataFromLocalStorage();
+      
       const submitData = await prepareReportData("submitted");
 
       // Send to the server

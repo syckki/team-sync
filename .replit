@@ -21,7 +21,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "yarn dev"
+args = "./node_modules/.bin/next dev -p 5000"
 waitForPort = 5000
 
 [deployment]

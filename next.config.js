@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require("@ducanh2912/next-pwa").default;
+let withPWA;
+try {
+  withPWA = require("@ducanh2912/next-pwa").default;
+} catch (e) {
+  // Fall back to a function that simply returns the config
+  withPWA = (pwaConfig) => (nextConfig) => nextConfig;
+  console.warn("PWA module not available, continuing without PWA features");
+}
 
 const config = {
   reactStrictMode: true,

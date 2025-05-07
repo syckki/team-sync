@@ -1462,6 +1462,11 @@ core-js-compat@^3.40.0:
   dependencies:
     browserslist "^4.24.4"
 
+corepack@^0.32.0:
+  version "0.32.0"
+  resolved "https://registry.npmjs.org/corepack/-/corepack-0.32.0.tgz"
+  integrity sha512-KhahVUFy7xL8OTty/ToY646hXMQhih8rnvUkA9/qnk/u4QUF2+SbQneX/zZnDxG1NiABFm5ojZCWnIv93oyhhQ==
+
 crypto-random-string@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/crypto-random-string/-/crypto-random-string-2.0.0.tgz"

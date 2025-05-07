@@ -12,6 +12,7 @@
   "description": "Secure collaboration channels for updates, reports, and team insights.",
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
+    "corepack": "^0.32.0",
     "next": "^15.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

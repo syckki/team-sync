@@ -50,10 +50,12 @@ const CreatableComboBox = ({
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState([]);
+  const [originalValue, setOriginalValue] = useState("");
   const inputRef = useRef(null);
 
   useEffect(() => {
     setInputValue(value);
+    setOriginalValue(value); // Store the original value for the Edit option
   }, [value]);
 
   // Update filtered options when input changes
@@ -95,6 +97,22 @@ const CreatableComboBox = ({
       localStorage.setItem(key, JSON.stringify(updatedOptions));
     }
   };
+  
+  // Handle edit option - replaces the original value with the new one in localStorage
+  const handleEditOption = () => {
+    // Update in localStorage - replace the original value with the new one
+    if (originalValue && originalValue !== inputValue && originalValue.trim() !== "" && inputValue.trim() !== "") {
+      const updatedOptions = options.map(opt => opt === originalValue ? inputValue : opt);
+      if (!updatedOptions.includes(inputValue)) {
+        updatedOptions.push(inputValue);
+      }
+      const key = storageKey || "teamMemberOptions";
+      localStorage.setItem(key, JSON.stringify(updatedOptions));
+    }
+    
+    onChange(inputValue);
+    setIsOpen(false);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -117,7 +135,16 @@ const CreatableComboBox = ({
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (isOpen) {
-        handleCreateOption();
+        // If original value exists and it's different from input, use edit function
+        if (originalValue && 
+            originalValue !== inputValue && 
+            originalValue.trim() !== "" && 
+            inputValue.trim() !== "" && 
+            options.includes(originalValue)) {
+          handleEditOption();
+        } else {
+          handleCreateOption();
+        }
       }
     } else if (e.key === "ArrowDown") {
       if (!isOpen) {
@@ -207,6 +234,20 @@ const CreatableComboBox = ({
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}
+            
+          {/* Show Edit option when user has modified an existing value */}
+          {originalValue && 
+           originalValue !== inputValue && 
+           originalValue.trim() !== "" && 
+           inputValue.trim() !== "" && 
+           options.includes(originalValue) && (
+            <ComboBoxCreateOption
+              onMouseDown={handleEditOption}
+              onTouchStart={handleEditOption}
+            >
+              Edit "{originalValue}"
+            </ComboBoxCreateOption>
+          )}
         </ComboBoxDropdown>
       )}
     </ComboBoxContainer>

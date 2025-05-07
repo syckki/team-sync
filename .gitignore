@@ -1,6 +1,7 @@
 .next
 .data
 .DS_Store
+.env
 
 public/workbox*
 public/fallback*

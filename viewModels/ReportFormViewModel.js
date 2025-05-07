@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
-import { getAllReferenceData, updateReferenceDataCategory } from "../../lib/referenceDataClient";
-import ReportForm from "../presentational/ReportForm";
+import { importKeyFromBase64, encryptData } from "../lib/cryptoUtils";
+import { getAllReferenceData, updateReferenceDataCategory } from "../lib/referenceDataClient";
+import ReportForm from "../views/ReportForm";
 
 /**
- * Container component for the Report Form
+ * ViewModel for the Report Form
  * Handles state management, data processing, and form submission
  */
-const ReportFormContainer = ({
+const ReportFormViewModel = ({
   keyFragment,
   teamName,
   teamMemberOptions = [],
@@ -473,10 +473,10 @@ const ReportFormContainer = ({
           // Non-critical error, continue
         }
       }
-      // Save the team role for future use if its new
+      // Save the team role for future use if it's new
       if (teamRole) {
         try {
-          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || "[]");
+          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || '[]');
           if (!storedRoles.includes(teamRole)) {
             const updatedRoles = [...storedRoles, teamRole];
             localStorage.setItem(
@@ -546,6 +546,22 @@ const ReportFormContainer = ({
           // Non-critical error, continue
         }
       }
+      // Save the team role for future use if it's new
+      if (teamRole) {
+        try {
+          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || '[]');
+          if (!storedRoles.includes(teamRole)) {
+            const updatedRoles = [...storedRoles, teamRole];
+            localStorage.setItem(
+              "teamRoleOptions",
+              JSON.stringify(updatedRoles)
+            );
+          }
+        } catch (localStorageErr) {
+          console.error("Error saving team role option:", localStorageErr);
+          // Non-critical error, continue
+        }
+      }
 
       setSuccessMessage(
         "Your AI productivity report has been submitted successfully!",
@@ -597,4 +613,4 @@ const ReportFormContainer = ({
   );
 };
 
-export default ReportFormContainer;
+export default ReportFormViewModel;

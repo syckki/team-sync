@@ -143,59 +143,7 @@ const TextAreaWrapper = styled.div`
   }
 `;
 
-const sdlcSteps = [
-  "Requirements",
-  "Design",
-  "Implementation",
-  "Testing",
-  "Deployment",
-  "Maintenance",
-];
-
-const sdlcTasksMap = {
-  Requirements: [
-    "Requirement Gathering",
-    "User Story Creation",
-    "Feasibility Analysis",
-    "Requirement Documentation",
-    "Stakeholder Interviews",
-  ],
-  Design: [
-    "Architecture Design",
-    "Database Design",
-    "UI/UX Design",
-    "API Design",
-    "System Modeling",
-  ],
-  Implementation: [
-    "Frontend Development",
-    "Backend Development",
-    "Database Implementation",
-    "API Development",
-    "Integration",
-  ],
-  Testing: [
-    "Unit Testing",
-    "Integration Testing",
-    "System Testing",
-    "Performance Testing",
-    "User Acceptance Testing",
-  ],
-  Deployment: [
-    "Deployment Planning",
-    "Environment Setup",
-    "Data Migration",
-    "Release Management",
-    "Deployment Execution",
-  ],
-  Maintenance: [
-    "Bug Fixing",
-    "Feature Enhancement",
-    "Performance Optimization",
-    "Security Updates",
-    "Documentation Updates",
-  ],
-};
+// Reference data now comes from the props instead of hardcoded here
 
 /**
  * Presentation component for the Report Form
@@ -222,6 +170,16 @@ const ReportForm = ({
   successMessage,
   teamMemberOptions = [],
   readOnly = false, // Add readOnly prop with default false
+  referenceData = {
+    platforms: [],
+    projectInitiatives: [],
+    sdlcSteps: [],
+    sdlcTasksMap: {},
+    taskCategories: [],
+    complexityLevels: [],
+    qualityImpacts: [],
+    aiTools: []
+  } // Add reference data with default empty values
 }) => {
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
@@ -277,17 +235,7 @@ const ReportForm = ({
         <CreatableComboBox
           value={value}
           onChange={(newValue) => handleRowChange(row.id, "platform", newValue)}
-          options={[
-            "Unete",
-            "Revamp Somos Belcorp",
-            "Digital Catalog",
-            "Ecommerce Platform",
-            "Foundation Tool",
-            "Powder Tool",
-            "Skin Advisor",
-            "Newapp Somos Belcorp",
-            "FFVV",
-          ]}
+          options={referenceData.platforms}
           placeholder="Platform"
           storageKey="platformOptions"
           autoComplete="off"
@@ -308,7 +256,7 @@ const ReportForm = ({
           onChange={(newValue) =>
             handleRowChange(row.id, "projectInitiative", newValue)
           }
-          options={[]}
+          options={referenceData.projectInitiatives}
           placeholder="Initiative"
           storageKey="projectOptions"
           autoComplete="off"
@@ -327,7 +275,7 @@ const ReportForm = ({
         <CreatableComboBox
           value={value}
           onChange={(newValue) => handleSDLCStepChange(row.id, newValue)}
-          options={sdlcSteps}
+          options={referenceData.sdlcSteps}
           placeholder="SDLC Step"
           storageKey="sdlcStepOptions"
           autoComplete="off"
@@ -346,7 +294,7 @@ const ReportForm = ({
         <CreatableComboBox
           value={value}
           onChange={(newValue) => handleRowChange(row.id, "sdlcTask", newValue)}
-          options={row.sdlcStep ? sdlcTasksMap[row.sdlcStep] || [] : []}
+          options={row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []}
           placeholder="SDLC Task"
           storageKey="sdlcTaskOptions"
           readonly={readOnly}
@@ -369,16 +317,7 @@ const ReportForm = ({
           onChange={(newValue) =>
             handleRowChange(row.id, "taskCategory", newValue)
           }
-          options={[
-            "UI Development",
-            "API Integration",
-            "Code Refactoring",
-            "Documentation",
-            "Testing",
-            "Code Review",
-            "Bug Fixing",
-            "Performance Optimization",
-          ]}
+          options={referenceData.taskCategories}
           placeholder="Task Category"
           storageKey="taskCategoryOptions"
           autoComplete="off"
@@ -474,7 +413,7 @@ const ReportForm = ({
           onChange={(newValue) =>
             handleRowChange(row.id, "complexity", newValue)
           }
-          options={["Low", "Medium", "High"]}
+          options={referenceData.complexityLevels}
           placeholder="Complexity"
           readonly={readOnly}
           autoWrap

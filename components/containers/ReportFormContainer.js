@@ -430,6 +430,7 @@ const ReportFormContainer = ({
       successMessage={successMessage}
       teamMemberOptions={teamMemberOptions}
       readOnly={isReadOnly} // Pass readOnly to the form
+      referenceData={referenceData} // Pass reference data to the form
     />
   );
 };

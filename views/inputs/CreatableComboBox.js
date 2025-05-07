@@ -11,7 +11,7 @@ import {
 } from "./CustomSelect";
 
 // Styled component specific to CreatableComboBox
-const ComboBoxCreateOption = styled.li`
+export const ComboBoxCreateOption = styled.li`
   padding: 0.75rem;
   cursor: pointer;
   border-top: 1px dashed #e2e8f0;
@@ -289,4 +289,3 @@ const CreatableComboBox = ({
 };
 
 export default CreatableComboBox;
-export { ComboBoxCreateOption };

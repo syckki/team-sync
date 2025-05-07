@@ -6,10 +6,10 @@ import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
 import ReportViewerPresentation from "../../components/presentational/ReportViewer";
 
 // Report analysis components
-// Import from new viewModels structure when available
+// Import from viewModels structure as they're migrated
 import AiImpactSummaryViewModel from "./analysis/AiImpactSummaryViewModel";
+import ToolEffectivenessViewModel from "./analysis/ToolEffectivenessViewModel";
 // For the rest, we're still using the container components until they're migrated
-import ToolEffectivenessContainer from "../../components/containers/reports/ToolEffectivenessContainer";
 import RoleTeamAnalysisContainer from "../../components/containers/reports/RoleTeamAnalysisContainer";
 import SdlcAnalysisContainer from "../../components/containers/reports/SdlcAnalysisContainer";
 import ComplexityQualityContainer from "../../components/containers/reports/ComplexityQualityContainer";
@@ -188,7 +188,7 @@ const ReportViewerViewModel = ({ keyFragment, threadTitle }) => {
       case "aiImpactSummary":
         return <AiImpactSummaryViewModel reports={reports} filters={filters} />;
       case "toolEffectiveness":
-        return <ToolEffectivenessContainer reports={reports} filters={filters} />;
+        return <ToolEffectivenessViewModel reports={reports} filters={filters} />;
       case "roleTeamAnalysis":
         return <RoleTeamAnalysisContainer reports={reports} filters={filters} />;
       case "sdlcAnalysis":

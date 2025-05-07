@@ -7,7 +7,7 @@ import Link from "next/link";
 import ReportFormContainer from "../../../components/containers/ReportFormContainer";
 import ReportViewer from "../../../components/containers/ReportViewer";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
-import { Card, ErrorMessage } from "../../../components/ui";
+import { Card, ErrorMessage, ContentContainer } from "../../../components/ui";
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -80,13 +80,7 @@ const PageSubtitle = styled.p`
   }
 `;
 
-const ContentContainer = styled.div`
-  padding: 0 2rem 2rem;
-
-  @media (max-width: 768px) {
-    padding: 0 1rem 1.5rem;
-  }
-`;
+// Using ContentContainer from UI components
 
 const ReportPage = () => {
   const router = useRouter();

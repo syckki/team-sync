@@ -4,6 +4,7 @@ import Card from './Card';
 import Input, { TextArea, ReadOnlyField } from './Input';
 import Message, { ErrorMessage, SuccessMessage, WarningMessage, InfoMessage } from './Message';
 import { ContentContainer, Section, Grid, Flex } from './Layout';
+import PageHeader, { HeaderBanner, PageTitle, PageSubtitle, LockIcon } from './Header';
 
 export {
   Button,
@@ -19,5 +20,10 @@ export {
   ContentContainer,
   Section,
   Grid,
-  Flex
+  Flex,
+  PageHeader,
+  HeaderBanner,
+  PageTitle,
+  PageSubtitle,
+  LockIcon
 };

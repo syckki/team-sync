@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
+import { getAllReferenceData } from "../../lib/referenceDataClient";
 import ReportForm from "../presentational/ReportForm";
 
 /**
@@ -26,6 +27,34 @@ const ReportFormContainer = ({
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
+  
+  // Reference data state
+  const [referenceData, setReferenceData] = useState({
+    platforms: [],
+    projectInitiatives: [],
+    sdlcSteps: [],
+    sdlcTasksMap: {},
+    taskCategories: [],
+    complexityLevels: [],
+    qualityImpacts: [],
+    aiTools: []
+  });
+  
+  // Fetch reference data on component mount
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        const data = await getAllReferenceData();
+        if (data) {
+          setReferenceData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching reference data:", error);
+      }
+    };
+    
+    fetchReferenceData();
+  }, []);
 
   const getNewRow = () => ({
     id: Date.now(),

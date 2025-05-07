@@ -93,7 +93,7 @@ const MessageBadge = styled.span`
   font-weight: bold;
 `;
 
-const DecryptionContainer = ({ id, key64 }) => {
+const DecryptionViewModel = ({ id, key64 }) => {
   const [threadMessages, setThreadMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -636,4 +636,4 @@ const DecryptionContainer = ({ id, key64 }) => {
   );
 };
 
-export default DecryptionContainer;
+export default DecryptionViewModel;

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
-import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
-import ReportViewerPresentation from "../presentational/ReportViewer";
+import { importKeyFromBase64, decryptData } from "../lib/cryptoUtils";
+import ReportViewerPresentation from "../views/ReportViewer";
 
-// Report container components
+// Report container components - These would be moved to viewModels/reports/ in a complete restructuring
 import AiImpactSummaryContainer from "./reports/AiImpactSummaryContainer";
 import ToolEffectivenessContainer from "./reports/ToolEffectivenessContainer";
 import RoleTeamAnalysisContainer from "./reports/RoleTeamAnalysisContainer";
@@ -14,10 +14,10 @@ import ComplexityQualityContainer from "./reports/ComplexityQualityContainer";
 import QualitativeInsightsContainer from "./reports/QualitativeInsightsContainer";
 
 /**
- * Container component for the Report Viewer
+ * ViewModel for the Report Viewer
  * Handles data fetching, decryption, and state management
  */
-const ReportViewer = ({ keyFragment, threadTitle }) => {
+const ReportViewModel = ({ keyFragment, threadTitle }) => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -218,4 +218,4 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
   );
 };
 
-export default ReportViewer;
+export default ReportViewModel;

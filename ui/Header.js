@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styled from "styled-components";
-import { Breakpoint } from "../../lib/styles";
+import { Breakpoint } from "../lib/styles";
 
 const HeaderContainer = styled.header`
   background-color: ${({ theme }) => theme.colors.card};

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Header from "./Header";
 import MinWidthWarning from "./MinWidthWarning";
-import { Breakpoint } from "../../lib/styles";
+import { Breakpoint } from "../lib/styles";
 
 const Main = styled.main`
   margin: 0 auto;

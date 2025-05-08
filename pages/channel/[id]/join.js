@@ -2,11 +2,14 @@ import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import { Card, Button, Input, ErrorMessage, ContentContainer, PageHeader } from "../../../components/ui";
-
-// Using shared UI components
-
-// Using ContentContainer from UI components
+import {
+  Card,
+  Button,
+  Input,
+  ErrorMessage,
+  ContentContainer,
+  PageHeader,
+} from "../../../ui";
 
 const KeyInputForm = styled.form`
   margin: 2rem auto;
@@ -46,7 +49,7 @@ const JoinToThreadPage = () => {
         className="join-container"
         style={{ maxWidth: "600px", margin: "0 auto 2rem auto" }}
       >
-        <PageHeader 
+        <PageHeader
           title="Join an Existing Channel"
           subtitle="Enter the shared access key to continue."
           showLock={true}

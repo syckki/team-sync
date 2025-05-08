@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import SdlcAnalysisPresentation from "../../presentational/reports/SdlcAnalysisPresentation";
+import SdlcAnalysisView from "../../views/reports/SdlcAnalysisView";
 
 /**
  * Container component for the AI Impact on SDLC and Task Types report
  * Analyzes how AI tools affect different phases of the software development lifecycle
  */
-const SdlcAnalysisContainer = ({ reports, filters = {} }) => {
+const SdlcAnalysisViewModel = ({ reports, filters = {} }) => {
   // State to store processed data
   const [analysisData, setAnalysisData] = useState({
     sdlcPhaseAnalysis: [],
@@ -335,11 +335,11 @@ const SdlcAnalysisContainer = ({ reports, filters = {} }) => {
   }, [filteredReports, filters]);
 
   return (
-    <SdlcAnalysisPresentation 
+    <SdlcAnalysisView 
       analysisData={analysisData}
       filters={filters}
     />
   );
 };
 
-export default SdlcAnalysisContainer;
+export default SdlcAnalysisViewModel;

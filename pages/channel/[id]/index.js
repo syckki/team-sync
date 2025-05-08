@@ -1,13 +1,9 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import DecryptionContainer from "../../../components/containers/DecryptionContainer";
+import ChannelInboxViewModel from "../../../viewModels/ChannelInboxViewModel";
 import Head from "next/head";
 import styled from "styled-components";
-import { Card, ContentContainer, ErrorMessage, PageHeader } from "../../../components/ui";
-
-// Using Card component instead
-
-// Using shared UI components
+import { Card, ContentContainer, ErrorMessage, PageHeader } from "../../../ui";
 
 const LoadingMessage = styled.div`
   text-align: center;
@@ -16,7 +12,7 @@ const LoadingMessage = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-const ViewPage = ({ pageProps }) => {
+const ViewPage = () => {
   const [key, setKey] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,14 +66,14 @@ const ViewPage = ({ pageProps }) => {
         className="channel-container"
         style={{ maxWidth: "800px", margin: "0 auto 2rem auto" }}
       >
-        <PageHeader 
+        <PageHeader
           title="Channel Inbox"
           subtitle="Collaborate securely with your team in this encrypted channel."
           showLock={true}
         />
 
         <ContentContainer>
-          <DecryptionContainer id={id} key64={key} />
+          <ChannelInboxViewModel id={id} key64={key} />
         </ContentContainer>
       </Card>
     </>

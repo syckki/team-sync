@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import styled from "styled-components";
 
-import { importKeyFromBase64, decryptData } from "../../lib/cryptoUtils";
-import ReportViewerPresentation from "../presentational/ReportViewer";
+import { importKeyFromBase64, decryptData } from "../lib/cryptoUtils";
+import ReportViewerView from "../views/ReportViewerView";
 
-// Report container components
-import AiImpactSummaryContainer from "./reports/AiImpactSummaryContainer";
-import ToolEffectivenessContainer from "./reports/ToolEffectivenessContainer";
-import RoleTeamAnalysisContainer from "./reports/RoleTeamAnalysisContainer";
-import SdlcAnalysisContainer from "./reports/SdlcAnalysisContainer";
-import ComplexityQualityContainer from "./reports/ComplexityQualityContainer";
-import QualitativeInsightsContainer from "./reports/QualitativeInsightsContainer";
+import AiImpactSummaryViewModel from "./reports/AiImpactSummaryViewModel";
+import ToolEffectivenessViewModel from "./reports/ToolEffectivenessViewModel";
+import RoleTeamAnalysisViewModel from "./reports/RoleTeamAnalysisViewModel";
+import SdlcAnalysisViewModel from "./reports/SdlcAnalysisViewModel";
+import ComplexityQualityViewModel from "./reports/ComplexityQualityViewModel";
+import QualitativeInsightsViewModel from "./reports/QualitativeInsightsViewModel";
 
 /**
  * Container component for the Report Viewer
  * Handles data fetching, decryption, and state management
  */
-const ReportViewer = ({ keyFragment, threadTitle }) => {
+const ReportViewerViewModel = ({ keyFragment, threadTitle }) => {
   const router = useRouter();
   const { id } = router.query;
 
@@ -25,7 +23,7 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // State for report view options
   const [selectedReport, setSelectedReport] = useState("raw"); // default to raw report view
   const [filters, setFilters] = useState({
@@ -36,14 +34,14 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
     sdlcTask: "",
     periodType: "week",
   });
-  
+
   // Extract unique filter options from reports
   const [filterOptions, setFilterOptions] = useState({
     teamMembers: [],
     teamRoles: [],
     platforms: [],
     sdlcSteps: [],
-    sdlcTasks: []
+    sdlcTasks: [],
   });
 
   // Fetch and decrypt the reports when component mounts
@@ -67,13 +65,13 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
       const authorId = localStorage.getItem("encrypted-app-author-id");
       if (!authorId) {
         throw new Error(
-          "Author ID not found. Please go back to the thread view."
+          "Author ID not found. Please go back to the thread view.",
         );
       }
 
       // Fetch all messages from the thread
       const response = await fetch(
-        `/api/download?threadId=${id}&authorId=${authorId}`
+        `/api/download?threadId=${id}&authorId=${authorId}`,
       );
 
       if (!response.ok) {
@@ -94,7 +92,7 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
           try {
             // Convert base64 data back to ArrayBuffer
             const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
-              c.charCodeAt(0)
+              c.charCodeAt(0),
             );
 
             // Extract IV and ciphertext
@@ -122,7 +120,7 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
 
       // Sort reports by timestamp, newest first
       decryptedReports.sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
       );
 
       setReports(decryptedReports);
@@ -141,16 +139,16 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
       teamRoles: new Set(),
       platforms: new Set(),
       sdlcSteps: new Set(),
-      sdlcTasks: new Set()
+      sdlcTasks: new Set(),
     };
 
-    reports.forEach(report => {
+    reports.forEach((report) => {
       // Add team member and role
       if (report.teamMember) options.teamMembers.add(report.teamMember);
       if (report.teamRole) options.teamRoles.add(report.teamRole);
-      
+
       // Add platforms, SDLC steps, and SDLC tasks from each entry
-      report.entries.forEach(entry => {
+      report.entries.forEach((entry) => {
         if (entry.platform) options.platforms.add(entry.platform);
         if (entry.sdlcStep) options.sdlcSteps.add(entry.sdlcStep);
         if (entry.sdlcTask) options.sdlcTasks.add(entry.sdlcTask);
@@ -163,15 +161,15 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
       teamRoles: Array.from(options.teamRoles).sort(),
       platforms: Array.from(options.platforms).sort(),
       sdlcSteps: Array.from(options.sdlcSteps).sort(),
-      sdlcTasks: Array.from(options.sdlcTasks).sort()
+      sdlcTasks: Array.from(options.sdlcTasks).sort(),
     });
   };
 
   // Handle filter changes
   const handleFilterChange = (filterName, value) => {
-    setFilters(prevFilters => ({
+    setFilters((prevFilters) => ({
       ...prevFilters,
-      [filterName]: value
+      [filterName]: value,
     }));
   };
 
@@ -184,17 +182,25 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
   const renderReport = () => {
     switch (selectedReport) {
       case "aiImpactSummary":
-        return <AiImpactSummaryContainer reports={reports} filters={filters} />;
+        return <AiImpactSummaryViewModel reports={reports} filters={filters} />;
       case "toolEffectiveness":
-        return <ToolEffectivenessContainer reports={reports} filters={filters} />;
+        return (
+          <ToolEffectivenessViewModel reports={reports} filters={filters} />
+        );
       case "roleTeamAnalysis":
-        return <RoleTeamAnalysisContainer reports={reports} filters={filters} />;
+        return (
+          <RoleTeamAnalysisViewModel reports={reports} filters={filters} />
+        );
       case "sdlcAnalysis":
-        return <SdlcAnalysisContainer reports={reports} filters={filters} />;
+        return <SdlcAnalysisViewModel reports={reports} filters={filters} />;
       case "complexityQuality":
-        return <ComplexityQualityContainer reports={reports} filters={filters} />;
+        return (
+          <ComplexityQualityViewModel reports={reports} filters={filters} />
+        );
       case "qualitativeInsights":
-        return <QualitativeInsightsContainer reports={reports} filters={filters} />;
+        return (
+          <QualitativeInsightsViewModel reports={reports} filters={filters} />
+        );
       case "raw":
       default:
         // The raw reports will be handled in the presentation component
@@ -203,7 +209,7 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
   };
 
   return (
-    <ReportViewerPresentation
+    <ReportViewerView
       threadTitle={threadTitle}
       reports={reports}
       isLoading={isLoading}
@@ -218,4 +224,4 @@ const ReportViewer = ({ keyFragment, threadTitle }) => {
   );
 };
 
-export default ReportViewer;
+export default ReportViewerViewModel;

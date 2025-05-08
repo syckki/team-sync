@@ -3,16 +3,16 @@ import {
   generateKey,
   encryptData,
   exportKeyToBase64,
-} from "../../lib/cryptoUtils";
-import { queueMessage } from "../../lib/dbService";
+} from "../lib/cryptoUtils";
+import { queueMessage } from "../lib/dbService";
 import {
   initNetworkMonitoring,
   isOnline,
   onOnline,
   onOffline,
   syncQueuedMessages,
-} from "../../lib/networkService";
-import EncryptForm from "../presentational/EncryptForm";
+} from "../lib/networkService";
+import ChannelFormView from "../views/ChannelFormView";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { Button, Message } from "../ui";
@@ -55,7 +55,7 @@ const ReplyBadge = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
+const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [encryptedResult, setEncryptedResult] = useState(null);
   const [error, setError] = useState(null);
@@ -314,13 +314,13 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
       {!networkStatus && (
         <Message type="warning">
           <div>
-            <strong>You are offline.</strong> Messages will be
-            queued and sent automatically when your connection is restored.
+            <strong>You are offline.</strong> Messages will be queued and sent
+            automatically when your connection is restored.
           </div>
         </Message>
       )}
 
-      <EncryptForm
+      <ChannelFormView
         onSubmit={handleEncrypt}
         isLoading={isEncrypting}
         error={error}
@@ -370,11 +370,7 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
               >
                 {encryptedResult.url}
               </SecureLink>
-              <Button 
-                variant="primary" 
-                size="medium" 
-                onClick={copyToClipboard}
-              >
+              <Button variant="primary" size="medium" onClick={copyToClipboard}>
                 {copySuccess ? "Copied!" : "Copy Secure Link"}
               </Button>
               <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
@@ -394,4 +390,4 @@ const EncryptionContainer = ({ isReply = false, replyToId = null }) => {
   );
 };
 
-export default EncryptionContainer;
+export default ChannelFormViewModel;

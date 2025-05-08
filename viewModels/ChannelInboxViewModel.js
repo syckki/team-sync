@@ -3,17 +3,17 @@ import {
   importKeyFromBase64,
   decryptData,
   encryptData,
-} from "../../lib/cryptoUtils";
-import { queueMessage } from "../../lib/dbService";
+} from "../lib/cryptoUtils";
+import { queueMessage } from "../lib/dbService";
 import {
   initNetworkMonitoring,
   isOnline,
   onOnline,
   onOffline,
   syncQueuedMessages,
-} from "../../lib/networkService";
+} from "../lib/networkService";
 import styled from "styled-components";
-import EncryptForm from "../presentational/EncryptForm";
+import ChannelFormView from "../views/ChannelFormView";
 import { Button, ErrorMessage, WarningMessage, InfoMessage, Card } from "../ui";
 
 const LoadingContainer = styled.div`
@@ -93,7 +93,7 @@ const MessageBadge = styled.span`
   font-weight: bold;
 `;
 
-const DecryptionContainer = ({ id, key64 }) => {
+const ChannelInboxViewModel = ({ id, key64 }) => {
   const [threadMessages, setThreadMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -206,7 +206,8 @@ const DecryptionContainer = ({ id, key64 }) => {
 
         // Generate the secure sharing link with the current key
         if (threadData.isCreator && key64) {
-          const origin = typeof window !== 'undefined' ? window.location.origin : '';
+          const origin =
+            typeof window !== "undefined" ? window.location.origin : "";
           const secureUrl = `${origin}/channel/${id}#${key64}`;
           setSecureShareLink(secureUrl);
         }
@@ -506,25 +507,33 @@ const DecryptionContainer = ({ id, key64 }) => {
         {/* Show SecureLink for thread creator only */}
         {isThreadCreator && secureShareLink && (
           <InfoMessage title="Share this secure link with your team:">
-            <div style={{ 
-              padding: '0.75rem',
-              marginTop: '0.5rem',
-              background: '#f8fafc', 
-              border: '1px solid #e2e8f0', 
-              borderRadius: '0.375rem', 
-              wordBreak: 'break-all',
-              fontSize: '0.875rem',
-              fontFamily: 'monospace'
-            }}>
+            <div
+              style={{
+                padding: "0.75rem",
+                marginTop: "0.5rem",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "0.375rem",
+                wordBreak: "break-all",
+                fontSize: "0.875rem",
+                fontFamily: "monospace",
+              }}
+            >
               {secureShareLink}
             </div>
-            <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <div
+              style={{
+                marginTop: "0.75rem",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
               <Button
                 variant="primary"
                 size="small"
                 onClick={() => {
                   navigator.clipboard.writeText(secureShareLink);
-                  alert('Secure Link copied to clipboard!');
+                  alert("Secure Link copied to clipboard!");
                 }}
               >
                 Copy Secure Link
@@ -624,7 +633,7 @@ const DecryptionContainer = ({ id, key64 }) => {
         </ButtonRow>
 
         {showAddForm && (
-          <EncryptForm
+          <ChannelFormView
             onSubmit={handleAddMessage}
             isLoading={isAddingMessage}
             error={addMessageError}
@@ -636,4 +645,4 @@ const DecryptionContainer = ({ id, key64 }) => {
   );
 };
 
-export default DecryptionContainer;
+export default ChannelInboxViewModel;

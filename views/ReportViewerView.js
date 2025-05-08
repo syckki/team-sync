@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import CustomSelect from "./CustomSelect";
-import ResponsiveTable from "./ResponsiveTable";
+import CustomSelect from "../ui/CustomSelect";
+import ResponsiveTable from "../ui/ResponsiveTable";
 import { Button } from "../ui";
 
 // Styled components for the report viewer

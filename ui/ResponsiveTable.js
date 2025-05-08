@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Breakpoint } from "../../lib/styles";
+import { Breakpoint } from "../lib/styles";
 import InfoTooltip from "./InfoTooltip";
 
 // Flexbox-based responsive table container

@@ -1,8 +1,8 @@
-import { ThemeProvider } from 'styled-components';
-import { GlobalStyles } from '../styles/globalStyles';
-import { theme } from '../styles/theme';
-import Layout from '../components/presentational/Layout';
-import Head from 'next/head';
+import { ThemeProvider } from "styled-components";
+import { GlobalStyles } from "../styles/globalStyles";
+import { theme } from "../styles/theme";
+import Layout from "../ui/Layout";
+import Head from "next/head";
 
 const App = ({ Component, pageProps }) => {
   return (

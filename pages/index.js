@@ -1,10 +1,8 @@
 import Head from "next/head";
-import EncryptionContainer from "../components/containers/EncryptionContainer";
-import { Card, ContentContainer, PageHeader } from "../components/ui";
+import ChannelFormViewModel from "../viewModels/ChannelFormViewModel";
+import { Card, ContentContainer, PageHeader } from "../ui";
 
-// Using ContentContainer from UI components
-
-const HomePage = ({ staticProps }) => {
+const HomePage = () => {
   return (
     <>
       <Head>
@@ -20,13 +18,13 @@ const HomePage = ({ staticProps }) => {
         className="home-container"
         style={{ maxWidth: "600px", margin: "0 auto 2rem auto" }}
       >
-        <PageHeader 
+        <PageHeader
           title="Create New Channel"
           subtitle="Start a secure channel for team collaboration."
           showLock={true}
         />
         <ContentContainer>
-          <EncryptionContainer />
+          <ChannelFormViewModel />
         </ContentContainer>
       </Card>
     </>

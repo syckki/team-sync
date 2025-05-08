@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import ResponsiveTable from "../ResponsiveTable";
+import ResponsiveTable from "../../ui/ResponsiveTable";
 
 // Styled components for the report
 const ReportContainer = styled.div`

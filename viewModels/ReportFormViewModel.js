@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
-import { getAllReferenceData, updateReferenceDataCategory } from "../../lib/referenceDataClient";
-import ReportForm from "../presentational/ReportForm";
+import { importKeyFromBase64, encryptData } from "../lib/cryptoUtils";
+import {
+  getAllReferenceData,
+  updateReferenceDataCategory,
+} from "../lib/referenceDataClient";
+import ReportFormView from "../views/ReportFormView";
 
 /**
  * Container component for the Report Form
  * Handles state management, data processing, and form submission
  */
-const ReportFormContainer = ({
+const ReportFormViewModel = ({
   keyFragment,
   teamName,
   teamMemberOptions = [],
@@ -27,7 +30,7 @@ const ReportFormContainer = ({
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
-  
+
   // Reference data state
   const [referenceData, setReferenceData] = useState({
     platforms: [],
@@ -39,82 +42,86 @@ const ReportFormContainer = ({
     qualityImpacts: [],
     aiTools: [],
     teamRoles: [],
-    teamMembers: []
+    teamMembers: [],
   });
-  
+
   // Synchronize localStorage data with API
   const syncReferenceDataFromLocalStorage = async () => {
     try {
       // Map of localStorage keys to API category names
       const storageKeyMap = {
-        "platformOptions": "platforms",
-        "projectOptions": "projectInitiatives",
-        "sdlcStepOptions": "sdlcSteps",
-        "taskCategoryOptions": "taskCategories",
-        "qualityImpactOptions": "qualityImpacts",
-        "aiToolOptions": "aiTools",
-        "teamRoleOptions": "teamRoles",
-        "teamMemberOptions": "teamMembers"
+        platformOptions: "platforms",
+        projectOptions: "projectInitiatives",
+        sdlcStepOptions: "sdlcSteps",
+        taskCategoryOptions: "taskCategories",
+        qualityImpactOptions: "qualityImpacts",
+        aiToolOptions: "aiTools",
+        teamRoleOptions: "teamRoles",
+        teamMemberOptions: "teamMembers",
       };
-      
+
       // For each storage key, check if there are additional items to sync
       for (const [storageKey, categoryName] of Object.entries(storageKeyMap)) {
-        const storedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        
+        const storedItems = JSON.parse(
+          localStorage.getItem(storageKey) || "[]",
+        );
+
         if (storedItems.length === 0) continue;
-        
+
         // Check if there are any items in localStorage that are not in the API data
         const apiItems = referenceData[categoryName] || [];
-        const newItems = storedItems.filter(item => !apiItems.includes(item));
-        
+        const newItems = storedItems.filter((item) => !apiItems.includes(item));
+
         // If there are new items, update the API
         if (newItems.length > 0) {
           const updatedItems = [...apiItems, ...newItems];
           await updateReferenceDataCategory(categoryName, updatedItems);
-          
+
           // Update local reference data state
-          setReferenceData(prev => ({
+          setReferenceData((prev) => ({
             ...prev,
-            [categoryName]: updatedItems
+            [categoryName]: updatedItems,
           }));
         }
       }
-      
+
       // Handle sdlcTasksMap separately (it's an object mapping SDLC steps to arrays of tasks)
       try {
-        const sdlcTaskOptionsMap = JSON.parse(localStorage.getItem("sdlcTaskOptionsMap") || '{}');
+        const sdlcTaskOptionsMap = JSON.parse(
+          localStorage.getItem("sdlcTaskOptionsMap") || "{}",
+        );
         let hasUpdates = false;
         const updatedTasksMap = { ...referenceData.sdlcTasksMap };
-        
+
         // Check for each step if there are new tasks
         Object.entries(sdlcTaskOptionsMap).forEach(([step, tasks]) => {
           if (!Array.isArray(tasks) || tasks.length === 0) return;
-          
+
           // If the step doesn't exist in the API data, create it
           if (!updatedTasksMap[step]) {
             updatedTasksMap[step] = tasks;
             hasUpdates = true;
             return;
           }
-          
+
           // Check for new tasks for this step
           const apiTasks = updatedTasksMap[step] || [];
-          const newTasks = tasks.filter(task => !apiTasks.includes(task));
-          
+          const newTasks = tasks.filter((task) => !apiTasks.includes(task));
+
           if (newTasks.length > 0) {
             updatedTasksMap[step] = [...apiTasks, ...newTasks];
             hasUpdates = true;
           }
         });
-        
+
         // If there were updates, save to the API
         if (hasUpdates) {
           await updateReferenceDataCategory("sdlcTasksMap", updatedTasksMap);
-          
+
           // Update local reference data state
-          setReferenceData(prev => ({
+          setReferenceData((prev) => ({
             ...prev,
-            sdlcTasksMap: updatedTasksMap
+            sdlcTasksMap: updatedTasksMap,
           }));
         }
       } catch (taskMapError) {
@@ -124,50 +131,57 @@ const ReportFormContainer = ({
       console.error("Error synchronizing reference data:", error);
     }
   };
-  
+
   // Update localStorage from API reference data
   const updateLocalStorageFromAPI = (data) => {
     try {
       // Map of API category names to localStorage keys
       const categoryKeyMap = {
-        "platforms": "platformOptions",
-        "projectInitiatives": "projectOptions",
-        "sdlcSteps": "sdlcStepOptions",
-        "taskCategories": "taskCategoryOptions",
-        "qualityImpacts": "qualityImpactOptions",
-        "aiTools": "aiToolOptions",
-        "teamRoles": "teamRoleOptions",
-        "teamMembers": "teamMemberOptions"
+        platforms: "platformOptions",
+        projectInitiatives: "projectOptions",
+        sdlcSteps: "sdlcStepOptions",
+        taskCategories: "taskCategoryOptions",
+        qualityImpacts: "qualityImpactOptions",
+        aiTools: "aiToolOptions",
+        teamRoles: "teamRoleOptions",
+        teamMembers: "teamMemberOptions",
       };
-      
+
       // For each API category, update localStorage
       Object.entries(categoryKeyMap).forEach(([categoryName, storageKey]) => {
         const apiItems = data[categoryName] || [];
         if (apiItems.length === 0) return;
-        
+
         // Get existing items from localStorage
-        const storedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        
+        const storedItems = JSON.parse(
+          localStorage.getItem(storageKey) || "[]",
+        );
+
         // Merge items, ensuring uniqueness
         const mergedItems = [...new Set([...storedItems, ...apiItems])];
-        
+
         // Update localStorage
         localStorage.setItem(storageKey, JSON.stringify(mergedItems));
       });
-      
+
       // Handle sdlcTasksMap separately
       if (data.sdlcTasksMap) {
-        const existingTaskMap = JSON.parse(localStorage.getItem("sdlcTaskOptionsMap") || '{}');
+        const existingTaskMap = JSON.parse(
+          localStorage.getItem("sdlcTaskOptionsMap") || "{}",
+        );
         const updatedTaskMap = { ...existingTaskMap };
-        
+
         // Merge each step's tasks
         Object.entries(data.sdlcTasksMap).forEach(([step, tasks]) => {
           const existingTasks = updatedTaskMap[step] || [];
           updatedTaskMap[step] = [...new Set([...existingTasks, ...tasks])];
         });
-        
+
         // Update localStorage
-        localStorage.setItem("sdlcTaskOptionsMap", JSON.stringify(updatedTaskMap));
+        localStorage.setItem(
+          "sdlcTaskOptionsMap",
+          JSON.stringify(updatedTaskMap),
+        );
       }
     } catch (error) {
       console.error("Error updating localStorage from API:", error);
@@ -181,10 +195,10 @@ const ReportFormContainer = ({
         const data = await getAllReferenceData();
         if (data) {
           setReferenceData(data);
-          
+
           // First update localStorage with API data
           updateLocalStorageFromAPI(data);
-          
+
           // Then synchronize any new items from localStorage back to the API
           await syncReferenceDataFromLocalStorage();
         }
@@ -192,7 +206,7 @@ const ReportFormContainer = ({
         console.error("Error fetching reference data:", error);
       }
     };
-    
+
     fetchReferenceData();
   }, []);
 
@@ -444,7 +458,7 @@ const ReportFormContainer = ({
     try {
       // Synchronize reference data from localStorage to the backend
       await syncReferenceDataFromLocalStorage();
-      
+
       const submitData = await prepareReportData("draft");
 
       // Send to the server
@@ -473,15 +487,17 @@ const ReportFormContainer = ({
           // Non-critical error, continue
         }
       }
-      // Save the team role for future use if its new
+      // Save the team role for future use if it's new
       if (teamRole) {
         try {
-          const storedRoles = JSON.parse(localStorage.getItem("teamRoleOptions") || "[]");
+          const storedRoles = JSON.parse(
+            localStorage.getItem("teamRoleOptions") || "[]",
+          );
           if (!storedRoles.includes(teamRole)) {
             const updatedRoles = [...storedRoles, teamRole];
             localStorage.setItem(
               "teamRoleOptions",
-              JSON.stringify(updatedRoles)
+              JSON.stringify(updatedRoles),
             );
           }
         } catch (localStorageErr) {
@@ -517,7 +533,7 @@ const ReportFormContainer = ({
     try {
       // Synchronize reference data from localStorage to the backend
       await syncReferenceDataFromLocalStorage();
-      
+
       const submitData = await prepareReportData("submitted");
 
       // Send to the server
@@ -546,6 +562,24 @@ const ReportFormContainer = ({
           // Non-critical error, continue
         }
       }
+      // Save the team role for future use if it's new
+      if (teamRole) {
+        try {
+          const storedRoles = JSON.parse(
+            localStorage.getItem("teamRoleOptions") || "[]",
+          );
+          if (!storedRoles.includes(teamRole)) {
+            const updatedRoles = [...storedRoles, teamRole];
+            localStorage.setItem(
+              "teamRoleOptions",
+              JSON.stringify(updatedRoles),
+            );
+          }
+        } catch (localStorageErr) {
+          console.error("Error saving team role option:", localStorageErr);
+          // Non-critical error, continue
+        }
+      }
 
       setSuccessMessage(
         "Your AI productivity report has been submitted successfully!",
@@ -571,7 +605,7 @@ const ReportFormContainer = ({
 
   // Pass all state and handlers to the presentation component
   return (
-    <ReportForm
+    <ReportFormView
       teamName={teamName}
       teamMember={teamMember}
       setTeamMember={setTeamMember}
@@ -597,4 +631,4 @@ const ReportFormContainer = ({
   );
 };
 
-export default ReportFormContainer;
+export default ReportFormViewModel;

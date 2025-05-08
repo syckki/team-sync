@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import Head from 'next/head';
-import Layout from '../components/presentational/Layout';
+import Layout from '../ui/Layout';
 
 const AboutContainer = styled.div`
   max-width: 800px;

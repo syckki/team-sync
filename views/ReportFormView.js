@@ -1,14 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import { Breakpoint } from "../../lib/styles";
+import { Breakpoint } from "../lib/styles";
 
-import CustomSelect, { ReadonlyField } from "./CustomSelect";
-import CustomInput from "./CustomInput";
-import CreatableComboBox from "./CreatableComboBox";
-import CreatableMultiSelect from "./CreatableMultiSelect";
-import AutoResizeTextArea from "./AutoResizeTextArea";
-import ResponsiveTable from "./ResponsiveTable";
-import InfoTooltip from "./InfoTooltip";
+import CustomSelect, { ReadonlyField } from "../ui/CustomSelect";
+import CustomInput from "../ui/CustomInput";
+import CreatableComboBox from "../ui/CreatableComboBox";
+import CreatableMultiSelect from "../ui/CreatableMultiSelect";
+import AutoResizeTextArea from "../ui/AutoResizeTextArea";
+import ResponsiveTable from "../ui/ResponsiveTable";
+import InfoTooltip from "../ui/InfoTooltip";
 import { Button } from "../ui";
 
 const Form = styled.form`

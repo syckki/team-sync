@@ -41,7 +41,7 @@ const TextArea = styled.textarea`
   }
 `;
 
-const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
+const ChannelFormView = ({ onSubmit, isLoading, error, isReply = false }) => {
   const [formValues, setFormValues] = useState({
     title: "",
     message: "",
@@ -114,4 +114,4 @@ const EncryptForm = ({ onSubmit, isLoading, error, isReply = false }) => {
   );
 };
 
-export default EncryptForm;
+export default ChannelFormView;

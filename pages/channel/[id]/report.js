@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportFormContainer from "../../../components/containers/ReportFormContainer";
-import ReportViewer from "../../../components/containers/ReportViewer";
+import ReportFormViewModel from "../../../viewModels/ReportFormViewModel";
+import ReportViewerViewModel from "../../../viewModels/ReportViewerViewModel";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
-import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../components/ui";
+import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -159,7 +159,7 @@ const ReportPage = () => {
         className="report-container"
         style={{ maxWidth: "1240px", margin: "0 auto 2rem auto" }}
       >
-        <PageHeader 
+        <PageHeader
           title="AI Productivity Report"
           subtitle="Track and measure your productivity gains from using AI tools"
           showLock={true}
@@ -173,10 +173,13 @@ const ReportPage = () => {
           ) : (
             <>
               {isViewMode ? (
-                <ReportViewer keyFragment={key} threadTitle={threadTitle} />
+                <ReportViewerViewModel
+                  keyFragment={key}
+                  threadTitle={threadTitle}
+                />
               ) : (
                 <>
-                  <ReportFormContainer
+                  <ReportFormViewModel
                     keyFragment={key}
                     teamName={teamName}
                     teamMemberOptions={teamMemberOptions}

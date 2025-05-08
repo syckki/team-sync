@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportFormViewModel from "../../../viewModels/reports/ReportFormViewModel";
+import ReportFormViewModel from "../../../viewModels/ReportFormViewModel";
 import ReportViewerViewModel from "../../../viewModels/ReportViewerViewModel";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";

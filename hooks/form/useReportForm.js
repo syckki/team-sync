@@ -1,55 +1,19 @@
 import { useState, useEffect } from "react";
 
 /**
- * Custom hook for managing report form state and operations
- * 
- * @param {Object} initialData - Initial report data (if editing an existing report)
- * @returns {Object} Form state and handler functions
+ * Custom hook for managing report form state
+ * Handles form data, row operations, and calculations
  */
-const useReportForm = (initialData = null) => {
+const useReportForm = (initialReportData = null) => {
+  // Form state for team information
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
-  const [rows, setRows] = useState([]);
-  const [expandedRows, setExpandedRows] = useState({});
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
 
-  // Initialize form with data if provided
-  useEffect(() => {
-    if (initialData) {
-      setTeamMember(initialData.teamMember || "");
-      setTeamRole(initialData.teamRole || "");
-      
-      // Initialize rows from initialData or create a default row
-      if (initialData.items && initialData.items.length > 0) {
-        setRows(
-          initialData.items.map((item) => ({
-            ...item,
-            id: item.id || `row-${Math.random().toString(36).substr(2, 9)}`,
-          }))
-        );
-        
-        // Initialize expanded rows
-        const expanded = {};
-        initialData.items.forEach((item) => {
-          expanded[item.id || `row-${Math.random().toString(36).substr(2, 9)}`] = false;
-        });
-        setExpandedRows(expanded);
-      } else {
-        // Create a default row if no items exist
-        addNewRow();
-      }
-    } else {
-      // No initialData, create a default row
-      addNewRow();
-    }
-  }, [initialData]);
-
-  /**
-   * Create a new empty row
-   * @returns {Object} New row object with default values
-   */
-  const createNewRow = () => ({
-    id: `row-${Math.random().toString(36).substr(2, 9)}`,
+  // Get a new empty row with unique ID
+  const getNewRow = () => ({
+    id: Date.now(),
     platform: "",
     projectInitiative: "",
     sdlcStep: "",
@@ -57,158 +21,199 @@ const useReportForm = (initialData = null) => {
     taskCategory: "",
     estimatedTimeWithoutAI: "",
     actualTimeWithAI: "",
+    timeSaved: "", // is calculated
     complexity: "",
     qualityImpact: "",
-    aiTools: [],
-    taskNotes: "",
-    aiUsageNotes: "",
+    aiToolsUsed: [],
+    taskDetails: "",
+    notesHowAIHelped: "",
   });
 
-  /**
-   * Add a new row to the form
-   */
-  const addNewRow = () => {
-    const newRow = createNewRow();
-    setRows((prevRows) => [...prevRows, newRow]);
-    setExpandedRows((prev) => ({ ...prev, [newRow.id]: false }));
+  // Initialize rows state with a single empty row
+  const [rows, setRows] = useState([getNewRow()]);
+
+  // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
+  const roundToQuarterHour = (time) => {
+    const value = parseFloat(time) || 0;
+    return (Math.round(value * 4) / 4).toFixed(2);
   };
 
-  /**
-   * Add a new empty row to the table
-   */
-  const addRow = () => {
-    addNewRow();
+  // Handle SDLC step change and reset the task when step changes
+  const handleSDLCStepChange = (id, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === id
+          ? { ...row, sdlcStep: value, sdlcTask: "" } // Reset task when step changes
+          : row
+      )
+    );
   };
 
-  /**
-   * Remove a row from the table
-   * @param {string} rowId - ID of the row to remove
-   */
-  const removeRow = (rowId) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== rowId));
-    setExpandedRows((prev) => {
-      const { [rowId]: _, ...rest } = prev;
-      return rest;
-    });
+  // Handle general field changes in form rows
+  const handleRowChange = (id, field, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
+        if (row.id === id) {
+          const updatedRow = { ...row, [field]: value };
+
+          // Calculate time saved if both time fields are filled
+          if (
+            field === "estimatedTimeWithoutAI" ||
+            field === "actualTimeWithAI"
+          ) {
+            const estimatedTime = parseFloat(
+              field === "estimatedTimeWithoutAI"
+                ? value
+                : updatedRow.estimatedTimeWithoutAI
+            );
+            const actualTime = parseFloat(
+              field === "actualTimeWithAI"
+                ? value
+                : updatedRow.actualTimeWithAI
+            );
+
+            if (!isNaN(estimatedTime) && !isNaN(actualTime)) {
+              const timeSaved = Math.max(0, estimatedTime - actualTime);
+              updatedRow.timeSaved = roundToQuarterHour(timeSaved);
+            } else {
+              updatedRow.timeSaved = "";
+            }
+          }
+
+          return updatedRow;
+        }
+        return row;
+      })
+    );
   };
 
-  /**
-   * Toggle expansion state of a row
-   * @param {string} rowId - ID of the row to toggle
-   */
-  const toggleRowExpansion = (rowId) => {
+  // Toggle row expansion
+  const toggleRowExpansion = (id) => {
     setExpandedRows((prev) => ({
       ...prev,
-      [rowId]: !prev[rowId],
+      [id]: !prev[id],
     }));
   };
 
-  /**
-   * Handle changes in SDLC Step field
-   * This requires special handling to clear the SDLC Task field
-   * @param {string} rowId - ID of the row being modified
-   * @param {string} newValue - New SDLC Step value
-   */
-  const handleSDLCStepChange = (rowId, newValue) => {
-    setRows((prevRows) =>
-      prevRows.map((row) => {
-        if (row.id === rowId) {
-          // Clear the SDLC Task when changing the SDLC Step
-          return {
-            ...row,
-            sdlcStep: newValue,
-            sdlcTask: "",
-          };
-        }
-        return row;
-      })
-    );
+  // Add a new row to the form
+  const addRow = () => {
+    const newRow = getNewRow();
+    setRows((prevRows) => [...prevRows, newRow]);
+    // Automatically expand the new row
+    setExpandedRows((prev) => ({
+      ...prev,
+      [newRow.id]: true,
+    }));
   };
 
-  /**
-   * Handle changes in any row field
-   * @param {string} rowId - ID of the row being modified
-   * @param {string} field - Field name to update
-   * @param {any} value - New field value
-   */
-  const handleRowChange = (rowId, field, value) => {
-    setRows((prevRows) =>
-      prevRows.map((row) => {
-        if (row.id === rowId) {
-          return {
-            ...row,
-            [field]: value,
-          };
-        }
-        return row;
-      })
-    );
+  // Remove a row from the form
+  const removeRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // Also remove from expanded state
+    setExpandedRows((prev) => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
   };
 
-  /**
-   * Validate the form data
-   * @returns {Object} Validation result with valid flag and error message
-   */
-  const validateForm = () => {
-    if (!teamMember.trim()) {
-      return { valid: false, error: "Team Member name is required" };
+  // Function to process report data (whether from URL param or direct props)
+  const processReportData = (existingReport) => {
+    if (!existingReport) return;
+    
+    // Check report status - if submitted, set read-only mode
+    if (existingReport.status === "submitted") {
+      setIsReadOnly(true);
     }
 
-    if (!teamRole.trim()) {
-      return { valid: false, error: "Team Role is required" };
-    }
+    // Set team member and role
+    setTeamMember(existingReport.teamMember || "");
+    setTeamRole(existingReport.teamRole || "");
 
-    // Make sure at least one row exists with minimum data
-    if (rows.length === 0) {
-      return { valid: false, error: "At least one productivity item is required" };
-    }
+    // Load rows data if available
+    if (existingReport.entries && existingReport.entries.length > 0) {
+      // Map the entries to row format with unique IDs
+      const loadedRows = existingReport.entries.map((entry) => ({
+        id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+        platform: entry.platform,
+        projectInitiative: entry.projectInitiative,
+        sdlcStep: entry.sdlcStep,
+        sdlcTask: entry.sdlcTask,
+        taskCategory: entry.taskCategory,
+        estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
+        actualTimeWithAI: entry.actualTimeWithAI || "",
+        complexity: entry.complexity || "",
+        qualityImpact: entry.qualityImpact || "",
+        aiToolsUsed: entry.aiToolsUsed
+          ? Array.isArray(entry.aiToolsUsed)
+            ? entry.aiToolsUsed
+            : entry.aiToolsUsed.includes(",")
+              ? entry.aiToolsUsed.split(",").map((t) => t.trim())
+              : [entry.aiToolsUsed]
+          : [],
+        taskDetails: entry.taskDetails,
+        notesHowAIHelped: entry.notesHowAIHelped || "",
+      }));
 
-    // Check each row for required fields
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row.platform) {
-        return { valid: false, error: `Row #${i + 1}: Platform is required` };
-      }
-      if (!row.projectInitiative) {
-        return { valid: false, error: `Row #${i + 1}: Initiative is required` };
-      }
-      if (!row.estimatedTimeWithoutAI) {
-        return { valid: false, error: `Row #${i + 1}: Estimated time is required` };
-      }
-      if (!row.actualTimeWithAI) {
-        return { valid: false, error: `Row #${i + 1}: Actual time is required` };
-      }
-      if (!row.sdlcStep) {
-        return { valid: false, error: `Row #${i + 1}: SDLC Step is required` };
-      }
-      if (!row.complexity) {
-        return { valid: false, error: `Row #${i + 1}: Complexity is required` };
-      }
-      if (!row.qualityImpact) {
-        return { valid: false, error: `Row #${i + 1}: Quality Impact is required` };
-      }
-      if (!row.aiTools || row.aiTools.length === 0) {
-        return { valid: false, error: `Row #${i + 1}: At least one AI Tool is required` };
-      }
+      setRows(loadedRows);
     }
-
-    return { valid: true };
   };
 
-  /**
-   * Prepare report data for submission
-   * @returns {Object} Formatted report data
-   */
+  // Load report data if provided
+  useEffect(() => {
+    if (initialReportData) {
+      processReportData(initialReportData);
+    }
+  }, [initialReportData]);
+
+  // Prepare report data for submission
   const prepareReportData = () => {
+    // Process the form data
+    const reportEntries = rows.map((row) => ({
+      platform: row.platform,
+      projectInitiative: row.projectInitiative,
+      sdlcStep: row.sdlcStep,
+      sdlcTask: row.sdlcTask,
+      taskCategory: row.taskCategory,
+      estimatedTimeWithoutAI: roundToQuarterHour(row.estimatedTimeWithoutAI),
+      actualTimeWithAI: roundToQuarterHour(row.actualTimeWithAI),
+      timeSaved: row.timeSaved,
+      complexity: row.complexity,
+      qualityImpact: row.qualityImpact,
+      aiToolsUsed:
+        Array.isArray(row.aiToolsUsed) && row.aiToolsUsed.length > 0
+          ? row.aiToolsUsed.join(", ")
+          : "",
+      taskDetails: row.taskDetails,
+      notesHowAIHelped: row.notesHowAIHelped,
+    }));
+
     return {
       teamMember,
       teamRole,
-      items: rows,
-      timestamp: new Date().toISOString(),
+      entries: reportEntries
     };
   };
 
+  // Validate form data
+  const validateForm = () => {
+    if (!teamMember.trim()) {
+      return { valid: false, error: "Please enter your name" };
+    }
+
+    if (!teamRole.trim()) {
+      return { valid: false, error: "Please enter your role" };
+    }
+
+    if (rows.length === 0) {
+      return { valid: false, error: "Please add at least one entry" };
+    }
+
+    return { valid: true, error: null };
+  };
+
   return {
+    // Form state
     teamMember,
     setTeamMember,
     teamRole,
@@ -217,11 +222,15 @@ const useReportForm = (initialData = null) => {
     isReadOnly,
     setIsReadOnly,
     expandedRows,
+    
+    // Row operations
     handleSDLCStepChange,
     handleRowChange,
     toggleRowExpansion,
     addRow,
     removeRow,
+    
+    // Form processing
     prepareReportData,
     validateForm
   };

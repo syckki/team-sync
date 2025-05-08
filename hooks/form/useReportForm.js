@@ -1,15 +1,27 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 
 /**
  * Custom hook for managing report form state
  * Handles form data, row operations, and calculations
  */
-const useReportForm = (initialReportData = null) => {
+const useReportForm = ({
+  keyFragment,
+  readOnly = false,
+  initialReportData = null,
+  messageIndex = null,
+}) => {
   // Form state for team information
   const [teamMember, setTeamMember] = useState("");
   const [teamRole, setTeamRole] = useState("");
-  const [isReadOnly, setIsReadOnly] = useState(false);
+  // Set up state for read-only mode (for submitted reports)
+  // Allow override from props (for messageIndex-based loading)
+  const [isReadOnly, setIsReadOnly] = useState(readOnly);
   const [expandedRows, setExpandedRows] = useState({});
+
+  const router = useRouter();
+  const { id: threadId } = router.query;
 
   // Get a new empty row with unique ID
   const getNewRow = () => ({
@@ -44,8 +56,8 @@ const useReportForm = (initialReportData = null) => {
       prevRows.map((row) =>
         row.id === id
           ? { ...row, sdlcStep: value, sdlcTask: "" } // Reset task when step changes
-          : row
-      )
+          : row,
+      ),
     );
   };
 
@@ -64,12 +76,12 @@ const useReportForm = (initialReportData = null) => {
             const estimatedTime = parseFloat(
               field === "estimatedTimeWithoutAI"
                 ? value
-                : updatedRow.estimatedTimeWithoutAI
+                : updatedRow.estimatedTimeWithoutAI,
             );
             const actualTime = parseFloat(
               field === "actualTimeWithAI"
                 ? value
-                : updatedRow.actualTimeWithAI
+                : updatedRow.actualTimeWithAI,
             );
 
             if (!isNaN(estimatedTime) && !isNaN(actualTime)) {
@@ -83,7 +95,7 @@ const useReportForm = (initialReportData = null) => {
           return updatedRow;
         }
         return row;
-      })
+      }),
     );
   };
 
@@ -119,16 +131,14 @@ const useReportForm = (initialReportData = null) => {
 
   // Function to process report data (whether from URL param or direct props)
   const processReportData = (existingReport) => {
-    if (!existingReport) return;
-    
     // Check report status - if submitted, set read-only mode
     if (existingReport.status === "submitted") {
       setIsReadOnly(true);
     }
 
     // Set team member and role
-    setTeamMember(existingReport.teamMember || "");
-    setTeamRole(existingReport.teamRole || "");
+    setTeamMember(existingReport.teamMember);
+    setTeamRole(existingReport.teamRole);
 
     // Load rows data if available
     if (existingReport.entries && existingReport.entries.length > 0) {
@@ -140,10 +150,10 @@ const useReportForm = (initialReportData = null) => {
         sdlcStep: entry.sdlcStep,
         sdlcTask: entry.sdlcTask,
         taskCategory: entry.taskCategory,
-        estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI || "",
-        actualTimeWithAI: entry.actualTimeWithAI || "",
-        complexity: entry.complexity || "",
-        qualityImpact: entry.qualityImpact || "",
+        estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI,
+        actualTimeWithAI: entry.actualTimeWithAI,
+        complexity: entry.complexity,
+        qualityImpact: entry.qualityImpact,
         aiToolsUsed: entry.aiToolsUsed
           ? Array.isArray(entry.aiToolsUsed)
             ? entry.aiToolsUsed
@@ -152,22 +162,28 @@ const useReportForm = (initialReportData = null) => {
               : [entry.aiToolsUsed]
           : [],
         taskDetails: entry.taskDetails,
-        notesHowAIHelped: entry.notesHowAIHelped || "",
+        notesHowAIHelped: entry.notesHowAIHelped,
       }));
 
       setRows(loadedRows);
     }
   };
 
-  // Load report data if provided
-  useEffect(() => {
-    if (initialReportData) {
-      processReportData(initialReportData);
-    }
-  }, [initialReportData]);
-
   // Prepare report data for submission
-  const prepareReportData = () => {
+  const prepareReportData = async (status = "submitted") => {
+    // Basic validation
+    if (!teamMember.trim()) {
+      throw new Error("Please enter your name");
+    }
+
+    if (!teamRole.trim()) {
+      throw new Error("Please enter your role");
+    }
+
+    if (rows.length === 0) {
+      throw new Error("Please add at least one entry");
+    }
+
     // Process the form data
     const reportEntries = rows.map((row) => ({
       platform: row.platform,
@@ -188,29 +204,59 @@ const useReportForm = (initialReportData = null) => {
       notesHowAIHelped: row.notesHowAIHelped,
     }));
 
-    return {
+    // Add author ID if available (for multi-user identification)
+    const authorId = localStorage.getItem("encrypted-app-author-id");
+
+    // Create the report object
+    const reportData = {
+      teamName,
       teamMember,
       teamRole,
-      entries: reportEntries
+      timestamp: new Date().toISOString(),
+      entries: reportEntries,
+      status, // Add status field: 'draft' or 'submitted'
+      authorId,
     };
+
+    // Import the key to use for encryption
+    const cryptoKey = await importKeyFromBase64(keyFragment);
+
+    // Encrypt the report data
+    const jsonData = JSON.stringify(reportData);
+    const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
+
+    // Convert the combined ciphertext and IV to ArrayBuffer for upload
+    const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
+    combinedData.set(iv, 0);
+    combinedData.set(new Uint8Array(ciphertext), iv.length);
+
+    // Prepare the report submission
+    const submitData = {
+      threadId,
+      threadTitle: teamName,
+      data: Array.from(combinedData), // <-- Convert the ArrayBuffer to array of bytes
+      metadata: {
+        authorId,
+        isReport: true,
+        timestamp: new Date().toISOString(),
+        status, // Add status to metadata
+      },
+    };
+
+    // If we're editing an existing message, include the messageIndex
+    if (messageIndex !== null) {
+      submitData.messageIndex = messageIndex;
+    }
+
+    return submitData;
   };
 
-  // Validate form data
-  const validateForm = () => {
-    if (!teamMember.trim()) {
-      return { valid: false, error: "Please enter your name" };
+  // Load report data if provided
+  useEffect(() => {
+    if (initialReportData) {
+      processReportData(initialReportData);
     }
-
-    if (!teamRole.trim()) {
-      return { valid: false, error: "Please enter your role" };
-    }
-
-    if (rows.length === 0) {
-      return { valid: false, error: "Please add at least one entry" };
-    }
-
-    return { valid: true, error: null };
-  };
+  }, [initialReportData]);
 
   return {
     // Form state
@@ -218,21 +264,19 @@ const useReportForm = (initialReportData = null) => {
     setTeamMember,
     teamRole,
     setTeamRole,
-    rows,
     isReadOnly,
-    setIsReadOnly,
+    rows,
+    setRows,
     expandedRows,
-    
+    setExpandedRows,
     // Row operations
     handleSDLCStepChange,
     handleRowChange,
     toggleRowExpansion,
     addRow,
     removeRow,
-    
     // Form processing
     prepareReportData,
-    validateForm
   };
 };
 

@@ -69,15 +69,15 @@ const CreatableComboBox = ({
       setFilteredOptions(filtered);
     }
   }, [inputValue, options]);
-  
+
   // Load options from localStorage on mount to ensure we have the latest options
   useEffect(() => {
     try {
-      const key = storageKey || "teamMemberOptions";
-      const storedOptions = JSON.parse(localStorage.getItem(key) || '[]');
+      const key = storageKey;
+      const storedOptions = JSON.parse(localStorage.getItem(key) || "[]");
       if (storedOptions.length > 0) {
-        // Update filtered options with stored options 
-        setFilteredOptions(prev => {
+        // Update filtered options with stored options
+        setFilteredOptions((prev) => {
           const combined = [...new Set([...prev, ...storedOptions])];
           return combined;
         });
@@ -105,43 +105,64 @@ const CreatableComboBox = ({
   // Handle create option
   const handleCreateOption = () => {
     onChange(inputValue);
-    
+
     // Add to local storage if it's a new option
     if (!options.includes(inputValue) && inputValue.trim() !== "") {
       const updatedOptions = [...options, inputValue];
-      const key = storageKey || "teamMemberOptions";
+      const key = storageKey;
+      const items = JSON.parse(localStorage.getItem(`${key}-altered`) || "{}");
+      items[updatedOptions.length] = "new";
+
       localStorage.setItem(key, JSON.stringify(updatedOptions));
-      
+      localStorage.setItem(`${key}-altered`, JSON.stringify(items));
+
       // Force update the filtered options to include the new option
-      setFilteredOptions(prev => [...prev, inputValue]);
+      setFilteredOptions((prev) => [...prev, inputValue]);
     }
-    
+
     // Close the dropdown after a small delay to allow the state to update
     setTimeout(() => {
       setIsOpen(false);
     }, 50);
   };
-  
+
   // Handle edit option - replaces the original value with the new one in localStorage
   const handleEditOption = () => {
     // Update in localStorage - replace the original value with the new one
-    if (originalValue && originalValue !== inputValue && originalValue.trim() !== "" && inputValue.trim() !== "") {
-      const updatedOptions = options.map(opt => opt === originalValue ? inputValue : opt);
+    if (
+      originalValue &&
+      originalValue !== inputValue &&
+      originalValue.trim() !== "" &&
+      inputValue.trim() !== ""
+    ) {
+      const updatedOptions = options.map((opt) =>
+        opt === originalValue ? inputValue : opt,
+      );
+
+      let index = updatedOptions.indexOf(inputValue);
+
       if (!updatedOptions.includes(inputValue)) {
-        updatedOptions.push(inputValue);
+        index = updatedOptions.push(inputValue) - 1;
       }
-      const key = storageKey || "teamMemberOptions";
+      const key = storageKey;
+      const items = JSON.parse(localStorage.getItem(`${key}-altered`) || "{}");
+
+      if (items[index] !== "new") {
+        items[index] = "edited";
+      }
+
       localStorage.setItem(key, JSON.stringify(updatedOptions));
-      
+      localStorage.setItem(`${key}-altered`, JSON.stringify(items));
+
       // Force update the filtered options to include the new option and remove the old one
-      setFilteredOptions(prev => {
-        const withoutOld = prev.filter(opt => opt !== originalValue);
+      setFilteredOptions((prev) => {
+        const withoutOld = prev.filter((opt) => opt !== originalValue);
         return [...withoutOld, inputValue];
       });
     }
-    
+
     onChange(inputValue);
-    
+
     // Close the dropdown after a small delay to allow the state to update
     setTimeout(() => {
       setIsOpen(false);
@@ -170,11 +191,13 @@ const CreatableComboBox = ({
       e.preventDefault();
       if (isOpen) {
         // If original value exists and it's different from input, use edit function
-        if (originalValue && 
-            originalValue !== inputValue && 
-            originalValue.trim() !== "" && 
-            inputValue.trim() !== "" && 
-            options.includes(originalValue)) {
+        if (
+          originalValue &&
+          originalValue !== inputValue &&
+          originalValue.trim() !== "" &&
+          inputValue.trim() !== "" &&
+          options.includes(originalValue)
+        ) {
           handleEditOption();
         } else {
           handleCreateOption();
@@ -268,20 +291,20 @@ const CreatableComboBox = ({
                 Create "{inputValue}"
               </ComboBoxCreateOption>
             )}
-            
+
           {/* Show Edit option when user has modified an existing value */}
-          {originalValue && 
-           originalValue !== inputValue && 
-           originalValue.trim() !== "" && 
-           inputValue.trim() !== "" && 
-           options.includes(originalValue) && (
-            <ComboBoxCreateOption
-              onMouseDown={handleEditOption}
-              onTouchStart={handleEditOption}
-            >
-              Edit "{originalValue}"
-            </ComboBoxCreateOption>
-          )}
+          {originalValue &&
+            originalValue !== inputValue &&
+            originalValue.trim() !== "" &&
+            inputValue.trim() !== "" &&
+            options.includes(originalValue) && (
+              <ComboBoxCreateOption
+                onMouseDown={handleEditOption}
+                onTouchStart={handleEditOption}
+              >
+                Edit "{originalValue}"
+              </ComboBoxCreateOption>
+            )}
         </ComboBoxDropdown>
       )}
     </ComboBoxContainer>

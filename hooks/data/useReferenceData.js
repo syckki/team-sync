@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { mergeDataValue } from "../../lib/mergeUtils";
 
 /**
  * Custom hook for managing reference data
@@ -19,9 +20,6 @@ const useReferenceData = () => {
     teamMembers: [],
   });
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   /**
    * Get all reference data from the API
    * @returns {Promise<Object>} Reference data object
@@ -38,7 +36,6 @@ const useReferenceData = () => {
       return await response.json();
     } catch (error) {
       console.error("Error fetching reference data:", error);
-      setError("Failed to load reference data");
       // Return null to indicate an error
       return null;
     }
@@ -50,10 +47,12 @@ const useReferenceData = () => {
    * @param {Array|Object} data - The new data for the category
    * @returns {Promise<boolean>} Success indicator
    */
-  const updateReferenceDataCategory = async (category, data) => {
+  const updateAllReferenceData = async (data) => {
     try {
-      const response = await fetch(`/api/reference-data/${category}`, {
-        method: "PUT",
+      console.log("Updating reference data:", data);
+      /*
+      const response = await fetch(`/api/reference-data`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -62,29 +61,19 @@ const useReferenceData = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Failed to update category '${category}'`
-        );
+        throw new Error(errorData.error || "Failed to update reference data");
       }
-
-      // Update local state with new data
-      setReferenceData(prev => ({
-        ...prev,
-        [category]: data
-      }));
-
+      */
       return true;
     } catch (error) {
-      console.error(
-        `Error updating reference data for category '${category}':`,
-        error
-      );
+      console.error("Error updating reference data", error);
       return false;
     }
   };
 
-  // Synchronize localStorage data with API
-  const syncReferenceDataFromLocalStorage = async () => {
+  const updateData = async () => {
+    const newData = { altered: {} };
+
     try {
       // Map of localStorage keys to API category names
       const storageKeyMap = {
@@ -98,68 +87,61 @@ const useReferenceData = () => {
         teamMemberOptions: "teamMembers",
       };
 
+      let hasUpdates = false;
+
       // For each storage key, check if there are additional items to sync
       for (const [storageKey, categoryName] of Object.entries(storageKeyMap)) {
         const storedItems = JSON.parse(
-          localStorage.getItem(storageKey) || "[]"
+          localStorage.getItem(storageKey) || "[]",
+        );
+        const alteredItems = JSON.parse(
+          localStorage.getItem(`${storageKey}-altered`) || "[]",
         );
 
-        if (storedItems.length === 0) continue;
-
-        // Check if there are any items in localStorage that are not in the API data
-        const apiItems = referenceData[categoryName] || [];
-        const newItems = storedItems.filter((item) => !apiItems.includes(item));
-
-        // If there are new items, update the API
-        if (newItems.length > 0) {
-          const updatedItems = [...apiItems, ...newItems];
-          await updateReferenceDataCategory(categoryName, updatedItems);
+        newData[categoryName] = storedItems;
+        if (alteredItems.length > 0) {
+          newData.altered[categoryName] = alteredItems;
+          hasUpdates = true;
         }
       }
 
-      // Handle sdlcTasksMap separately (it's an object mapping SDLC steps to arrays of tasks)
-      try {
-        const sdlcTaskOptionsMap = JSON.parse(
-          localStorage.getItem("sdlcTaskOptionsMap") || "{}"
-        );
-        let hasUpdates = false;
-        const updatedTasksMap = { ...referenceData.sdlcTasksMap };
+      const categoryName = "sdlcTasksMap";
+      const storageKey = "sdlcTaskOptionsMap";
 
-        // Check for each step if there are new tasks
-        Object.entries(sdlcTaskOptionsMap).forEach(([step, tasks]) => {
-          if (!Array.isArray(tasks) || tasks.length === 0) return;
+      const storedTaskMap = JSON.parse(
+        localStorage.getItem(storageKey) || "{}",
+      );
+      const alteredTaskMap = JSON.parse(
+        localStorage.getItem(`${storageKey}-altered`) || "{}",
+      );
 
-          // If the step doesn't exist in the API data, create it
-          if (!updatedTasksMap[step]) {
-            updatedTasksMap[step] = tasks;
-            hasUpdates = true;
-            return;
-          }
+      const updatedTasksMap = {};
 
-          // Check for new tasks for this step
-          const apiTasks = updatedTasksMap[step] || [];
-          const newTasks = tasks.filter((task) => !apiTasks.includes(task));
+      // Check for each step if there are new tasks
+      Object.entries(storedTaskMap).forEach(([step, tasks]) => {
+        const alteredTasks = alteredTaskMap[step] || [];
 
-          if (newTasks.length > 0) {
-            updatedTasksMap[step] = [...apiTasks, ...newTasks];
-            hasUpdates = true;
-          }
-        });
-
-        // If there were updates, save to the API
-        if (hasUpdates) {
-          await updateReferenceDataCategory("sdlcTasksMap", updatedTasksMap);
+        updatedTasksMap[step] = tasks;
+        if (alteredTasks.length > 0) {
+          newData.altered[categoryName] = newData.altered[categoryName] || {};
+          newData.altered[categoryName][step] = alteredTasks;
+          hasUpdates = true;
         }
-      } catch (taskMapError) {
-        console.error("Error synchronizing SDLC task map:", taskMapError);
-      }
+      });
+
+      newData[categoryName] = updatedTasksMap;
+
+      if (!hasUpdates) return;
+
+      await updateAllReferenceData(newData);
     } catch (error) {
       console.error("Error synchronizing reference data:", error);
     }
   };
 
-  // Update localStorage from API reference data
-  const updateLocalStorageFromAPI = (data) => {
+  const mergeData = (data) => {
+    const newData = structuredClone(data);
+
     try {
       // Map of API category names to localStorage keys
       const categoryKeyMap = {
@@ -175,65 +157,72 @@ const useReferenceData = () => {
 
       // For each API category, update localStorage
       Object.entries(categoryKeyMap).forEach(([categoryName, storageKey]) => {
-        const apiItems = data[categoryName] || [];
+        const apiItems = newData[categoryName] || [];
         if (apiItems.length === 0) return;
 
         // Get existing items from localStorage
         const storedItems = JSON.parse(
-          localStorage.getItem(storageKey) || "[]"
+          localStorage.getItem(storageKey) || "[]",
         );
 
-        // Merge items, ensuring uniqueness
-        const mergedItems = [...new Set([...storedItems, ...apiItems])];
+        const alteredItems = JSON.parse(
+          localStorage.getItem(`${storageKey}-altered`) || "[]",
+        );
+
+        // Merge items
+        const mergedItems = mergeDataValue(apiItems, storedItems, alteredItems);
 
         // Update localStorage
         localStorage.setItem(storageKey, JSON.stringify(mergedItems));
+        localStorage.removeItem(`${storageKey}-altered`);
+        newData[categoryName] = mergedItems;
       });
 
+      const categoryName = "sdlcTasksMap";
+      const storageKey = "sdlcTaskOptionsMap";
+
       // Handle sdlcTasksMap separately
-      if (data.sdlcTasksMap) {
-        const existingTaskMap = JSON.parse(
-          localStorage.getItem("sdlcTaskOptionsMap") || "{}"
+      if (newData[categoryName]) {
+        const storedTaskMap = JSON.parse(
+          localStorage.getItem(storageKey) || "{}",
         );
-        const updatedTaskMap = { ...existingTaskMap };
+        const alteredTaskMap = JSON.parse(
+          localStorage.getItem(`${storageKey}-altered`) || "{}",
+        );
+        const updatedTaskMap = structuredClone(storedTaskMap);
 
         // Merge each step's tasks
-        Object.entries(data.sdlcTasksMap).forEach(([step, tasks]) => {
+        Object.entries(newData[categoryName]).forEach(([step, tasks]) => {
           const existingTasks = updatedTaskMap[step] || [];
-          updatedTaskMap[step] = [...new Set([...existingTasks, ...tasks])];
+          const alteredTasks = alteredTaskMap[step] || [];
+
+          updatedTaskMap[step] = mergeDataValue(
+            tasks,
+            existingTasks,
+            alteredTasks,
+          );
         });
 
         // Update localStorage
-        localStorage.setItem(
-          "sdlcTaskOptionsMap",
-          JSON.stringify(updatedTaskMap)
-        );
+        localStorage.setItem(storageKey, JSON.stringify(updatedTaskMap));
+        localStorage.removeItem(`${storageKey}-altered`);
+        newData[categoryName] = updatedTaskMap;
       }
     } catch (error) {
       console.error("Error updating localStorage from API:", error);
     }
+
+    return newData;
   };
 
   // Fetch reference data on hook mount and synchronize with localStorage
   useEffect(() => {
     const fetchReferenceData = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getAllReferenceData();
-        if (data) {
-          setReferenceData(data);
+      const data = await getAllReferenceData();
 
-          // First update localStorage with API data
-          updateLocalStorageFromAPI(data);
-
-          // Then synchronize any new items from localStorage back to the API
-          await syncReferenceDataFromLocalStorage();
-        }
-      } catch (error) {
-        console.error("Error fetching reference data:", error);
-        setError("Failed to load reference data");
-      } finally {
-        setIsLoading(false);
+      if (data) {
+        const mergedData = mergeData(data);
+        setReferenceData(mergedData);
       }
     };
 
@@ -242,10 +231,7 @@ const useReferenceData = () => {
 
   return {
     referenceData,
-    isLoading,
-    error,
-    syncReferenceDataFromLocalStorage,
-    updateReferenceDataCategory
+    updateData,
   };
 };
 

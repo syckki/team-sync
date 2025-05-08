@@ -110,11 +110,12 @@ const CreatableComboBox = ({
     if (!options.includes(inputValue) && inputValue.trim() !== "") {
       const updatedOptions = [...options, inputValue];
       const key = storageKey;
-      const items = JSON.parse(localStorage.getItem(`${key}-altered`) || "{}");
+      const alteredKey = `${key}-altered`;
+      const items = JSON.parse(localStorage.getItem(alteredKey) || "{}");
       items[updatedOptions.length] = "new";
-
+      console.log("NEW", alteredKey);
       localStorage.setItem(key, JSON.stringify(updatedOptions));
-      localStorage.setItem(`${key}-altered`, JSON.stringify(items));
+      localStorage.setItem(alteredKey, JSON.stringify(items));
 
       // Force update the filtered options to include the new option
       setFilteredOptions((prev) => [...prev, inputValue]);
@@ -145,14 +146,15 @@ const CreatableComboBox = ({
         index = updatedOptions.push(inputValue) - 1;
       }
       const key = storageKey;
-      const items = JSON.parse(localStorage.getItem(`${key}-altered`) || "{}");
+      const alteredKey = `${key}-altered`;
+      const items = JSON.parse(localStorage.getItem(alteredKey) || "{}");
 
       if (items[index] !== "new") {
         items[index] = "edited";
       }
-
+      console.log("EDITED", alteredKey);
       localStorage.setItem(key, JSON.stringify(updatedOptions));
-      localStorage.setItem(`${key}-altered`, JSON.stringify(items));
+      localStorage.setItem(alteredKey, JSON.stringify(items));
 
       // Force update the filtered options to include the new option and remove the old one
       setFilteredOptions((prev) => {

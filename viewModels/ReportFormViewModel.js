@@ -11,13 +11,11 @@ import useReportForm from "../hooks/form/useReportForm";
 const ReportFormViewModel = ({
   keyFragment,
   teamName,
-  teamMemberOptions = [],
   reportData = null,
   readOnly = false,
   messageIndex = null,
 }) => {
-  const { referenceData, syncReferenceDataFromLocalStorage } =
-    useReferenceData();
+  const { referenceData, updateData } = useReferenceData();
 
   const {
     // Form state
@@ -59,7 +57,7 @@ const ReportFormViewModel = ({
 
     try {
       // Synchronize reference data from localStorage to the backend
-      await syncReferenceDataFromLocalStorage();
+      await updateData();
 
       const submitData = await prepareReportData("draft");
 
@@ -74,38 +72,6 @@ const ReportFormViewModel = ({
 
       if (!response.ok) {
         throw new Error("Error saving draft. Please try again.");
-      }
-
-      // Save the team member name for future use if it's new
-      if (teamMember && !teamMemberOptions.includes(teamMember)) {
-        try {
-          const updatedOptions = [...teamMemberOptions, teamMember];
-          localStorage.setItem(
-            "teamMemberOptions",
-            JSON.stringify(updatedOptions),
-          );
-        } catch (localStorageErr) {
-          console.error("Error saving team member option:", localStorageErr);
-          // Non-critical error, continue
-        }
-      }
-      // Save the team role for future use if it's new
-      if (teamRole) {
-        try {
-          const storedRoles = JSON.parse(
-            localStorage.getItem("teamRoleOptions") || "[]",
-          );
-          if (!storedRoles.includes(teamRole)) {
-            const updatedRoles = [...storedRoles, teamRole];
-            localStorage.setItem(
-              "teamRoleOptions",
-              JSON.stringify(updatedRoles),
-            );
-          }
-        } catch (localStorageErr) {
-          console.error("Error saving team role option:", localStorageErr);
-          // Non-critical error, continue
-        }
       }
 
       setSuccessMessage(
@@ -134,7 +100,7 @@ const ReportFormViewModel = ({
 
     try {
       // Synchronize reference data from localStorage to the backend
-      await syncReferenceDataFromLocalStorage();
+      await updateData();
 
       const submitData = await prepareReportData("submitted");
 
@@ -149,38 +115,6 @@ const ReportFormViewModel = ({
 
       if (!response.ok) {
         throw new Error("Error submitting report. Please try again.");
-      }
-
-      // Save the team member name for future use if it's new
-      if (teamMember && !teamMemberOptions.includes(teamMember)) {
-        try {
-          const updatedOptions = [...teamMemberOptions, teamMember];
-          localStorage.setItem(
-            "teamMemberOptions",
-            JSON.stringify(updatedOptions),
-          );
-        } catch (localStorageErr) {
-          console.error("Error saving team member option:", localStorageErr);
-          // Non-critical error, continue
-        }
-      }
-      // Save the team role for future use if it's new
-      if (teamRole) {
-        try {
-          const storedRoles = JSON.parse(
-            localStorage.getItem("teamRoleOptions") || "[]",
-          );
-          if (!storedRoles.includes(teamRole)) {
-            const updatedRoles = [...storedRoles, teamRole];
-            localStorage.setItem(
-              "teamRoleOptions",
-              JSON.stringify(updatedRoles),
-            );
-          }
-        } catch (localStorageErr) {
-          console.error("Error saving team role option:", localStorageErr);
-          // Non-critical error, continue
-        }
       }
 
       setSuccessMessage(
@@ -214,7 +148,6 @@ const ReportFormViewModel = ({
       setTeamMember={setTeamMember}
       teamRole={teamRole}
       setTeamRole={setTeamRole}
-      teamMemberOptions={teamMemberOptions}
       referenceData={referenceData}
       readOnly={isReadOnly}
       rows={rows}

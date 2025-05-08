@@ -166,7 +166,7 @@ const useReferenceData = () => {
         );
 
         const alteredItems = JSON.parse(
-          localStorage.getItem(`${storageKey}-altered`) || "[]",
+          localStorage.getItem(`${storageKey}-altered`) || "{}",
         );
 
         // Merge items
@@ -174,7 +174,6 @@ const useReferenceData = () => {
 
         // Update localStorage
         localStorage.setItem(storageKey, JSON.stringify(mergedItems));
-        localStorage.removeItem(`${storageKey}-altered`);
         newData[categoryName] = mergedItems;
       });
 
@@ -194,7 +193,7 @@ const useReferenceData = () => {
         // Merge each step's tasks
         Object.entries(newData[categoryName]).forEach(([step, tasks]) => {
           const existingTasks = updatedTaskMap[step] || [];
-          const alteredTasks = alteredTaskMap[step] || [];
+          const alteredTasks = alteredTaskMap[step] || {};
 
           updatedTaskMap[step] = mergeDataValue(
             tasks,
@@ -205,7 +204,6 @@ const useReferenceData = () => {
 
         // Update localStorage
         localStorage.setItem(storageKey, JSON.stringify(updatedTaskMap));
-        localStorage.removeItem(`${storageKey}-altered`);
         newData[categoryName] = updatedTaskMap;
       }
     } catch (error) {

@@ -41,7 +41,6 @@ const ReportPage = () => {
   const [key, setKey] = useState(null);
   const [threadTitle, setThreadTitle] = useState("");
   const [teamName, setTeamName] = useState("");
-  const [teamMemberOptions, setTeamMemberOptions] = useState([]);
   const [error, setError] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
@@ -63,17 +62,6 @@ const ReportPage = () => {
       }
 
       setKey(fragment);
-
-      // Load team member options from localStorage if available
-      try {
-        const savedOptions = localStorage.getItem("teamMemberOptions");
-        if (savedOptions) {
-          setTeamMemberOptions(JSON.parse(savedOptions));
-        }
-      } catch (localStorageErr) {
-        console.error("Error loading team member options:", localStorageErr);
-        // Non-critical error, continue without saved options
-      }
     } catch (err) {
       console.error("Error parsing key:", err);
       setError("Could not retrieve encryption key from URL.");
@@ -182,7 +170,6 @@ const ReportPage = () => {
                   <ReportFormViewModel
                     keyFragment={key}
                     teamName={teamName}
-                    teamMemberOptions={teamMemberOptions}
                     reportData={reportData}
                     readOnly={readOnly}
                     messageIndex={messageIndex}

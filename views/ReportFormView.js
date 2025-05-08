@@ -168,7 +168,6 @@ const ReportForm = ({
   error,
   success,
   successMessage,
-  teamMemberOptions = [],
   readOnly = false, // Add readOnly prop with default false
   referenceData = {
     platforms: [],
@@ -180,8 +179,8 @@ const ReportForm = ({
     qualityImpacts: [],
     aiTools: [],
     teamRoles: [],
-    teamMembers: []
-  } // Add reference data with default empty values
+    teamMembers: [],
+  }, // Add reference data with default empty values
 }) => {
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
@@ -296,7 +295,9 @@ const ReportForm = ({
         <CreatableComboBox
           value={value}
           onChange={(newValue) => handleRowChange(row.id, "sdlcTask", newValue)}
-          options={row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []}
+          options={
+            row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []
+          }
           placeholder="SDLC Task"
           storageKey="sdlcTaskOptions"
           readonly={readOnly}
@@ -521,7 +522,8 @@ const ReportForm = ({
                 <CreatableComboBox
                   value={teamMember}
                   onChange={setTeamMember}
-                  options={teamMemberOptions}
+                  options={referenceData.teamMembers}
+                  storageKey="teamMemberOptions"
                   placeholder="Enter your name"
                   autoComplete="new-password"
                   data-lpignore="true"

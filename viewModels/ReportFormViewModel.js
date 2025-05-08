@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData } from "../lib/cryptoUtils";
-import {
-  getAllReferenceData,
-  updateReferenceDataCategory,
-} from "../lib/referenceDataClient";
 import ReportFormView from "../views/ReportFormView";
 
 /**
@@ -209,6 +205,60 @@ const ReportFormViewModel = ({
 
     fetchReferenceData();
   }, []);
+
+  /**
+   * Get all reference data from the API
+   * @returns {Promise<Object>} Reference data object
+   */
+  const getAllReferenceData = async () => {
+    try {
+      const response = await fetch("/api/reference-data");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch reference data");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching reference data:", error);
+      // Return null to indicate an error
+      return null;
+    }
+  };
+
+  /**
+   * Update a specific reference data category
+   * @param {string} category - The category to update
+   * @param {Array|Object} data - The new data for the category
+   * @returns {Promise<boolean>} Success indicator
+   */
+  const updateReferenceDataCategory = async (category, data) => {
+    try {
+      const response = await fetch(`/api/reference-data`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ [category]: data }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || `Failed to update category '${category}'`,
+        );
+      }
+
+      return true;
+    } catch (error) {
+      console.error(
+        `Error updating reference data for category '${category}':`,
+        error,
+      );
+      return false;
+    }
+  };
 
   const getNewRow = () => ({
     id: Date.now(),

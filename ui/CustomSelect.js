@@ -131,6 +131,8 @@ export const ReadonlyField = styled.span`
     props.$autoWrap &&
     `
     min-height: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     hyphens: auto;
   `}
 

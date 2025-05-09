@@ -34,11 +34,13 @@ const ReportFormViewModel = ({
     toggleRowExpansion,
     addRow,
     removeRow,
+    getNewRow,
     // Form processing
     prepareReportData,
   } = useReportForm({
     keyFragment,
     readOnly,
+    teamName,
     initialReportData: reportData,
     messageIndex,
   });

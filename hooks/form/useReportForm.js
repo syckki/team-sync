@@ -9,6 +9,7 @@ import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 const useReportForm = ({
   keyFragment,
   readOnly = false,
+  teamName,
   initialReportData = null,
   messageIndex = null,
 }) => {
@@ -275,6 +276,7 @@ const useReportForm = ({
     toggleRowExpansion,
     addRow,
     removeRow,
+    getNewRow,
     // Form processing
     prepareReportData,
   };

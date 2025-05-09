@@ -295,11 +295,27 @@ const ReportForm = ({
         <CreatableComboBox
           value={value}
           onChange={(newValue) => handleRowChange(row.id, "sdlcTask", newValue)}
+          onStorage={(options, mode, index) => {
+            const key = "sdlcTaskOptionsMap";
+            const alteredKey = `${key}-altered`;
+            const mapItems = JSON.parse(localStorage.getItem(key) || "{}");
+            const items = JSON.parse(localStorage.getItem(alteredKey) || "{}");
+
+            mapItems[row.sdlcStep] = options;
+            items[row.sdlcStep] = items[row.sdlcStep] || {};
+
+            if (!items[row.sdlcStep][index]) {
+              items[row.sdlcStep][index] = mode;
+            }
+
+            localStorage.setItem(key, JSON.stringify(mapItems));
+            localStorage.setItem(alteredKey, JSON.stringify(items));
+          }}
           options={
             row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []
           }
           placeholder="SDLC Task"
-          storageKey="sdlcTaskOptions"
+          // storageKey="sdlcTaskOptions"
           readonly={readOnly}
           disabled={!row.sdlcStep && !readOnly}
           autoComplete="off"

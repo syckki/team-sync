@@ -49,8 +49,6 @@ const useReferenceData = () => {
    */
   const updateAllReferenceData = async (data) => {
     try {
-      console.log("Updating reference data:", data);
-      /*
       const response = await fetch(`/api/reference-data`, {
         method: "POST",
         headers: {
@@ -63,7 +61,7 @@ const useReferenceData = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to update reference data");
       }
-      */
+
       return true;
     } catch (error) {
       console.error("Error updating reference data", error);
@@ -95,12 +93,13 @@ const useReferenceData = () => {
           localStorage.getItem(storageKey) || "[]",
         );
         const alteredItems = JSON.parse(
-          localStorage.getItem(`${storageKey}-altered`) || "[]",
+          localStorage.getItem(`${storageKey}-altered`) || "{}",
         );
 
         newData[categoryName] = storedItems;
-        if (alteredItems.length > 0) {
+        if (Object.keys(alteredItems).length > 0) {
           newData.altered[categoryName] = alteredItems;
+          localStorage.removeItem(`${storageKey}-altered`);
           hasUpdates = true;
         }
       }
@@ -119,17 +118,19 @@ const useReferenceData = () => {
 
       // Check for each step if there are new tasks
       Object.entries(storedTaskMap).forEach(([step, tasks]) => {
-        const alteredTasks = alteredTaskMap[step] || [];
+        const alteredTasks = alteredTaskMap[step] || {};
 
         updatedTasksMap[step] = tasks;
-        if (alteredTasks.length > 0) {
+        if (Object.keys(alteredTasks).length > 0) {
           newData.altered[categoryName] = newData.altered[categoryName] || {};
           newData.altered[categoryName][step] = alteredTasks;
+
           hasUpdates = true;
         }
       });
 
       newData[categoryName] = updatedTasksMap;
+      localStorage.removeItem(`${storageKey}-altered`);
 
       if (!hasUpdates) return;
 

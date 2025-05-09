@@ -17,7 +17,6 @@ const ReportFormViewModel = ({
 }) => {
   const router = useRouter();
   const { id: threadId } = router.query;
-
   const { referenceData, updateData } = useReferenceData();
 
   const {
@@ -28,16 +27,13 @@ const ReportFormViewModel = ({
     setTeamRole,
     isReadOnly,
     rows,
-    setRows,
     expandedRows,
-    setExpandedRows,
     // Row operations
     handleSDLCStepChange,
     handleRowChange,
     toggleRowExpansion,
     addRow,
     removeRow,
-    getNewRow,
     // Form processing
     prepareFormData,
   } = useReportForm({
@@ -47,64 +43,31 @@ const ReportFormViewModel = ({
   });
 
   // Submission state management using the hook
-  const {
-    submitReport,
-    isSubmitting,
-    error,
-    success,
-    successMessage,
-    resetStatus,
-    redirectToChannelInbox
-  } = useReportSubmission(threadId, keyFragment, messageIndex);
-
-  // Handle saving as draft
-  const handleSaveAsDraft = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Synchronize reference data from localStorage to the backend
-      await updateData();
-
-      const formData = prepareFormData();
-
-      // Submit as draft using the submission hook
-      const success = await submitReport(formData, "draft", teamName);
-
-      // On success, redirect to channel inbox
-      if (success) {
-        redirectToChannelInbox();
-      }
-    } catch (err) {
-      console.error("Error preparing draft:", err);
-    }
-  };
+  const { submitReport, isSubmitting, error, success, successMessage } =
+    useReportSubmission(threadId, keyFragment, messageIndex);
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (status) => async (e) => {
     e.preventDefault();
 
     try {
-      // Synchronize reference data from localStorage to the backend
-      await updateData();
-
       const formData = prepareFormData();
 
       // Submit as final using the submission hook
-      const success = await submitReport(formData, "submitted", teamName);
+      const microtask1 = submitReport(formData, status, teamName);
+      // Synchronize reference data from localStorage to the backend
+      const microtask2 = updateData();
+
+      const [success] = await Promise.all([microtask1, microtask2]);
 
       // Reset form and redirect to channel inbox
       if (success) {
-        // Reset the form for future use in case user navigates back
-        setRows([getNewRow()]);
-        setExpandedRows({});
-        setTeamMember("");
-        setTeamRole("");
-        
-        // Redirect to channel inbox
-        redirectToChannelInbox();
+        setTimeout(() => {
+          router.push(`/channel/${threadId}#${keyFragment}`);
+        }, 3000);
       }
     } catch (err) {
-      console.error("Error preparing submission:", err);
+      console.error("Error submitting report:", err);
     }
   };
 
@@ -128,8 +91,8 @@ const ReportFormViewModel = ({
       addRow={addRow}
       removeRow={removeRow}
       // Form processing
-      handleSubmit={handleSubmit}
-      handleSaveAsDraft={handleSaveAsDraft}
+      handleSubmit={handleSubmit("submitted")}
+      handleSaveAsDraft={handleSubmit("draft")}
       isSubmitting={isSubmitting}
       error={error}
       success={success}

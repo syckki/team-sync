@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 
 /**
@@ -11,7 +10,6 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const router = useRouter();
 
   /**
    * Encrypt and submit report data
@@ -102,37 +100,12 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
     }
   };
 
-  const resetStatus = () => {
-    setSuccess(false);
-    setError(null);
-    setSuccessMessage("");
-  };
-  
-  /**
-   * Redirect to the channel inbox page with the encryption key fragment
-   * @param {number} delay - Optional delay in milliseconds before redirecting
-   */
-  const redirectToChannelInbox = (delay = 1500) => {
-    if (!threadId || !keyFragment) return;
-    
-    // Extract the key in base64 format from keyFragment
-    const key64 = typeof keyFragment === 'string' 
-      ? keyFragment 
-      : keyFragment.key;
-      
-    setTimeout(() => {
-      router.push(`/channel/${threadId}#${key64}`);
-    }, delay);
-  };
-
   return {
     submitReport,
     isSubmitting,
     error,
     success,
     successMessage,
-    resetStatus,
-    redirectToChannelInbox,
   };
 };
 

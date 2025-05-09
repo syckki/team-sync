@@ -224,16 +224,13 @@ const useReportForm = ({
     setTeamRole,
     isReadOnly,
     rows,
-    setRows,
     expandedRows,
-    setExpandedRows,
     // Row operations
     handleSDLCStepChange,
     handleRowChange,
     toggleRowExpansion,
     addRow,
     removeRow,
-    getNewRow,
     // Form processing
     prepareFormData,
   };

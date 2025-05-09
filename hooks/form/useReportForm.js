@@ -1,180 +1,239 @@
-/**
- * Hook for managing report form state and validation
- */
-
-import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useState, useEffect } from "react";
 
 /**
- * Custom hook for form state management
- * @param {Object} options - Configuration options
- * @param {Object} options.initialData - Initial form data
- * @param {Function} options.onSubmit - Form submission handler
- * @param {Function} options.onSaveDraft - Draft saving handler
- * @returns {Object} Form state and handlers
+ * Custom hook for managing report form state
+ * Handles form data, row operations, and calculations
  */
-export const useReportForm = ({
-  initialData = {},
-  onSubmit,
-  onSaveDraft
+const useReportForm = ({
+  readOnly = false,
+  teamName,
+  initialReportData = null,
 }) => {
-  // Form state
-  const [formData, setFormData] = useState(initialData);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(null);
-  const [expandedRows, setExpandedRows] = useState([]);
-  const router = useRouter();
+  // Form state for team information
+  const [teamMember, setTeamMember] = useState("");
+  const [teamRole, setTeamRole] = useState("");
+  // Set up state for read-only mode (for submitted reports)
+  // Allow override from props (for messageIndex-based loading)
+  const [isReadOnly, setIsReadOnly] = useState(readOnly);
+  const [expandedRows, setExpandedRows] = useState({});
 
-  // Update form data if initialData changes
-  useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+  // Get a new empty row with unique ID
+  const getNewRow = () => ({
+    id: Date.now(),
+    platform: "",
+    projectInitiative: "",
+    sdlcStep: "",
+    sdlcTask: "",
+    taskCategory: "",
+    estimatedTimeWithoutAI: "",
+    actualTimeWithAI: "",
+    timeSaved: "", // is calculated
+    complexity: "",
+    qualityImpact: "",
+    aiToolsUsed: [],
+    taskDetails: "",
+    notesHowAIHelped: "",
+  });
 
-  // Field update handler
-  const updateField = useCallback((field, value) => {
-    setFormData(prevData => ({
-      ...prevData,
-      [field]: value
-    }));
-    
-    // Clear error when field is updated
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  }, [errors]);
+  // Initialize rows state with a single empty row
+  const [rows, setRows] = useState([getNewRow()]);
 
-  // Add row to a section
-  const addRow = useCallback((section, defaults = {}) => {
-    setFormData(prevData => {
-      const sectionData = prevData[section] || [];
-      return {
-        ...prevData,
-        [section]: [
-          ...sectionData,
-          { id: Date.now().toString(), ...defaults }
-        ]
-      };
-    });
-  }, []);
+  // Function to round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
+  const roundToQuarterHour = (time) => {
+    const value = parseFloat(time) || 0;
+    return (Math.round(value * 4) / 4).toFixed(2);
+  };
 
-  // Remove row from a section
-  const removeRow = useCallback((section, id) => {
-    setFormData(prevData => {
-      const sectionData = prevData[section] || [];
-      return {
-        ...prevData,
-        [section]: sectionData.filter(item => item.id !== id)
-      };
-    });
-  }, []);
+  // Handle SDLC step change and reset the task when step changes
+  const handleSDLCStepChange = (id, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === id
+          ? { ...row, sdlcStep: value, sdlcTask: "" } // Reset task when step changes
+          : row,
+      ),
+    );
+  };
+
+  // Handle general field changes in form rows
+  const handleRowChange = (id, field, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
+        if (row.id === id) {
+          const updatedRow = { ...row, [field]: value };
+
+          // Calculate time saved if both time fields are filled
+          if (
+            field === "estimatedTimeWithoutAI" ||
+            field === "actualTimeWithAI"
+          ) {
+            const estimatedTime = parseFloat(
+              field === "estimatedTimeWithoutAI"
+                ? value
+                : updatedRow.estimatedTimeWithoutAI,
+            );
+            const actualTime = parseFloat(
+              field === "actualTimeWithAI"
+                ? value
+                : updatedRow.actualTimeWithAI,
+            );
+
+            if (!isNaN(estimatedTime) && !isNaN(actualTime)) {
+              const timeSaved = Math.max(0, estimatedTime - actualTime);
+              updatedRow.timeSaved = roundToQuarterHour(timeSaved);
+            } else {
+              updatedRow.timeSaved = "";
+            }
+          }
+
+          return updatedRow;
+        }
+        return row;
+      }),
+    );
+  };
 
   // Toggle row expansion
-  const toggleRow = useCallback((rowId) => {
-    setExpandedRows(prevRows => {
-      return prevRows.includes(rowId)
-        ? prevRows.filter(id => id !== rowId)
-        : [...prevRows, rowId];
+  const toggleRowExpansion = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // Add a new row to the form
+  const addRow = () => {
+    const newRow = getNewRow();
+    setRows((prevRows) => [...prevRows, newRow]);
+    // Automatically expand the new row
+    setExpandedRows((prev) => ({
+      ...prev,
+      [newRow.id]: true,
+    }));
+  };
+
+  // Remove a row from the form
+  const removeRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // Also remove from expanded state
+    setExpandedRows((prev) => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
     });
-  }, []);
+  };
 
-  // Check if a row is expanded
-  const isRowExpanded = useCallback((rowId) => {
-    return expandedRows.includes(rowId);
-  }, [expandedRows]);
-
-  // Form validation
-  const validate = useCallback(() => {
-    const newErrors = {};
-    
-    // Basic required field validation
-    if (!formData.title || formData.title.trim() === '') {
-      newErrors.title = 'Title is required';
+  // Function to process report data (whether from URL param or direct props)
+  const processReportData = (existingReport) => {
+    // Check report status - if submitted, set read-only mode
+    if (existingReport.status === "submitted") {
+      setIsReadOnly(true);
     }
 
-    // Check for minimum required data in dynamically added sections
-    if (formData.aiTools && formData.aiTools.length === 0) {
-      newErrors.aiTools = 'At least one AI tool must be added';
-    }
+    // Set team member and role
+    setTeamMember(existingReport.teamMember);
+    setTeamRole(existingReport.teamRole);
 
-    // Add more validation rules as needed
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  // Create a generic submission handler that can handle both draft saving and final submission
-  const handleSubmission = useCallback(async (type) => {
-    const isValid = validate();
-    if (!isValid) return false;
-
-    setLoading(true);
-    setSuccess(null);
-
-    try {
-      // Prepare form data (move any special preparation to the consumer of this hook)
-      const preparedData = { ...formData };
-      
-      // Call the appropriate handler based on type
-      let result;
-      if (type === 'draft') {
-        result = await onSaveDraft(preparedData, 'draft');
-      } else {
-        result = await onSubmit(preparedData, 'submitted');
-      }
-      
-      setSuccess({
-        message: type === 'draft' ? 'Draft saved successfully' : 'Report submitted successfully',
-        ...result
-      });
-      
-      // Redirect after a success message is shown
-      setTimeout(() => {
-        router.push('/channels');
-      }, 3000);
-      
-      return true;
-    } catch (error) {
-      console.error(`Error ${type === 'draft' ? 'saving draft' : 'submitting form'}:`, error);
-      setErrors(prev => ({
-        ...prev,
-        form: error.message || `Failed to ${type === 'draft' ? 'save draft' : 'submit form'}`
+    // Load rows data if available
+    if (existingReport.entries && existingReport.entries.length > 0) {
+      // Map the entries to row format with unique IDs
+      const loadedRows = existingReport.entries.map((entry) => ({
+        id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+        platform: entry.platform,
+        projectInitiative: entry.projectInitiative,
+        sdlcStep: entry.sdlcStep,
+        sdlcTask: entry.sdlcTask,
+        taskCategory: entry.taskCategory,
+        estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI,
+        actualTimeWithAI: entry.actualTimeWithAI,
+        complexity: entry.complexity,
+        qualityImpact: entry.qualityImpact,
+        aiToolsUsed: entry.aiToolsUsed
+          ? Array.isArray(entry.aiToolsUsed)
+            ? entry.aiToolsUsed
+            : entry.aiToolsUsed.includes(",")
+              ? entry.aiToolsUsed.split(",").map((t) => t.trim())
+              : [entry.aiToolsUsed]
+          : [],
+        taskDetails: entry.taskDetails,
+        notesHowAIHelped: entry.notesHowAIHelped,
       }));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [formData, validate, onSubmit, onSaveDraft, router]);
 
-  // Handlers for submission and draft saving
-  const handleSubmit = useCallback(() => handleSubmission('submit'), [handleSubmission]);
-  const handleSaveAsDraft = useCallback(() => handleSubmission('draft'), [handleSubmission]);
+      setRows(loadedRows);
+    }
+  };
+
+  // Prepare form data (validation and formatting only)
+  const prepareFormData = () => {
+    // Basic validation
+    if (!teamMember.trim()) {
+      throw new Error("Please enter your name");
+    }
+
+    if (!teamRole.trim()) {
+      throw new Error("Please enter your role");
+    }
+
+    if (rows.length === 0) {
+      throw new Error("Please add at least one entry");
+    }
+
+    // Process the form data
+    const reportEntries = rows.map((row) => ({
+      platform: row.platform,
+      projectInitiative: row.projectInitiative,
+      sdlcStep: row.sdlcStep,
+      sdlcTask: row.sdlcTask,
+      taskCategory: row.taskCategory,
+      estimatedTimeWithoutAI: roundToQuarterHour(row.estimatedTimeWithoutAI),
+      actualTimeWithAI: roundToQuarterHour(row.actualTimeWithAI),
+      timeSaved: row.timeSaved,
+      complexity: row.complexity,
+      qualityImpact: row.qualityImpact,
+      aiToolsUsed:
+        Array.isArray(row.aiToolsUsed) && row.aiToolsUsed.length > 0
+          ? row.aiToolsUsed.join(", ")
+          : "",
+      taskDetails: row.taskDetails,
+      notesHowAIHelped: row.notesHowAIHelped,
+    }));
+
+    // Create the report object
+    const formData = {
+      teamName,
+      teamMember,
+      teamRole,
+      entries: reportEntries,
+    };
+
+    return formData;
+  };
+
+  // Load report data if provided
+  useEffect(() => {
+    if (initialReportData) {
+      processReportData(initialReportData);
+    }
+  }, [initialReportData]);
 
   return {
-    // State
-    formData,
-    errors,
-    loading,
-    success,
+    // Form state
+    teamMember,
+    setTeamMember,
+    teamRole,
+    setTeamRole,
+    isReadOnly,
+    rows,
     expandedRows,
-    
-    // Actions
-    updateField,
+    // Row operations
+    handleSDLCStepChange,
+    handleRowChange,
+    toggleRowExpansion,
     addRow,
     removeRow,
-    toggleRow,
-    validate,
-    
-    // Form submission
-    handleSubmit,
-    handleSaveAsDraft,
-    
-    // Helpers
-    isRowExpanded,
-    isValid: Object.keys(errors).length === 0
+    // Form processing
+    prepareFormData,
   };
 };
+
+export default useReportForm;

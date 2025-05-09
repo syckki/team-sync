@@ -6,9 +6,6 @@ const config = {
   compiler: {
     styledComponents: true,
   },
-  allowedDevOrigins: [
-    "9a5bfd6b-cdf0-4a02-b3f1-8c1732d06db4-00-35vewrmn53e0l.spock.replit.dev",
-  ],
   async headers() {
     return [
       {

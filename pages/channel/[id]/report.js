@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
+// Import both view models so we can use either one
 import ReportFormViewModel from "../../../viewModels/ReportFormViewModel";
+import ReportFormStateMachineViewModel from "../../../viewModels/ReportFormStateMachineViewModel";
 import ReportViewerViewModel from "../../../viewModels/ReportViewerViewModel";
 import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
@@ -31,6 +33,9 @@ const LoadingMessage = styled.div`
 // Using shared components from the UI library
 
 // Using ContentContainer from UI components
+
+// Feature flag to toggle between old and new view models
+const USE_STATE_MACHINE = true;
 
 const ReportPage = () => {
   const router = useRouter();
@@ -167,13 +172,26 @@ const ReportPage = () => {
                 />
               ) : (
                 <>
-                  <ReportFormViewModel
-                    keyFragment={key}
-                    teamName={teamName}
-                    reportData={reportData}
-                    readOnly={readOnly}
-                    messageIndex={messageIndex}
-                  />
+                  {USE_STATE_MACHINE ? (
+                    <ReportFormStateMachineViewModel
+                      threadId={id}
+                      keyFragment={key}
+                      initialData={{
+                        teamName,
+                        ...reportData
+                      }}
+                      isReadOnly={readOnly}
+                      existingReportIndex={messageIndex}
+                    />
+                  ) : (
+                    <ReportFormViewModel
+                      keyFragment={key}
+                      teamName={teamName}
+                      reportData={reportData}
+                      readOnly={readOnly}
+                      messageIndex={messageIndex}
+                    />
+                  )}
                 </>
               )}
               <Link href={`/channel/${id}#${key}`}>

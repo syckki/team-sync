@@ -62,7 +62,7 @@ const ReportFormViewModel = ({
       // Synchronize reference data from localStorage to the backend
       await updateData();
       
-      const formData = prepareReportData();
+      const formData = prepareReportData("draft");
       
       // Submit as draft using the submission hook
       const success = await submitReport(formData, "draft", teamName);
@@ -86,7 +86,7 @@ const ReportFormViewModel = ({
       // Synchronize reference data from localStorage to the backend
       await updateData();
       
-      const formData = prepareReportData();
+      const formData = prepareReportData("submitted");
       
       // Submit as final using the submission hook
       const success = await submitReport(formData, "submitted", teamName);

@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 
 import ReportFormView from "../views/ReportFormView";
-import { useReferenceData, useReportForm, useReportSubmission } from "../hooks";
+import { useReferenceData, useReportFormMachine } from "../hooks";
 
 /**
  * Container component for the Report Form
  * Handles state management, data processing, and form submission
+ * Uses XState state machine for more robust state management
  */
 const ReportFormViewModel = ({
   keyFragment,
@@ -19,6 +20,7 @@ const ReportFormViewModel = ({
   const { id: threadId } = router.query;
   const { referenceData, updateData } = useReferenceData();
 
+  // Use the XState-based report form machine
   const {
     // Form state
     teamMember,
@@ -35,41 +37,31 @@ const ReportFormViewModel = ({
     addRow,
     removeRow,
     // Form processing
-    prepareFormData,
-  } = useReportForm({
-    readOnly,
+    handleSubmit,
+    handleSaveAsDraft,
+    isSubmitting,
+    error,
+    success,
+    successMessage
+  } = useReportFormMachine({
     teamName,
-    initialReportData: reportData,
+    keyFragment,
+    threadId,
+    messageIndex,
+    reportData,
+    readOnly,
+    router,
   });
 
-  // Submission state management using the hook
-  const { submitReport, isSubmitting, error, success, successMessage } =
-    useReportSubmission(threadId, keyFragment, messageIndex);
-
-  // Handle form submission
-  const handleSubmit = (status) => async (e) => {
-    e.preventDefault();
-
-    try {
-      const formData = prepareFormData();
-
-      // Submit as final using the submission hook
-      const microtask1 = submitReport(formData, status, teamName);
-      // Synchronize reference data from localStorage to the backend
-      const microtask2 = updateData();
-
-      const [success] = await Promise.all([microtask1, microtask2]);
-
-      // Reset form and redirect to channel inbox
-      if (success) {
-        setTimeout(() => {
-          router.push(`/channel/${threadId}#${keyFragment}`);
-        }, 3000);
-      }
-    } catch (err) {
-      console.error("Error submitting report:", err);
+  // Synchronize reference data when submission succeeds
+  useEffect(() => {
+    if (success) {
+      // Update reference data in the background
+      updateData().catch(err => {
+        console.error("Error updating reference data:", err);
+      });
     }
-  };
+  }, [success, updateData]);
 
   // Pass all state and handlers to the presentation component
   return (
@@ -91,8 +83,8 @@ const ReportFormViewModel = ({
       addRow={addRow}
       removeRow={removeRow}
       // Form processing
-      handleSubmit={handleSubmit("submitted")}
-      handleSaveAsDraft={handleSubmit("draft")}
+      handleSubmit={handleSubmit}
+      handleSaveAsDraft={handleSaveAsDraft}
       isSubmitting={isSubmitting}
       error={error}
       success={success}

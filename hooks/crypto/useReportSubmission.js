@@ -13,22 +13,22 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
 
   /**
    * Encrypt and submit report data
-   * @param {Object} reportData - The report data to encrypt and submit
+   * @param {Object} formData - The form data prepared by useReportForm 
    * @param {string} status - The status of the report ("draft" or "submitted")
    * @param {string} teamName - The team name associated with the report
    * @returns {Promise<boolean>} - Success indicator
    */
-  const submitReport = async (reportData, status, teamName) => {
+  const submitReport = async (formData, status, teamName) => {
     setIsSubmitting(true);
     setError(null);
     
     try {
-      // Add author ID if available (for multi-user identification)
+      // Get author ID for multi-user identification
       const authorId = localStorage.getItem("encrypted-app-author-id");
       
-      // Add fields to report data
+      // Add system fields to the form data to create the full report object
       const completeReportData = {
-        ...reportData,
+        ...formData,
         timestamp: new Date().toISOString(),
         status, // 'draft' or 'submitted' 
         authorId

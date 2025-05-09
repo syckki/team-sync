@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 
 /**
  * Custom hook for managing report form state
@@ -170,8 +169,8 @@ const useReportForm = ({
     }
   };
 
-  // Prepare report data for submission
-  const prepareReportData = async (status = "submitted") => {
+  // Prepare form data (validation and formatting only)
+  const prepareFormData = (status = "submitted") => {
     // Basic validation
     if (!teamMember.trim()) {
       throw new Error("Please enter your name");
@@ -205,51 +204,15 @@ const useReportForm = ({
       notesHowAIHelped: row.notesHowAIHelped,
     }));
 
-    // Add author ID if available (for multi-user identification)
-    const authorId = localStorage.getItem("encrypted-app-author-id");
-
     // Create the report object
-    const reportData = {
+    const formData = {
       teamName,
       teamMember,
       teamRole,
-      timestamp: new Date().toISOString(),
       entries: reportEntries,
-      status, // Add status field: 'draft' or 'submitted'
-      authorId,
     };
 
-    // Import the key to use for encryption
-    const cryptoKey = await importKeyFromBase64(keyFragment);
-
-    // Encrypt the report data
-    const jsonData = JSON.stringify(reportData);
-    const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
-
-    // Convert the combined ciphertext and IV to ArrayBuffer for upload
-    const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
-    combinedData.set(iv, 0);
-    combinedData.set(new Uint8Array(ciphertext), iv.length);
-
-    // Prepare the report submission
-    const submitData = {
-      threadId,
-      threadTitle: teamName,
-      data: Array.from(combinedData), // <-- Convert the ArrayBuffer to array of bytes
-      metadata: {
-        authorId,
-        isReport: true,
-        timestamp: new Date().toISOString(),
-        status, // Add status to metadata
-      },
-    };
-
-    // If we're editing an existing message, include the messageIndex
-    if (messageIndex !== null) {
-      submitData.messageIndex = messageIndex;
-    }
-
-    return submitData;
+    return formData;
   };
 
   // Load report data if provided
@@ -278,7 +241,7 @@ const useReportForm = ({
     removeRow,
     getNewRow,
     // Form processing
-    prepareReportData,
+    prepareFormData,
   };
 };
 

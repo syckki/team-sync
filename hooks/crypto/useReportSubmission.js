@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import { importKeyFromBase64, encryptData } from "../../lib/cryptoUtils";
 
 /**
@@ -10,10 +11,11 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const router = useRouter();
 
   /**
    * Encrypt and submit report data
-   * @param {Object} formData - The form data prepared by useReportForm 
+   * @param {Object} formData - The form data prepared by useReportForm
    * @param {string} status - The status of the report ("draft" or "submitted")
    * @param {string} teamName - The team name associated with the report
    * @returns {Promise<boolean>} - Success indicator
@@ -21,17 +23,17 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
   const submitReport = async (formData, status, teamName) => {
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       // Get author ID for multi-user identification
       const authorId = localStorage.getItem("encrypted-app-author-id");
-      
+
       // Add system fields to the form data to create the full report object
       const completeReportData = {
         ...formData,
         timestamp: new Date().toISOString(),
-        status, // 'draft' or 'submitted' 
-        authorId
+        status, // 'draft' or 'submitted'
+        authorId,
       };
 
       // Import the key to use for encryption
@@ -74,22 +76,26 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
       });
 
       if (!response.ok) {
-        throw new Error(status === "draft" 
-          ? "Error saving draft. Please try again." 
-          : "Error submitting report. Please try again.");
+        throw new Error(
+          status === "draft"
+            ? "Error saving draft. Please try again."
+            : "Error submitting report. Please try again.",
+        );
       }
 
       setSuccess(true);
       setSuccessMessage(
         status === "draft"
           ? "Your AI productivity report has been saved as a draft!"
-          : "Your AI productivity report has been submitted successfully!"
+          : "Your AI productivity report has been submitted successfully!",
       );
-      
+
       return true;
     } catch (err) {
       console.error("Error submitting report:", err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
+      setError(
+        err.message || "An unexpected error occurred. Please try again.",
+      );
       return false;
     } finally {
       setIsSubmitting(false);
@@ -101,6 +107,23 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
     setError(null);
     setSuccessMessage("");
   };
+  
+  /**
+   * Redirect to the channel inbox page with the encryption key fragment
+   * @param {number} delay - Optional delay in milliseconds before redirecting
+   */
+  const redirectToChannelInbox = (delay = 1500) => {
+    if (!threadId || !keyFragment) return;
+    
+    // Extract the key in base64 format from keyFragment
+    const key64 = typeof keyFragment === 'string' 
+      ? keyFragment 
+      : keyFragment.key;
+      
+    setTimeout(() => {
+      router.push(`/channel/${threadId}#${key64}`);
+    }, delay);
+  };
 
   return {
     submitReport,
@@ -108,7 +131,8 @@ const useReportSubmission = (threadId, keyFragment, messageIndex = null) => {
     error,
     success,
     successMessage,
-    resetStatus
+    resetStatus,
+    redirectToChannelInbox,
   };
 };
 

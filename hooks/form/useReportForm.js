@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 
 /**
  * Custom hook for managing report form state
  * Handles form data, row operations, and calculations
  */
 const useReportForm = ({
-  keyFragment,
   readOnly = false,
   teamName,
   initialReportData = null,
-  messageIndex = null,
 }) => {
   // Form state for team information
   const [teamMember, setTeamMember] = useState("");
@@ -19,9 +16,6 @@ const useReportForm = ({
   // Allow override from props (for messageIndex-based loading)
   const [isReadOnly, setIsReadOnly] = useState(readOnly);
   const [expandedRows, setExpandedRows] = useState({});
-
-  const router = useRouter();
-  const { id: threadId } = router.query;
 
   // Get a new empty row with unique ID
   const getNewRow = () => ({
@@ -170,7 +164,7 @@ const useReportForm = ({
   };
 
   // Prepare form data (validation and formatting only)
-  const prepareFormData = (status = "submitted") => {
+  const prepareFormData = () => {
     // Basic validation
     if (!teamMember.trim()) {
       throw new Error("Please enter your name");

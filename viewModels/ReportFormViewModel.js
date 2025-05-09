@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 
 import ReportFormView from "../views/ReportFormView";
-import useReferenceData from "../hooks/data/useReferenceData";
-import useReportForm from "../hooks/form/useReportForm";
+import { useReferenceData, useReportForm, useReportSubmission } from "../hooks";
 
 /**
  * Container component for the Report Form
@@ -45,99 +44,65 @@ const ReportFormViewModel = ({
     messageIndex,
   });
 
-  // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  // Submission state management using the hook
+  const { 
+    submitReport, 
+    isSubmitting, 
+    error, 
+    success, 
+    successMessage, 
+    resetStatus 
+  } = useReportSubmission(reportData?.threadId || keyFragment?.threadId || messageIndex?.threadId, keyFragment, messageIndex);
 
   // Handle saving as draft
   const handleSaveAsDraft = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
+    
     try {
       // Synchronize reference data from localStorage to the backend
       await updateData();
-
-      const submitData = await prepareReportData("draft");
-
-      // Send to the server
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error saving draft. Please try again.");
+      
+      const formData = prepareReportData();
+      
+      // Submit as draft using the submission hook
+      const success = await submitReport(formData, "draft", teamName);
+      
+      // Clear success message after delay
+      if (success) {
+        setTimeout(() => {
+          resetStatus();
+        }, 3000);
       }
-
-      setSuccessMessage(
-        "Your AI productivity report has been saved as a draft!",
-      );
-      setSuccess(true);
-
-      // Show success message but don't reset form
-      setTimeout(() => {
-        setSuccess(false);
-        setSuccessMessage("");
-      }, 3000);
     } catch (err) {
-      console.error("Error saving draft:", err);
-      setError(err.message || "Error saving draft. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error preparing draft:", err);
     }
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
+    
     try {
       // Synchronize reference data from localStorage to the backend
       await updateData();
-
-      const submitData = await prepareReportData("submitted");
-
-      // Send to the server
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error submitting report. Please try again.");
+      
+      const formData = prepareReportData();
+      
+      // Submit as final using the submission hook
+      const success = await submitReport(formData, "submitted", teamName);
+      
+      // Reset form after successful submission
+      if (success) {
+        setTimeout(() => {
+          setRows([getNewRow()]);
+          setExpandedRows({});
+          setTeamMember("");
+          setTeamRole("");
+          resetStatus();
+        }, 3000);
       }
-
-      setSuccessMessage(
-        "Your AI productivity report has been submitted successfully!",
-      );
-      setSuccess(true);
-
-      // Reset the form after a delay
-      setTimeout(() => {
-        setRows([getNewRow()]);
-        setExpandedRows({});
-        setTeamMember("");
-        setTeamRole("");
-        setSuccess(false);
-        setSuccessMessage("");
-      }, 3000);
     } catch (err) {
-      console.error("Error submitting report:", err);
-      setError(err.message || "Error submitting report. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error preparing submission:", err);
     }
   };
 

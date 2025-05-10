@@ -53,39 +53,39 @@ const Input = styled.input`
   border-radius: 4px;
 `;
 
+// Define the machine outside of the component to prevent recreation
+const counterMachine = createMachine({
+  id: 'counter',
+  initial: 'active',
+  context: {
+    count: 0,
+    name: ''
+  },
+  states: {
+    active: {
+      on: {
+        INCREMENT: {
+          actions: 'increment'
+        },
+        DECREMENT: {
+          actions: 'decrement'
+        },
+        RESET: {
+          actions: 'reset'
+        },
+        UPDATE_NAME: {
+          actions: 'updateName'
+        }
+      }
+    }
+  }
+});
+
 /**
  * XState V5 Test Component
  * Following the exact API documentation
  */
-export default function XStateV5Test() {
-  // Define the machine with useRef to avoid recreation on each render
-  const counterMachine = useRef(createMachine({
-    id: 'counter',
-    initial: 'active',
-    context: {
-      count: 0,
-      name: ''
-    },
-    states: {
-      active: {
-        on: {
-          INCREMENT: {
-            actions: 'increment'
-          },
-          DECREMENT: {
-            actions: 'decrement'
-          },
-          RESET: {
-            actions: 'reset'
-          },
-          UPDATE_NAME: {
-            actions: 'updateName'
-          }
-        }
-      }
-    }
-  })).current;
-
+export default function XStateV5Test2() {
   // Use the machine with implementations passed via provide
   const [state, send] = useMachine(
     counterMachine.provide({

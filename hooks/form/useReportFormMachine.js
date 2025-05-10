@@ -225,7 +225,7 @@ const useReportFormMachine = ({
     resetForm: assign({
       teamMember: "",
       teamRole: "",
-      rows: (context) => [getNewRow()],
+      rows: ({ context }) => [getNewRow()],
       expandedRows: {},
       isReadOnly: readOnly,
       error: null,
@@ -233,7 +233,7 @@ const useReportFormMachine = ({
       successMessage: "",
     }),
     // Set initial form data from loaded report
-    setInitialFormData: assign((context, event) => {
+    setInitialFormData: assign(({ context, event }) => {
       const data = event.data;
       const isSubmitted = data.status === "submitted";
       
@@ -274,15 +274,15 @@ const useReportFormMachine = ({
     }),
     // Update team member name
     updateTeamMember: assign({
-      teamMember: (_, event) => event.value
+      teamMember: ({ event }) => event.value
     }),
     // Update team role
     updateTeamRole: assign({
-      teamRole: (_, event) => event.value
+      teamRole: ({ event }) => event.value
     }),
     // Update a field in a row
     updateField: assign({
-      rows: (context, event) => context.rows.map(row => {
+      rows: ({ context, event }) => context.rows.map(row => {
         if (row.id === event.id) {
           const updatedRow = { ...row, [event.field]: event.value };
 
@@ -309,14 +309,14 @@ const useReportFormMachine = ({
     }),
     // Update SDLC step (resets the task)
     updateSDLCStep: assign({
-      rows: (context, event) => context.rows.map(row => 
+      rows: ({ context, event }) => context.rows.map(row => 
         row.id === event.id
           ? { ...row, sdlcStep: event.value, sdlcTask: "" }
           : row
       )
     }),
     // Add a new row
-    addRow: assign((context) => {
+    addRow: assign(({ context }) => {
       const newRow = getNewRow();
       return {
         rows: [...context.rows, newRow],
@@ -327,7 +327,7 @@ const useReportFormMachine = ({
       };
     }),
     // Remove a row
-    removeRow: assign((context, event) => {
+    removeRow: assign(({ context, event }) => {
       const newExpandedRows = { ...context.expandedRows };
       delete newExpandedRows[event.id];
       
@@ -338,25 +338,25 @@ const useReportFormMachine = ({
     }),
     // Toggle row expansion
     toggleRowExpansion: assign({
-      expandedRows: (context, event) => ({
+      expandedRows: ({ context, event }) => ({
         ...context.expandedRows,
         [event.id]: !context.expandedRows[event.id]
       })
     }),
     // Set error from loading
     setLoadError: assign({
-      error: (_, event) => event.data?.message || "Failed to load report data"
+      error: ({ event }) => event.data?.message || "Failed to load report data"
     }),
     // Set error from saving draft
     setSaveError: assign({
-      error: (_, event) => event.data?.message || "Failed to save draft"
+      error: ({ event }) => event.data?.message || "Failed to save draft"
     }),
     // Set error from submitting
     setSubmitError: assign({
-      error: (_, event) => event.data?.message || "Failed to submit report"
+      error: ({ event }) => event.data?.message || "Failed to submit report"
     }),
     // Set success state
-    setSuccess: assign((_, event) => ({
+    setSuccess: assign(({ event }) => ({
       success: true,
       successMessage: event.data.message
     })),
@@ -374,13 +374,14 @@ const useReportFormMachine = ({
     })
   ).current;
 
-  // Use the machine with provide() pattern for XState v5
-  const [state, send] = useMachine(
-    reportFormMachine.provide({
-      actions,
-      services
-    })
-  );
+  // Create a machine with provided implementations
+  const machineWithImplementations = reportFormMachine.provide({
+    actions,
+    services
+  });
+  
+  // Use the machine with implementations - following XState v5 pattern
+  const [state, send] = useMachine(machineWithImplementations);
 
   // Initialize the machine when the component mounts
   useEffect(() => {

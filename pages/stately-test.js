@@ -1,6 +1,84 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useReportFormMachine } from '../hooks';
+import Link from 'next/link';
+
+// Define a simple state machine for testing
+const testMachine = createMachine({
+  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOgBsB7KAehygEUAlAYQGVYwAXdYAL02kAD0QBGADQgAnsnEBmAKwA2AOxKF8zbNWKl68bMUB2RQBoQAT0TjVNvfpnrNygowIaATKoPGnAGhAAvoBeuorOFtQqoS5mClY2BkbxBkEAJvHO5mQRIdSycpaUcgqw-MZmCOZUtgmpiWYKxsb2JZW2FdWIALQgTcFi6JgERPSIGAyBfkHIoZGKxrFR1IkkNoiG9gQhSnhO+T0Kxbl56XlFJRTlxpbVdbGNiIhDK8NoYxOTKGgYKw0IG0+mMBwGeCQ7l8Q38fkORw0sRSaROpz0KRKvgogiuY2uthm8xsADVXt9YH9AcDFMC3uC3j8BK5Dm5lPN4LjlHZCC4tphERZ8QsiXR7BYiYYTDC8TCEXYodCYcY4XijGiJB5JCxjGj9Fp9MZiLTkDICYYyagGVZLBaFELBdE1Gj5e8FYqSa8ld85iRHm8Pj9nGLUbNNEs0QQAA */
+  id: 'testMachine',
+  initial: 'idle',
+  context: {
+    teamMember: '',
+    teamRole: '',
+    count: 0,
+    error: null,
+    success: false,
+    message: ''
+  },
+  states: {
+    idle: {
+      on: {
+        START: 'loading'
+      }
+    },
+    loading: {
+      on: {
+        LOADED: 'editing',
+        ERROR: 'error'
+      }
+    },
+    editing: {
+      on: {
+        SAVE: 'saving',
+        SUBMIT: 'submitting',
+        INCREMENT: {
+          actions: ({ context }) => {
+            context.count += 1;
+          }
+        },
+        UPDATE_MEMBER: {
+          actions: ({ context, event }) => {
+            context.teamMember = event.value;
+          }
+        },
+        UPDATE_ROLE: {
+          actions: ({ context, event }) => {
+            context.teamRole = event.value;
+          }
+        }
+      }
+    },
+    saving: {
+      on: {
+        SAVE_SUCCESS: 'success',
+        SAVE_ERROR: 'error'
+      }
+    },
+    submitting: {
+      on: {
+        SUBMIT_SUCCESS: 'success',
+        SUBMIT_ERROR: 'error'
+      }
+    },
+    success: {
+      entry: ({ context }) => {
+        context.success = true;
+        context.message = 'Operation completed successfully!';
+      },
+      after: {
+        3000: 'editing'
+      }
+    },
+    error: {
+      entry: ({ context }) => {
+        context.error = 'Something went wrong';
+      },
+      on: {
+        RETRY: 'editing'
+      }
+    }
+  }
+});
 
 const Container = styled.div`
   max-width: 900px;
@@ -75,56 +153,44 @@ const Input = styled.input`
 `;
 
 const StatelyTest = () => {
-  // Mock dependencies for the test
-  const mockUpdateReferenceData = async () => {
-    console.log('Updating reference data...');
-    return true;
-  };
+  // Use XState machine
+  const [state, send] = useMachine(testMachine);
   
-  // Use our state machine hook
-  const {
-    state,
-    context,
-    updateTeamMember,
-    updateTeamRole,
-    addRow,
-    removeRow,
-    saveAsDraft,
-    submitForm,
-    retry,
-    isSubmitting,
-    error,
-    success,
-    successMessage,
-    rows
-  } = useReportFormMachine({
-    threadId: 'test-thread',
-    keyFragment: 'test-key',
-    teamName: 'Test Team',
-    updateReferenceData: mockUpdateReferenceData,
-    readOnly: false,
-    initialReportData: null,
-    messageIndex: null
-  });
-
+  // Start the machine on mount (will run once when component renders)
+  React.useEffect(() => {
+    send('START');
+    
+    // Simulate loading completion
+    setTimeout(() => {
+      send('LOADED');
+    }, 1000);
+  }, []);
+  
+  // Get current context
+  const { teamMember, teamRole, count, error, success, message } = state.context;
+  
+  // Get current state
+  const currentState = state.value;
+  const isSubmitting = currentState === 'submitting' || currentState === 'saving';
+  
   // Display the current state and context
   return (
     <Container>
       <Header>
-        <Title>XState Report Form Machine Test</Title>
+        <Title>XState Simple Test Machine</Title>
       </Header>
       
       <StateBox>
-        <StateTitle>Current State: {JSON.stringify(state)}</StateTitle>
-        <pre>{JSON.stringify({ rows, error, success, successMessage }, null, 2)}</pre>
+        <StateTitle>Current State: {currentState}</StateTitle>
+        <div>Count: {count}</div>
       </StateBox>
       
       <FormControl>
         <Label htmlFor="teamMember">Team Member</Label>
         <Input
           id="teamMember"
-          value={context.teamMember}
-          onChange={(e) => updateTeamMember(e.target.value)}
+          value={teamMember}
+          onChange={(e) => send({ type: 'UPDATE_MEMBER', value: e.target.value })}
           placeholder="Enter your name"
         />
       </FormControl>
@@ -133,25 +199,38 @@ const StatelyTest = () => {
         <Label htmlFor="teamRole">Role</Label>
         <Input
           id="teamRole"
-          value={context.teamRole}
-          onChange={(e) => updateTeamRole(e.target.value)}
+          value={teamRole}
+          onChange={(e) => send({ type: 'UPDATE_ROLE', value: e.target.value })}
           placeholder="Enter your role"
         />
       </FormControl>
       
       <ActionsBox>
-        <Button onClick={addRow}>Add Row</Button>
-        {rows.length > 0 && (
-          <Button onClick={() => removeRow(rows[0].id)}>Remove First Row</Button>
-        )}
-        <Button onClick={saveAsDraft} disabled={isSubmitting}>Save as Draft</Button>
-        <Button onClick={submitForm} disabled={isSubmitting}>Submit</Button>
-        {error && <Button onClick={retry}>Retry</Button>}
+        <Button onClick={() => send('INCREMENT')}>Increment Count</Button>
+        <Button onClick={() => send('SAVE')} disabled={isSubmitting}>Save</Button>
+        <Button onClick={() => send('SUBMIT')} disabled={isSubmitting}>Submit</Button>
+        {currentState === 'error' && <Button onClick={() => send('RETRY')}>Retry</Button>}
       </ActionsBox>
+      
+      {currentState === 'saving' && (
+        <StateBox style={{ backgroundColor: '#cce5ff', color: '#004085' }}>
+          Saving your data...
+          <Button onClick={() => send('SAVE_SUCCESS')}>Simulate Success</Button>
+          <Button onClick={() => send('SAVE_ERROR')}>Simulate Error</Button>
+        </StateBox>
+      )}
+      
+      {currentState === 'submitting' && (
+        <StateBox style={{ backgroundColor: '#cce5ff', color: '#004085' }}>
+          Submitting your data...
+          <Button onClick={() => send('SUBMIT_SUCCESS')}>Simulate Success</Button>
+          <Button onClick={() => send('SUBMIT_ERROR')}>Simulate Error</Button>
+        </StateBox>
+      )}
       
       {success && (
         <StateBox style={{ backgroundColor: '#d4edda', color: '#155724' }}>
-          {successMessage}
+          {message}
         </StateBox>
       )}
       

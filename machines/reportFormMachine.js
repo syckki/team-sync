@@ -1,45 +1,16 @@
 /**
- * State machine for the Report Form
- * This defines all possible states and transitions for the form
- * Using XState v5 syntax, but without TypeScript
+ * Simple XState machine for the Report Form 
+ * Using XState v5 syntax with JS
  */
-import { setup } from 'xstate';
+import { createMachine } from 'xstate';
 
 /**
- * Creates a report form state machine with XState v5 syntax
- * @returns {Object} - XState state machine for the report form
+ * Creates a basic report form state machine
+ * @returns {StateMachine} - XState state machine for the report form
  */
 export const createReportFormMachine = () => {
-  // Define the machine
-  const machine = setup({
-    actions: {
-      // Empty implementations - will be provided by the hook
-      resetForm: () => {},
-      setInitialFormData: () => {},
-      updateTeamMember: ({ context, event }) => {
-        context.teamMember = event.value;
-      },
-      updateTeamRole: ({ context, event }) => {
-        context.teamRole = event.value;
-      },
-      updateField: () => {},
-      updateSDLCStep: () => {},
-      addRow: () => {},
-      removeRow: () => {},
-      toggleRowExpansion: () => {},
-      setLoadError: () => {},
-      setSaveError: () => {},
-      setSubmitError: () => {},
-      setSuccess: () => {},
-      redirectToInbox: () => {}
-    },
-    guards: {
-      isFormValid: () => true
-    },
-    delays: {
-      REDIRECT_DELAY: 3000
-    }
-  }).createMachine({
+  return createMachine({
+    /** @xstate-layout N4IgpgJg5mDOIC5QGMD2A7ALgYgDKoDEAygIIDCYADmAN4CyE4AdANoAMAuoqAA4B0AMWaIQAD0QBaAEwA2ACwB2agQCs2xeoA0IAJ6JN85ZrGaA7AFYATGYAcxvYoWaANCCPEThw4WKLbTnQLVbU0tBHs1P1VVd2sTHWJfAF8kwOQ0TFxCAEEAZQAVEhx8QlJyCipaOmx6Jj1eNioKZRNDY14THho7OGEtXnUIElYBNtsiXyChUXFFSv5q2vNaxv6OoKbW9p7I6MQYuIRksjRMHABJRDw0fDmsPELJnD4AQSnD5EwEREQAVTm0AAUXgBZH4AgDSNkA8v8AIqQqFMIh-GQrGT2ZRbGhaNSLGwmZQY4jYuhY1HEhikWhEjHCfyybGeHx+PGEkmk7o9PqIMZ4AAWrGqAGVWnAQGCZoiYMiwRs5HI+eYBULRZcttstjKFSdlcjbgYpDRXO5pfQZbLWMtzhciQSALJLRDYHAYvqTZ4GZU6C38Cy8p5s2yqOwaHRKsxYszc-w6LQmdQ+7mCuEI5FC0WSoTSoPgd7vYY-TSGbR-HQI1lKZnE0ZKebLGhTGRY9wyKOshNcuQ57ncn0JpO+tOulGgKgYHAAcwARgALEEbdE0Sh0BtSoA */
     id: 'reportForm',
     initial: 'idle',
     context: {
@@ -57,113 +28,58 @@ export const createReportFormMachine = () => {
       teamName: ''
     },
     states: {
-      // Initial state - waiting to be initialized
       idle: {
         on: {
-          INITIALIZE: {
-            target: 'loading',
-            actions: 'resetForm',
-          }
+          INITIALIZE: 'loading'
         }
       },
-      // Loading report data (existing report or creating new one)
       loading: {
-        invoke: {
-          src: ({ input }) => Promise.resolve(input.initialReportData),
-          onDone: {
-            target: 'editing',
-            actions: 'setInitialFormData'
-          },
-          onError: {
-            target: 'error',
-            actions: 'setLoadError'
-          }
+        on: {
+          LOAD_SUCCESS: 'editing',
+          LOAD_ERROR: 'error'
         }
       },
-      // User is editing the form
       editing: {
         on: {
-          // Form field updates
+          SAVE_DRAFT: 'savingDraft',
+          SUBMIT: 'submitting',
           UPDATE_FIELD: {
-            actions: 'updateField'
+            actions: ({ context, event }) => {
+              console.log('Field updated:', event);
+            }
           },
           UPDATE_TEAM_MEMBER: {
-            actions: 'updateTeamMember'
+            actions: ({ context, event }) => {
+              context.teamMember = event.value;
+            }
           },
           UPDATE_TEAM_ROLE: {
-            actions: 'updateTeamRole'
-          },
-          // Row operations
-          ADD_ROW: {
-            actions: 'addRow'
-          },
-          REMOVE_ROW: {
-            actions: 'removeRow'
-          },
-          TOGGLE_ROW: {
-            actions: 'toggleRowExpansion'
-          },
-          // Special field handling
-          UPDATE_SDLC_STEP: {
-            actions: 'updateSDLCStep'
-          },
-          // Form submission
-          SAVE_DRAFT: {
-            target: 'savingDraft',
-            guard: 'isFormValid'
-          },
-          SUBMIT: {
-            target: 'submitting',
-            guard: 'isFormValid'
+            actions: ({ context, event }) => {
+              context.teamRole = event.value;
+            }
           }
         }
       },
-      // Saving form as draft
       savingDraft: {
-        invoke: {
-          src: ({ input, self }) => {
-            const context = self.getSnapshot().context;
-            return input.submitReport(context, 'draft');
-          },
-          onDone: {
-            target: 'success',
-            actions: 'setSuccess'
-          },
-          onError: {
-            target: 'error',
-            actions: 'setSaveError'
-          }
+        on: {
+          SAVE_SUCCESS: 'success',
+          SAVE_ERROR: 'error'
         }
       },
-      // Submitting form as final
       submitting: {
-        invoke: {
-          src: ({ input, self }) => {
-            const context = self.getSnapshot().context;
-            return input.submitReport(context, 'submitted');
-          },
-          onDone: {
-            target: 'success',
-            actions: 'setSuccess'
-          },
-          onError: {
-            target: 'error',
-            actions: 'setSubmitError'
-          }
+        on: {
+          SUBMIT_SUCCESS: 'success',
+          SUBMIT_ERROR: 'error'
         }
       },
-      // Successful operation
       success: {
         after: {
-          REDIRECT_DELAY: 'redirecting'
+          3000: 'redirecting'
         }
       },
-      // Redirecting to inbox
       redirecting: {
-        entry: 'redirectToInbox',
         type: 'final'
       },
-      // Error state
       error: {
         on: {
           RETRY: 'editing'
@@ -171,8 +87,6 @@ export const createReportFormMachine = () => {
       }
     }
   });
-
-  return machine;
 };
 
 export default createReportFormMachine;

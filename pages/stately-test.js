@@ -61,12 +61,18 @@ export default function StatelyTest() {
   const [mockThreadId] = useState('test-thread-123');
   const [mockKeyFragment] = useState('test-key-fragment');
   
+  // Mock reference data update function
+  const mockUpdateReferenceData = useCallback(async () => {
+    console.log('Updating reference data...');
+    return true;
+  }, []);
+  
   // Creating the form machine
   const reportForm = useReportFormMachine({
     threadId: mockThreadId,
     keyFragment: mockKeyFragment,
     teamName: mockTeamName,
-    updateReferenceData: async () => console.log('Updating reference data...'),
+    updateReferenceData: mockUpdateReferenceData,
   });
 
   // Extract states and actions
@@ -91,7 +97,7 @@ export default function StatelyTest() {
 
   // Helper to stringify state for display
   const getStateName = () => {
-    return state;
+    return typeof state.value === 'string' ? state.value : JSON.stringify(state.value);
   };
 
   return (

@@ -1,8 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useInterpret, useSelector } from '@xstate/react';
+import { useMachine } from '@xstate/react';
 import { createReportFormMachine } from '../../machines/reportFormMachine';
 import { importKeyFromBase64, encryptData } from '../../lib/cryptoUtils';
+import { assign, createActor } from 'xstate';
 
 /**
  * Round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
@@ -362,8 +363,8 @@ const useReportFormMachine = ({
     }
   };
 
-  // Create and start the interpreter
-  const service = useInterpret(
+  // Create and start the machine
+  const [state, send, actor] = useMachine(
     createReportFormMachine({
       teamName,
       isReadOnly: readOnly
@@ -376,24 +377,21 @@ const useReportFormMachine = ({
 
   // Initialize the machine when the component mounts
   useEffect(() => {
-    service.send({ type: 'INITIALIZE' });
-  }, [service]);
+    send({ type: 'INITIALIZE' });
+  }, [send]);
 
-  // Selectors for commonly used state
-  const state = useSelector(service, (state) => state.value);
-  const context = useSelector(service, (state) => state.context);
-  const isSubmitting = useSelector(service, (state) => 
-    state.matches('submitting') || state.matches('savingDraft')
-  );
-  const isSuccess = useSelector(service, (state) => state.matches('success'));
-  const isError = useSelector(service, (state) => state.matches('error'));
+  // Get commonly used state values
+  const context = state.context;
+  const isSubmitting = state.matches('submitting') || state.matches('savingDraft');
+  const isSuccess = state.matches('success');
+  const isError = state.matches('error');
 
   return {
     // Basic state machine access
-    service,
+    actor,
     state,
     context,
-    send: service.send,
+    send,
     // Form state
     teamMember: context.teamMember,
     teamRole: context.teamRole,
@@ -408,16 +406,16 @@ const useReportFormMachine = ({
     success: context.success,
     successMessage: context.successMessage,
     // Action creators (makes it easier for components to send events)
-    updateTeamMember: (value) => service.send({ type: 'UPDATE_TEAM_MEMBER', value }),
-    updateTeamRole: (value) => service.send({ type: 'UPDATE_TEAM_ROLE', value }),
-    updateField: (id, field, value) => service.send({ type: 'UPDATE_FIELD', id, field, value }),
-    updateSDLCStep: (id, value) => service.send({ type: 'UPDATE_SDLC_STEP', id, value }),
-    toggleRowExpansion: (id) => service.send({ type: 'TOGGLE_ROW', id }),
-    addRow: () => service.send({ type: 'ADD_ROW' }),
-    removeRow: (id) => service.send({ type: 'REMOVE_ROW', id }),
-    saveAsDraft: () => service.send({ type: 'SAVE_DRAFT' }),
-    submitForm: () => service.send({ type: 'SUBMIT' }),
-    retry: () => service.send({ type: 'RETRY' })
+    updateTeamMember: (value) => send({ type: 'UPDATE_TEAM_MEMBER', value }),
+    updateTeamRole: (value) => send({ type: 'UPDATE_TEAM_ROLE', value }),
+    updateField: (id, field, value) => send({ type: 'UPDATE_FIELD', id, field, value }),
+    updateSDLCStep: (id, value) => send({ type: 'UPDATE_SDLC_STEP', id, value }),
+    toggleRowExpansion: (id) => send({ type: 'TOGGLE_ROW', id }),
+    addRow: () => send({ type: 'ADD_ROW' }),
+    removeRow: (id) => send({ type: 'REMOVE_ROW', id }),
+    saveAsDraft: () => send({ type: 'SAVE_DRAFT' }),
+    submitForm: () => send({ type: 'SUBMIT' }),
+    retry: () => send({ type: 'RETRY' })
   };
 };
 

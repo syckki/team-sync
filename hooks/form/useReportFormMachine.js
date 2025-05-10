@@ -374,11 +374,13 @@ const useReportFormMachine = ({
     })
   ).current;
 
-  // Use the machine
-  const [state, send] = useMachine(reportFormMachine, {
-    actions,
-    services
-  });
+  // Use the machine with provide() pattern for XState v5
+  const [state, send] = useMachine(
+    reportFormMachine.provide({
+      actions,
+      services
+    })
+  );
 
   // Initialize the machine when the component mounts
   useEffect(() => {

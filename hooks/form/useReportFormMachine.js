@@ -61,6 +61,9 @@ const useReportFormMachine = ({
     // Load report data from API or props
     loadReportData: async () => {
       console.log('Loading report data...');
+      // For testing purposes, add a small delay to simulate async loading
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // For now, just return the initialReportData or create new data
       return initialReportData || {
         teamMember: "",

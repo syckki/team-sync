@@ -69,24 +69,24 @@ export default function SimpleXStateTest() {
       active: {
         on: {
           INCREMENT: {
-            actions: assign({
-              count: (context) => context.count + 1
-            })
+            actions: assign((context) => ({
+              count: context.count + 1
+            }))
           },
           DECREMENT: {
-            actions: assign({
-              count: (context) => context.count - 1
-            })
+            actions: assign((context) => ({
+              count: context.count - 1
+            }))
           },
           RESET: {
-            actions: assign({
+            actions: assign((_) => ({
               count: 0
-            })
+            }))
           },
           UPDATE_NAME: {
-            actions: assign({
-              name: (_, event) => event.value
-            })
+            actions: assign((context, event) => ({
+              name: event.value
+            }))
           }
         }
       }

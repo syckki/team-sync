@@ -1,9 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useMachine } from '@xstate/react';
 import { createReportFormMachine } from '../../machines/reportFormMachine';
 import { importKeyFromBase64, encryptData } from '../../lib/cryptoUtils';
-import { assign, createActor } from 'xstate';
+import { assign } from 'xstate';
 
 /**
  * Round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
@@ -363,17 +363,19 @@ const useReportFormMachine = ({
     }
   };
 
-  // Create and start the machine
-  const [state, send, actor] = useMachine(
+  // Create the machine with stable reference using useRef
+  const reportFormMachine = useRef(
     createReportFormMachine({
       teamName,
       isReadOnly: readOnly
-    }),
-    {
-      actions,
-      services
-    }
-  );
+    })
+  ).current;
+
+  // Use the machine
+  const [state, send] = useMachine(reportFormMachine, {
+    actions,
+    services
+  });
 
   // Initialize the machine when the component mounts
   useEffect(() => {
@@ -388,7 +390,6 @@ const useReportFormMachine = ({
 
   return {
     // Basic state machine access
-    actor,
     state,
     context,
     send,

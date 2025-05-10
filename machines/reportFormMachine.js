@@ -4,12 +4,41 @@
  */
 import { createMachine, assign } from 'xstate';
 
+// Define a function to get a new row
+const getNewRow = () => ({
+  id: Date.now() + Math.floor(Math.random() * 1000),
+  platform: '',
+  projectInitiative: '',
+  sdlcStep: '',
+  sdlcTask: '',
+  taskCategory: '',
+  estimatedTimeWithoutAI: '',
+  actualTimeWithAI: '',
+  timeSaved: '',
+  complexity: '',
+  qualityImpact: '',
+  aiToolsUsed: [],
+  taskDetails: '',
+  notesHowAIHelped: '',
+});
+
+// Calculate time saved with proper rounding
+const calculateTimeSaved = (estimatedTime, actualTime) => {
+  if (!estimatedTime || !actualTime) return '';
+  const parsed1 = parseFloat(estimatedTime);
+  const parsed2 = parseFloat(actualTime);
+  if (isNaN(parsed1) || isNaN(parsed2)) return '';
+  
+  const timeSaved = Math.max(0, parsed1 - parsed2);
+  return Number(timeSaved.toFixed(2)).toString();
+};
+
 /**
  * Creates a report form state machine
  * @param {Object} context - Initial context for the state machine
  * @returns {StateMachine} - XState state machine for the report form
  */
-export const createReportFormMachine = (context) => {
+export const createReportFormMachine = (initialContext) => {
   return createMachine({
     id: 'reportForm',
     initial: 'idle',
@@ -17,7 +46,7 @@ export const createReportFormMachine = (context) => {
       // Form data
       teamMember: '',
       teamRole: '',
-      rows: [],
+      rows: [getNewRow()],
       expandedRows: {},
       // Status flags
       isReadOnly: false,
@@ -27,7 +56,7 @@ export const createReportFormMachine = (context) => {
       // Properties from outside
       teamName: '',
       // Override with provided context
-      ...context
+      ...initialContext
     },
     states: {
       // Initial state - waiting to be initialized
@@ -35,7 +64,15 @@ export const createReportFormMachine = (context) => {
         on: {
           INITIALIZE: {
             target: 'loading',
-            actions: 'resetForm',
+            actions: assign({
+              teamMember: '',
+              teamRole: '',
+              rows: [getNewRow()],
+              expandedRows: {},
+              error: null,
+              success: false,
+              successMessage: '',
+            })
           }
         }
       },
@@ -45,11 +82,51 @@ export const createReportFormMachine = (context) => {
           src: 'loadReportData',
           onDone: {
             target: 'editing',
-            actions: 'setInitialFormData'
+            actions: assign(({ event }) => {
+              const data = event.data;
+              const isSubmitted = data.status === "submitted";
+              
+              // Map entries to rows with proper format
+              const loadedRows = data.entries && data.entries.length > 0
+                ? data.entries.map((entry) => ({
+                    id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+                    platform: entry.platform,
+                    projectInitiative: entry.projectInitiative,
+                    sdlcStep: entry.sdlcStep,
+                    sdlcTask: entry.sdlcTask,
+                    taskCategory: entry.taskCategory,
+                    estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI,
+                    actualTimeWithAI: entry.actualTimeWithAI,
+                    timeSaved: entry.timeSaved,
+                    complexity: entry.complexity,
+                    qualityImpact: entry.qualityImpact,
+                    aiToolsUsed:
+                      entry.aiToolsUsed
+                        ? Array.isArray(entry.aiToolsUsed)
+                          ? entry.aiToolsUsed
+                          : entry.aiToolsUsed.includes(",")
+                            ? entry.aiToolsUsed.split(",").map((t) => t.trim())
+                            : [entry.aiToolsUsed]
+                        : [],
+                    taskDetails: entry.taskDetails,
+                    notesHowAIHelped: entry.notesHowAIHelped,
+                  }))
+                : [getNewRow()];
+
+              return {
+                teamMember: data.teamMember || '',
+                teamRole: data.teamRole || '',
+                rows: loadedRows,
+                expandedRows: {},
+                isReadOnly: isSubmitted || initialContext.isReadOnly,
+              };
+            })
           },
           onError: {
             target: 'error',
-            actions: 'setLoadError'
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to load report data"
+            })
           }
         }
       },
@@ -58,27 +135,84 @@ export const createReportFormMachine = (context) => {
         on: {
           // Form field updates
           UPDATE_FIELD: {
-            actions: 'updateField'
+            actions: assign({
+              rows: ({ context, event }) => context.rows.map(row => {
+                if (row.id === event.id) {
+                  const updatedRow = { ...row, [event.field]: event.value };
+        
+                  // Calculate time saved if necessary
+                  if (event.field === 'estimatedTimeWithoutAI' || event.field === 'actualTimeWithAI') {
+                    const estimatedTime = parseFloat(
+                      event.field === 'estimatedTimeWithoutAI'
+                        ? event.value
+                        : updatedRow.estimatedTimeWithoutAI
+                    );
+                    const actualTime = parseFloat(
+                      event.field === 'actualTimeWithAI'
+                        ? event.value
+                        : updatedRow.actualTimeWithAI
+                    );
+        
+                    updatedRow.timeSaved = calculateTimeSaved(estimatedTime, actualTime);
+                  }
+        
+                  return updatedRow;
+                }
+                return row;
+              })
+            })
           },
           UPDATE_TEAM_MEMBER: {
-            actions: 'updateTeamMember'
+            actions: assign({
+              teamMember: ({ event }) => event.value
+            })
           },
           UPDATE_TEAM_ROLE: {
-            actions: 'updateTeamRole'
+            actions: assign({
+              teamRole: ({ event }) => event.value
+            })
           },
           // Row operations
           ADD_ROW: {
-            actions: 'addRow'
+            actions: assign(({ context }) => {
+              const newRow = getNewRow();
+              return {
+                rows: [...context.rows, newRow],
+                expandedRows: {
+                  ...context.expandedRows,
+                  [newRow.id]: true // Automatically expand the new row
+                }
+              };
+            })
           },
           REMOVE_ROW: {
-            actions: 'removeRow'
+            actions: assign(({ context, event }) => {
+              const newExpandedRows = { ...context.expandedRows };
+              delete newExpandedRows[event.id];
+              
+              return {
+                rows: context.rows.filter(row => row.id !== event.id),
+                expandedRows: newExpandedRows
+              };
+            })
           },
           TOGGLE_ROW: {
-            actions: 'toggleRowExpansion'
+            actions: assign({
+              expandedRows: ({ context, event }) => ({
+                ...context.expandedRows,
+                [event.id]: !context.expandedRows[event.id]
+              })
+            })
           },
           // Special field handling
           UPDATE_SDLC_STEP: {
-            actions: 'updateSDLCStep'
+            actions: assign({
+              rows: ({ context, event }) => context.rows.map(row => 
+                row.id === event.id
+                  ? { ...row, sdlcStep: event.value, sdlcTask: "" }
+                  : row
+              )
+            })
           },
           // Form submission
           SAVE_DRAFT: {
@@ -95,11 +229,16 @@ export const createReportFormMachine = (context) => {
           src: 'saveDraft',
           onDone: {
             target: 'success',
-            actions: 'setSuccess'
+            actions: assign({
+              success: true,
+              successMessage: ({ event }) => event.data.message
+            })
           },
           onError: {
             target: 'error',
-            actions: 'setSaveError'
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to save draft"
+            })
           }
         }
       },
@@ -109,11 +248,16 @@ export const createReportFormMachine = (context) => {
           src: 'submitForm',
           onDone: {
             target: 'success',
-            actions: 'setSuccess'
+            actions: assign({
+              success: true,
+              successMessage: ({ event }) => event.data.message
+            })
           },
           onError: {
             target: 'error',
-            actions: 'setSubmitError'
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to submit report"
+            })
           }
         }
       },

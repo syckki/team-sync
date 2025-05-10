@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router';
 import { useMachine } from '@xstate/react';
-import { createReportFormMachine } from '../../machines/reportFormMachine';
-import { importKeyFromBase64, encryptData } from '../../lib/cryptoUtils';
-import { assign } from 'xstate';
+import { createMachine, assign } from 'xstate';
+import { useRouter } from 'next/router';
+import { encryptData } from '../../lib/cryptoUtils';
+import { addMessageToThread } from '../../lib/thread';
+import { queueMessage } from '../../lib/dbService';
 
 /**
  * Round time to the nearest quarter hour (0.00, 0.25, 0.50, 0.75)
@@ -11,8 +11,41 @@ import { assign } from 'xstate';
  * @returns {string} - Rounded time as string with 2 decimal places
  */
 const roundToQuarterHour = (time) => {
-  const value = parseFloat(time) || 0;
-  return (Math.round(value * 4) / 4).toFixed(2);
+  if (!time) return '';
+  const value = parseFloat(time);
+  if (isNaN(value)) return '';
+  
+  const rounded = Math.round(value * 4) / 4;
+  return rounded.toFixed(2);
+};
+
+// Define a function to get a new row
+const getNewRow = () => ({
+  id: Date.now() + Math.floor(Math.random() * 1000),
+  platform: '',
+  projectInitiative: '',
+  sdlcStep: '',
+  sdlcTask: '',
+  taskCategory: '',
+  estimatedTimeWithoutAI: '',
+  actualTimeWithAI: '',
+  timeSaved: '',
+  complexity: '',
+  qualityImpact: '',
+  aiToolsUsed: [],
+  taskDetails: '',
+  notesHowAIHelped: '',
+});
+
+// Calculate time saved with proper rounding
+const calculateTimeSaved = (estimatedTime, actualTime) => {
+  if (!estimatedTime || !actualTime) return '';
+  const parsed1 = parseFloat(estimatedTime);
+  const parsed2 = parseFloat(actualTime);
+  if (isNaN(parsed1) || isNaN(parsed2)) return '';
+  
+  const timeSaved = Math.max(0, parsed1 - parsed2);
+  return Number(timeSaved.toFixed(2)).toString();
 };
 
 /**
@@ -27,366 +60,388 @@ const roundToQuarterHour = (time) => {
  * @param {Function} props.updateReferenceData - Function to update reference data
  * @returns {Object} - State machine interface and form operations
  */
-const useReportFormMachine = ({
-  threadId,
+const useReportFormMachine = ({ 
+  threadId, 
   keyFragment,
-  teamName,
-  initialReportData = null,
+  teamName, 
+  initialReportData,
   readOnly = false,
   messageIndex = null,
-  updateReferenceData,
+  updateReferenceData = async () => true
 }) => {
   const router = useRouter();
 
-  // Create a new row with a unique ID
-  const getNewRow = useCallback(() => ({
-    id: Date.now(),
-    platform: "",
-    projectInitiative: "",
-    sdlcStep: "",
-    sdlcTask: "",
-    taskCategory: "",
-    estimatedTimeWithoutAI: "",
-    actualTimeWithAI: "",
-    timeSaved: "", // calculated value
-    complexity: "",
-    qualityImpact: "",
-    aiToolsUsed: [],
-    taskDetails: "",
-    notesHowAIHelped: "",
-  }), []);
-
-  // Services (async operations used by the state machine)
-  const services = {
-    // Load report data from API or props
-    loadReportData: async () => {
-      console.log('Loading report data...');
-      // For testing purposes, add a small delay to simulate async loading
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // For now, just return the initialReportData or create new data
-      return initialReportData || {
-        teamMember: "",
-        teamRole: "",
-        entries: [getNewRow()],
-        status: "draft",
-      };
-    },
-    // Save report as draft
-    saveDraft: async (context) => {
-      return await submitReportData(context, "draft");
-    },
-    // Submit report as final
-    submitForm: async (context) => {
-      return await submitReportData(context, "submitted");
-    },
-  };
-
-  // Submit report data to the server
-  const submitReportData = async (context, status) => {
-    try {
-      // Prepare the form data
-      const formData = prepareFormData(context);
-
-      // Get author ID for multi-user identification
-      const authorId = localStorage.getItem("encrypted-app-author-id");
-
-      // Add system fields to the form data to create the full report object
-      const completeReportData = {
-        ...formData,
-        timestamp: new Date().toISOString(),
-        status, // 'draft' or 'submitted'
-        authorId,
-      };
-
-      // Import the key to use for encryption
-      const cryptoKey = await importKeyFromBase64(keyFragment);
-
-      // Encrypt the report data
-      const jsonData = JSON.stringify(completeReportData);
-      const { ciphertext, iv } = await encryptData(jsonData, cryptoKey);
-
-      // Convert the combined ciphertext and IV to ArrayBuffer for upload
-      const combinedData = new Uint8Array(iv.length + ciphertext.byteLength);
-      combinedData.set(iv, 0);
-      combinedData.set(new Uint8Array(ciphertext), iv.length);
-
-      // Prepare the report submission
-      const submitData = {
-        threadId,
-        threadTitle: teamName,
-        data: Array.from(combinedData), // Convert the ArrayBuffer to array of bytes
-        metadata: {
-          authorId,
-          isReport: true,
-          timestamp: new Date().toISOString(),
-          status, // Add status to metadata
-        },
-      };
-
-      // If we're editing an existing message, include the messageIndex
-      if (messageIndex !== null) {
-        submitData.messageIndex = messageIndex;
-      }
-
-      // Launch two microtasks in parallel
-      const microtask1 = fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      // Synchronize reference data from localStorage to the backend
-      const microtask2 = updateReferenceData();
-
-      // Wait for both operations to complete
-      const [response] = await Promise.all([microtask1, microtask2]);
-
-      if (!response.ok) {
-        throw new Error(
-          status === "draft"
-            ? "Error saving draft. Please try again."
-            : "Error submitting report. Please try again."
-        );
-      }
-
-      return {
-        success: true,
-        message: status === "draft"
-          ? "Your AI productivity report has been saved as a draft!"
-          : "Your AI productivity report has been submitted successfully!"
-      };
-    } catch (err) {
-      console.error("Error submitting report:", err);
-      throw new Error(err.message || "An unexpected error occurred. Please try again.");
-    }
-  };
-
-  // Prepare form data for submission
-  const prepareFormData = (context) => {
-    const { teamMember, teamRole, rows } = context;
-
-    // Basic validation
-    if (!teamMember.trim()) {
-      throw new Error("Please enter your name");
-    }
-
-    if (!teamRole.trim()) {
-      throw new Error("Please enter your role");
-    }
-
-    if (rows.length === 0) {
-      throw new Error("Please add at least one entry");
-    }
-
-    // Process the form data
-    const reportEntries = rows.map((row) => ({
-      platform: row.platform,
-      projectInitiative: row.projectInitiative,
-      sdlcStep: row.sdlcStep,
-      sdlcTask: row.sdlcTask,
-      taskCategory: row.taskCategory,
-      estimatedTimeWithoutAI: roundToQuarterHour(row.estimatedTimeWithoutAI),
-      actualTimeWithAI: roundToQuarterHour(row.actualTimeWithAI),
-      timeSaved: row.timeSaved,
-      complexity: row.complexity,
-      qualityImpact: row.qualityImpact,
-      aiToolsUsed:
-        Array.isArray(row.aiToolsUsed) && row.aiToolsUsed.length > 0
-          ? row.aiToolsUsed.join(", ")
-          : "",
-      taskDetails: row.taskDetails,
-      notesHowAIHelped: row.notesHowAIHelped,
-    }));
-
-    // Create the report object
-    return {
-      teamName,
-      teamMember,
-      teamRole,
-      entries: reportEntries,
-    };
-  };
-
-  // Calculate time saved based on estimated and actual time
-  const calculateTimeSaved = (estimatedTime, actualTime) => {
-    if (isNaN(estimatedTime) || isNaN(actualTime)) {
-      return "";
-    }
-    const timeSaved = Math.max(0, estimatedTime - actualTime);
-    return roundToQuarterHour(timeSaved);
-  };
-
-  // Actions (synchronous operations that update context)
-  const actions = {
-    // Reset form to initial state
-    resetForm: assign({
-      teamMember: "",
-      teamRole: "",
-      rows: ({ context }) => [getNewRow()],
+  // Define the machine directly in the hook following XState v5 pattern
+  const reportFormMachine = createMachine({
+    id: 'reportForm',
+    initial: 'idle',
+    context: {
+      // Form data
+      teamMember: '',
+      teamRole: '',
+      rows: [getNewRow()],
       expandedRows: {},
+      // Status flags
       isReadOnly: readOnly,
       error: null,
       success: false,
-      successMessage: "",
-    }),
-    // Set initial form data from loaded report
-    setInitialFormData: assign(({ context, event }) => {
-      const data = event.data;
-      const isSubmitted = data.status === "submitted";
-      
-      // Map entries to rows with proper format
-      const loadedRows = data.entries && data.entries.length > 0
-        ? data.entries.map((entry) => ({
-            id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
-            platform: entry.platform,
-            projectInitiative: entry.projectInitiative,
-            sdlcStep: entry.sdlcStep,
-            sdlcTask: entry.sdlcTask,
-            taskCategory: entry.taskCategory,
-            estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI,
-            actualTimeWithAI: entry.actualTimeWithAI,
-            timeSaved: entry.timeSaved,
-            complexity: entry.complexity,
-            qualityImpact: entry.qualityImpact,
-            aiToolsUsed:
-              entry.aiToolsUsed
-                ? Array.isArray(entry.aiToolsUsed)
-                  ? entry.aiToolsUsed
-                  : entry.aiToolsUsed.includes(",")
-                    ? entry.aiToolsUsed.split(",").map((t) => t.trim())
-                    : [entry.aiToolsUsed]
-                : [],
-            taskDetails: entry.taskDetails,
-            notesHowAIHelped: entry.notesHowAIHelped,
-          }))
-        : [getNewRow()];
-
-      return {
-        teamMember: data.teamMember || "",
-        teamRole: data.teamRole || "",
-        rows: loadedRows,
-        expandedRows: {},
-        isReadOnly: isSubmitted || readOnly,
-      };
-    }),
-    // Update team member name
-    updateTeamMember: assign({
-      teamMember: ({ event }) => event.value
-    }),
-    // Update team role
-    updateTeamRole: assign({
-      teamRole: ({ event }) => event.value
-    }),
-    // Update a field in a row
-    updateField: assign({
-      rows: ({ context, event }) => context.rows.map(row => {
-        if (row.id === event.id) {
-          const updatedRow = { ...row, [event.field]: event.value };
-
-          // Calculate time saved if necessary
-          if (event.field === 'estimatedTimeWithoutAI' || event.field === 'actualTimeWithAI') {
-            const estimatedTime = parseFloat(
-              event.field === 'estimatedTimeWithoutAI'
-                ? event.value
-                : updatedRow.estimatedTimeWithoutAI
-            );
-            const actualTime = parseFloat(
-              event.field === 'actualTimeWithAI'
-                ? event.value
-                : updatedRow.actualTimeWithAI
-            );
-
-            updatedRow.timeSaved = calculateTimeSaved(estimatedTime, actualTime);
-          }
-
-          return updatedRow;
-        }
-        return row;
-      })
-    }),
-    // Update SDLC step (resets the task)
-    updateSDLCStep: assign({
-      rows: ({ context, event }) => context.rows.map(row => 
-        row.id === event.id
-          ? { ...row, sdlcStep: event.value, sdlcTask: "" }
-          : row
-      )
-    }),
-    // Add a new row
-    addRow: assign(({ context }) => {
-      const newRow = getNewRow();
-      return {
-        rows: [...context.rows, newRow],
-        expandedRows: {
-          ...context.expandedRows,
-          [newRow.id]: true // Automatically expand the new row
-        }
-      };
-    }),
-    // Remove a row
-    removeRow: assign(({ context, event }) => {
-      const newExpandedRows = { ...context.expandedRows };
-      delete newExpandedRows[event.id];
-      
-      return {
-        rows: context.rows.filter(row => row.id !== event.id),
-        expandedRows: newExpandedRows
-      };
-    }),
-    // Toggle row expansion
-    toggleRowExpansion: assign({
-      expandedRows: ({ context, event }) => ({
-        ...context.expandedRows,
-        [event.id]: !context.expandedRows[event.id]
-      })
-    }),
-    // Set error from loading
-    setLoadError: assign({
-      error: ({ event }) => event.data?.message || "Failed to load report data"
-    }),
-    // Set error from saving draft
-    setSaveError: assign({
-      error: ({ event }) => event.data?.message || "Failed to save draft"
-    }),
-    // Set error from submitting
-    setSubmitError: assign({
-      error: ({ event }) => event.data?.message || "Failed to submit report"
-    }),
-    // Set success state
-    setSuccess: assign(({ event }) => ({
-      success: true,
-      successMessage: event.data.message
-    })),
-    // Redirect to inbox
-    redirectToInbox: () => {
-      router.push(`/channel/${threadId}#${keyFragment}`);
-    }
-  };
-
-  // Create the machine with stable reference using useRef
-  const reportFormMachine = useRef(
-    createReportFormMachine({
+      successMessage: '',
+      // Properties from outside
       teamName,
-      isReadOnly: readOnly
-    })
-  ).current;
+    },
+    states: {
+      // Initial state - waiting to be initialized
+      idle: {
+        on: {
+          INITIALIZE: {
+            target: 'loading',
+            actions: assign({
+              teamMember: '',
+              teamRole: '',
+              rows: [getNewRow()],
+              expandedRows: {},
+              error: null,
+              success: false,
+              successMessage: '',
+            })
+          }
+        }
+      },
+      // Loading report data (existing report or creating new one)
+      loading: {
+        invoke: {
+          src: async () => {
+            try {
+              if (initialReportData) {
+                // Use provided initial data
+                return initialReportData;
+              }
+              
+              // Otherwise return empty report
+              return {
+                teamMember: '',
+                teamRole: '',
+                entries: [],
+                status: 'draft'
+              };
+            } catch (error) {
+              console.error('Error loading report data:', error);
+              throw new Error('Failed to load report data');
+            }
+          },
+          onDone: {
+            target: 'editing',
+            actions: assign(({ event }) => {
+              const data = event.data;
+              const isSubmitted = data.status === "submitted";
+              
+              // Map entries to rows with proper format
+              const loadedRows = data.entries && data.entries.length > 0
+                ? data.entries.map((entry) => ({
+                    id: Date.now() + Math.floor(Math.random() * 1000), // Generate unique id
+                    platform: entry.platform,
+                    projectInitiative: entry.projectInitiative,
+                    sdlcStep: entry.sdlcStep,
+                    sdlcTask: entry.sdlcTask,
+                    taskCategory: entry.taskCategory,
+                    estimatedTimeWithoutAI: entry.estimatedTimeWithoutAI,
+                    actualTimeWithAI: entry.actualTimeWithAI,
+                    timeSaved: entry.timeSaved,
+                    complexity: entry.complexity,
+                    qualityImpact: entry.qualityImpact,
+                    aiToolsUsed:
+                      entry.aiToolsUsed
+                        ? Array.isArray(entry.aiToolsUsed)
+                          ? entry.aiToolsUsed
+                          : entry.aiToolsUsed.includes(",")
+                            ? entry.aiToolsUsed.split(",").map((t) => t.trim())
+                            : [entry.aiToolsUsed]
+                        : [],
+                    taskDetails: entry.taskDetails,
+                    notesHowAIHelped: entry.notesHowAIHelped,
+                  }))
+                : [getNewRow()];
 
-  // Create a machine with provided implementations
-  const machineWithImplementations = reportFormMachine.provide({
-    actions,
-    services
+              return {
+                teamMember: data.teamMember || '',
+                teamRole: data.teamRole || '',
+                rows: loadedRows,
+                expandedRows: {},
+                isReadOnly: isSubmitted || readOnly,
+              };
+            })
+          },
+          onError: {
+            target: 'error',
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to load report data"
+            })
+          }
+        }
+      },
+      // User is editing the form
+      editing: {
+        on: {
+          // Form field updates
+          UPDATE_FIELD: {
+            actions: assign({
+              rows: ({ context, event }) => context.rows.map(row => {
+                if (row.id === event.id) {
+                  const updatedRow = { ...row, [event.field]: event.value };
+        
+                  // Calculate time saved if necessary
+                  if (event.field === 'estimatedTimeWithoutAI' || event.field === 'actualTimeWithAI') {
+                    const estimatedTime = parseFloat(
+                      event.field === 'estimatedTimeWithoutAI'
+                        ? event.value
+                        : updatedRow.estimatedTimeWithoutAI
+                    );
+                    const actualTime = parseFloat(
+                      event.field === 'actualTimeWithAI'
+                        ? event.value
+                        : updatedRow.actualTimeWithAI
+                    );
+        
+                    updatedRow.timeSaved = calculateTimeSaved(estimatedTime, actualTime);
+                  }
+        
+                  return updatedRow;
+                }
+                return row;
+              })
+            })
+          },
+          UPDATE_TEAM_MEMBER: {
+            actions: assign({
+              teamMember: ({ event }) => event.value
+            })
+          },
+          UPDATE_TEAM_ROLE: {
+            actions: assign({
+              teamRole: ({ event }) => event.value
+            })
+          },
+          // Row operations
+          ADD_ROW: {
+            actions: assign(({ context }) => {
+              const newRow = getNewRow();
+              return {
+                rows: [...context.rows, newRow],
+                expandedRows: {
+                  ...context.expandedRows,
+                  [newRow.id]: true // Automatically expand the new row
+                }
+              };
+            })
+          },
+          REMOVE_ROW: {
+            actions: assign(({ context, event }) => {
+              const newExpandedRows = { ...context.expandedRows };
+              delete newExpandedRows[event.id];
+              
+              return {
+                rows: context.rows.filter(row => row.id !== event.id),
+                expandedRows: newExpandedRows
+              };
+            })
+          },
+          TOGGLE_ROW: {
+            actions: assign({
+              expandedRows: ({ context, event }) => ({
+                ...context.expandedRows,
+                [event.id]: !context.expandedRows[event.id]
+              })
+            })
+          },
+          // Special field handling
+          UPDATE_SDLC_STEP: {
+            actions: assign({
+              rows: ({ context, event }) => context.rows.map(row => 
+                row.id === event.id
+                  ? { ...row, sdlcStep: event.value, sdlcTask: "" }
+                  : row
+              )
+            })
+          },
+          // Form submission
+          SAVE_DRAFT: {
+            target: 'savingDraft',
+          },
+          SUBMIT: {
+            target: 'submitting',
+          }
+        }
+      },
+      // Saving form as draft
+      savingDraft: {
+        invoke: {
+          src: async (context) => {
+            try {
+              // Extract data from context
+              const formData = {
+                teamName: context.teamName,
+                teamMember: context.teamMember,
+                teamRole: context.teamRole,
+                entries: context.rows,
+                status: 'draft',
+                date: new Date().toISOString()
+              };
+
+              // Encrypt the data
+              if (!keyFragment) {
+                throw new Error('No encryption key fragment found');
+              }
+              
+              const encryptedData = await encryptData(formData, keyFragment);
+              
+              // Save to the thread
+              await addMessageToThread(
+                threadId, 
+                encryptedData.encryptedBuffer, 
+                {
+                  type: 'productivity-report',
+                  reportStatus: 'draft',
+                  authorId: localStorage.getItem(`author-${threadId}`) || `author-${Date.now()}`,
+                  date: new Date().toISOString()
+                },
+                null,
+                messageIndex
+              );
+
+              // Queue for sync if offline
+              await queueMessage(
+                threadId,
+                encryptedData.encryptedBuffer,
+                {
+                  type: 'productivity-report',
+                  reportStatus: 'draft'
+                }
+              );
+              
+              // Update report tracking data
+              await updateReferenceData();
+              
+              return { 
+                success: true,
+                message: 'Report saved as draft successfully'
+              };
+            } catch (error) {
+              console.error('Error saving draft:', error);
+              throw new Error('Failed to save draft report');
+            }
+          },
+          onDone: {
+            target: 'success',
+            actions: assign({
+              success: true,
+              successMessage: ({ event }) => event.data.message
+            })
+          },
+          onError: {
+            target: 'error',
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to save draft"
+            })
+          }
+        }
+      },
+      // Submitting form as final
+      submitting: {
+        invoke: {
+          src: async (context) => {
+            try {
+              // Extract data from context
+              const formData = {
+                teamName: context.teamName,
+                teamMember: context.teamMember,
+                teamRole: context.teamRole,
+                entries: context.rows,
+                status: 'submitted',
+                date: new Date().toISOString()
+              };
+
+              // Encrypt the data
+              if (!keyFragment) {
+                throw new Error('No encryption key fragment found');
+              }
+              
+              const encryptedData = await encryptData(formData, keyFragment);
+              
+              // Save to the thread
+              await addMessageToThread(
+                threadId, 
+                encryptedData.encryptedBuffer, 
+                {
+                  type: 'productivity-report',
+                  reportStatus: 'submitted',
+                  authorId: localStorage.getItem(`author-${threadId}`) || `author-${Date.now()}`,
+                  date: new Date().toISOString()
+                },
+                null,
+                messageIndex
+              );
+
+              // Queue for sync if offline
+              await queueMessage(
+                threadId,
+                encryptedData.encryptedBuffer,
+                {
+                  type: 'productivity-report',
+                  reportStatus: 'submitted'
+                }
+              );
+
+              // Update report tracking data
+              await updateReferenceData();
+              
+              return { 
+                success: true,
+                message: 'Report submitted successfully'
+              };
+            } catch (error) {
+              console.error('Error submitting report:', error);
+              throw new Error('Failed to submit report');
+            }
+          },
+          onDone: {
+            target: 'success',
+            actions: assign({
+              success: true,
+              successMessage: ({ event }) => event.data.message
+            })
+          },
+          onError: {
+            target: 'error',
+            actions: assign({
+              error: ({ event }) => event.data?.message || "Failed to submit report"
+            })
+          }
+        }
+      },
+      // Successful operation
+      success: {
+        after: {
+          3000: 'redirecting'
+        }
+      },
+      // Redirecting to inbox
+      redirecting: {
+        entry: () => {
+          router.push(`/channel/${threadId}#${keyFragment}`);
+        },
+        type: 'final'
+      },
+      // Error state
+      error: {
+        on: {
+          RETRY: 'editing'
+        }
+      }
+    }
   });
-  
-  // Use the machine with implementations - following XState v5 pattern
-  const [state, send] = useMachine(machineWithImplementations);
 
-  // Initialize the machine when the component mounts
-  useEffect(() => {
-    send({ type: 'INITIALIZE' });
-  }, [send]);
+  // Use the machine directly
+  const [state, send] = useMachine(reportFormMachine);
 
   // Get commonly used state values
   const context = state.context;

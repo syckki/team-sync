@@ -53,10 +53,14 @@ const ReportFormViewModelXState = ({
     updateReferenceData,
   });
 
-  // Initialize the state machine when the component mounts
+  // Initialize the state machine only once when the component mounts
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    // Only initialize if we have a valid threadId
+    if (threadId) {
+      initialize();
+    }
+  }, []);
 
   // Create event handlers
   const handleSubmit = (e) => {

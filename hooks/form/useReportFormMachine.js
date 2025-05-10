@@ -426,10 +426,11 @@ const useReportFormMachine = ({
     }
   );
 
-  // Initialize the machine when mounted (only once)
+  // Initialize the machine (memoized to avoid recreating on renders)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialize = useCallback(() => {
     send({ type: 'INITIALIZE' });
-  }, [send]);
+  }, []);
 
   return {
     // Machine state

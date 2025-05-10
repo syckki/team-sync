@@ -1,16 +1,45 @@
 /**
  * State machine for the Report Form
  * This defines all possible states and transitions for the form
+ * Using XState v5 syntax, but without TypeScript
  */
-import { createMachine, assign } from 'xstate';
+import { setup } from 'xstate';
 
 /**
- * Creates a report form state machine
- * @param {Object} context - Initial context for the state machine
- * @returns {StateMachine} - XState state machine for the report form
+ * Creates a report form state machine with XState v5 syntax
+ * @returns {Object} - XState state machine for the report form
  */
-export const createReportFormMachine = (context) => {
-  return createMachine({
+export const createReportFormMachine = () => {
+  // Define the machine
+  const machine = setup({
+    actions: {
+      // Empty implementations - will be provided by the hook
+      resetForm: () => {},
+      setInitialFormData: () => {},
+      updateTeamMember: ({ context, event }) => {
+        context.teamMember = event.value;
+      },
+      updateTeamRole: ({ context, event }) => {
+        context.teamRole = event.value;
+      },
+      updateField: () => {},
+      updateSDLCStep: () => {},
+      addRow: () => {},
+      removeRow: () => {},
+      toggleRowExpansion: () => {},
+      setLoadError: () => {},
+      setSaveError: () => {},
+      setSubmitError: () => {},
+      setSuccess: () => {},
+      redirectToInbox: () => {}
+    },
+    guards: {
+      isFormValid: () => true
+    },
+    delays: {
+      REDIRECT_DELAY: 3000
+    }
+  }).createMachine({
     id: 'reportForm',
     initial: 'idle',
     context: {
@@ -25,9 +54,7 @@ export const createReportFormMachine = (context) => {
       success: false,
       successMessage: '',
       // Properties from outside
-      teamName: '',
-      // Override with provided context
-      ...context
+      teamName: ''
     },
     states: {
       // Initial state - waiting to be initialized
@@ -42,7 +69,7 @@ export const createReportFormMachine = (context) => {
       // Loading report data (existing report or creating new one)
       loading: {
         invoke: {
-          src: 'loadReportData',
+          src: ({ input }) => Promise.resolve(input.initialReportData),
           onDone: {
             target: 'editing',
             actions: 'setInitialFormData'
@@ -83,16 +110,21 @@ export const createReportFormMachine = (context) => {
           // Form submission
           SAVE_DRAFT: {
             target: 'savingDraft',
+            guard: 'isFormValid'
           },
           SUBMIT: {
             target: 'submitting',
+            guard: 'isFormValid'
           }
         }
       },
       // Saving form as draft
       savingDraft: {
         invoke: {
-          src: 'saveDraft',
+          src: ({ input, self }) => {
+            const context = self.getSnapshot().context;
+            return input.submitReport(context, 'draft');
+          },
           onDone: {
             target: 'success',
             actions: 'setSuccess'
@@ -106,7 +138,10 @@ export const createReportFormMachine = (context) => {
       // Submitting form as final
       submitting: {
         invoke: {
-          src: 'submitForm',
+          src: ({ input, self }) => {
+            const context = self.getSnapshot().context;
+            return input.submitReport(context, 'submitted');
+          },
           onDone: {
             target: 'success',
             actions: 'setSuccess'
@@ -120,7 +155,7 @@ export const createReportFormMachine = (context) => {
       // Successful operation
       success: {
         after: {
-          3000: 'redirecting'
+          REDIRECT_DELAY: 'redirecting'
         }
       },
       // Redirecting to inbox
@@ -136,6 +171,8 @@ export const createReportFormMachine = (context) => {
       }
     }
   });
+
+  return machine;
 };
 
 export default createReportFormMachine;

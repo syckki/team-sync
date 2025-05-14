@@ -167,7 +167,6 @@ const ReportForm = ({
   isSubmitting,
   error,
   success,
-  successMessage,
   readOnly = false, // Add readOnly prop with default false
   referenceData = {
     platforms: [],
@@ -506,8 +505,7 @@ const ReportForm = ({
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {success && (
         <SuccessMessage>
-          {successMessage ||
-            "Your AI productivity report has been submitted successfully!"}
+          Your AI productivity report has been submitted successfully!
         </SuccessMessage>
       )}
       <>

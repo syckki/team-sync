@@ -1,8 +1,8 @@
-import React from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 
 import ReportFormView from "../views/ReportFormView";
-import { useReferenceData, useReportForm, useReportSubmission } from "../hooks";
+import { useReportForm } from "../hooks";
 
 /**
  * Container component for the Report Form
@@ -17,7 +17,6 @@ const ReportFormViewModel = ({
 }) => {
   const router = useRouter();
   const { id: threadId } = router.query;
-  const { referenceData, updateData } = useReferenceData();
 
   const {
     // Form state
@@ -28,6 +27,11 @@ const ReportFormViewModel = ({
     isReadOnly,
     rows,
     expandedRows,
+    referenceData,
+
+    isSubmitting,
+    error,
+    success,
     // Row operations
     handleSDLCStepChange,
     handleRowChange,
@@ -35,41 +39,23 @@ const ReportFormViewModel = ({
     addRow,
     removeRow,
     // Form processing
-    prepareFormData,
+    submitReport,
   } = useReportForm({
     readOnly,
-    teamName,
     initialReportData: reportData,
   });
-
-  // Submission state management using the hook
-  const { submitReport, isSubmitting, error, success, successMessage } =
-    useReportSubmission(threadId, keyFragment, messageIndex);
 
   // Handle form submission
   const handleSubmit = (status) => async (e) => {
     e.preventDefault();
-
-    try {
-      const formData = prepareFormData();
-
-      // Submit as final using the submission hook
-      const microtask1 = submitReport(formData, status, teamName);
-      // Synchronize reference data from localStorage to the backend
-      const microtask2 = updateData();
-
-      const [success] = await Promise.all([microtask1, microtask2]);
-
-      // Reset form and redirect to channel inbox
-      if (success) {
-        setTimeout(() => {
-          router.push(`/channel/${threadId}#${keyFragment}`);
-        }, 3000);
-      }
-    } catch (err) {
-      console.error("Error submitting report:", err);
-    }
+    submitReport(status, teamName, threadId, keyFragment, messageIndex);
   };
+
+  useEffect(() => {
+    if (!success) return;
+    // Redirect to the thread page after successful submission
+    router.push(`/channel/${threadId}#${keyFragment}`);
+  }, [success]);
 
   // Pass all state and handlers to the presentation component
   return (
@@ -96,7 +82,6 @@ const ReportFormViewModel = ({
       isSubmitting={isSubmitting}
       error={error}
       success={success}
-      successMessage={successMessage}
     />
   );
 };

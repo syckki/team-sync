@@ -1,4 +1,7 @@
-import React from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { useSelector } from "@xstate/react";
+
 import styled from "styled-components";
 import { Breakpoint } from "../lib/styles";
 
@@ -149,41 +152,63 @@ const TextAreaWrapper = styled.div`
  * Presentation component for the Report Form
  * Pure presentation component that receives all props from the container
  */
-const ReportForm = ({
-  teamName,
-  teamMember,
-  setTeamMember,
-  teamRole,
-  setTeamRole,
-  rows,
-  expandedRows,
-  toggleRowExpansion,
-  handleRowChange,
-  handleSDLCStepChange,
-  addRow,
-  removeRow,
-  handleSubmit,
-  handleSaveAsDraft,
-  isSubmitting,
-  error,
-  success,
-  readOnly = false, // Add readOnly prop with default false
-  referenceData = {
-    platforms: [],
-    projectInitiatives: [],
-    sdlcSteps: [],
-    sdlcTasksMap: {},
-    taskCategories: [],
-    complexityLevels: [],
-    qualityImpacts: [],
-    aiTools: [],
-    teamRoles: [],
-    teamMembers: [],
-  }, // Add reference data with default empty values
-}) => {
+const ReportForm = ({ actor }) => {
+  const router = useRouter();
+  const { id: threadId } = router.query;
+
+  const state = useSelector(actor, (s) => s);
+  const send = actor.send;
+  const sendEvent = (type, data) => send({ type, data });
+
+  // Form state
+  const teamName = state.context.teamName;
+  const teamMember = state.context.teamMember;
+  const teamRole = state.context.teamRole;
+
+  const readOnly = state.context.isReadOnly;
+  const rows = state.context.rows;
+  const expandedRows = state.context.expandedRows;
+
+  const referenceData = state.context.referenceData;
+
+  const error = state.context.error;
+  const success = state.matches("success");
+  const isSubmitting = state.matches("submitting");
+
+  const setTeamMember = (name) => {
+    sendEvent("UPDATE_FIELD", { field: "teamMember", value: name });
+  };
+
+  const setTeamRole = (name) => {
+    sendEvent("UPDATE_FIELD", { field: "teamRole", value: name });
+  };
+
+  // Row operations
+  const handleSDLCStepChange = (id, value) => {
+    sendEvent("UPDATE_ROW", { id, field: "sdlcStep", value });
+  };
+
+  const handleRowChange = (id, field, value) => {
+    sendEvent("UPDATE_ROW", { id, field, value });
+  };
+
+  const addRow = () => {
+    sendEvent("ADD_ROW");
+  };
+
+  const removeRow = (id) => {
+    sendEvent("REMOVE_ROW", { id });
+  };
+
   // Function to handle row expansion for display purposes
   const toggleRowExpand = (rowId) => {
-    toggleRowExpansion(rowId);
+    sendEvent("TOGGLE_ROW_EXPANSION", { id: rowId });
+  };
+
+  // Handle form submission
+  const handleSubmit = (status) => async (e) => {
+    e.preventDefault();
+    sendEvent("SUBMIT_REPORT", { mode: status });
   };
 
   // Define column structure for the new ResponsiveTable
@@ -500,6 +525,12 @@ const ReportForm = ({
     });
   }
 
+  useEffect(() => {
+    if (!success) return;
+    // Redirect to the thread page after successful submission
+    router.push(`/channel/${threadId}#${keyFragment}`);
+  }, [success]);
+
   return (
     <>
       {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -510,7 +541,7 @@ const ReportForm = ({
       )}
       <>
         {!success && (
-          <Form onSubmit={handleSubmit} autoComplete="off">
+          <Form onSubmit={handleSubmit("submitted")} autoComplete="off">
             <TeamFormSection>
               <FormGroup>
                 <Label htmlFor="teamName">
@@ -750,7 +781,7 @@ const ReportForm = ({
                 <div style={{ display: "flex", gap: "0.75rem" }}>
                   <Button
                     type="button"
-                    onClick={handleSaveAsDraft}
+                    onClick={handleSubmit("draft")}
                     disabled={isSubmitting}
                     variant="secondary"
                   >

@@ -1,13 +1,14 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useMachine } from "@xstate/react";
 import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
-import ReportFormViewModel from "../../../viewModels/ReportFormViewModel";
+import ReportPageViewModel from "../../../machines/ReportPageViewModel";
 import ReportViewerViewModel from "../../../viewModels/ReportViewerViewModel";
-import { importKeyFromBase64, decryptData } from "../../../lib/cryptoUtils";
 import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
+import { getEncryptedAuthorId } from "../../../lib/cryptoUtils";
+import ReportFormView from "../../../views/ReportFormView";
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -28,109 +29,29 @@ const LoadingMessage = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-// Using shared components from the UI library
-
-// Using ContentContainer from UI components
-
 const ReportPage = () => {
   const router = useRouter();
-  const { id, view, index } = router.query;
-  const isViewMode = view === "true";
-  const messageIndex = index ? parseInt(index) : null;
+  const { id } = router.query;
+  const url = new URL(router.asPath, "https://example.com");
+  const { view, index } = Object.fromEntries(url.searchParams.entries());
+  const key = url.hash.slice(1);
+  const messageIndex = index ? parseInt(index, 10) : null;
 
-  const [key, setKey] = useState(null);
-  const [threadTitle, setThreadTitle] = useState("");
-  const [teamName, setTeamName] = useState("");
-  const [error, setError] = useState(null);
-  const [reportData, setReportData] = useState(null);
-  const [readOnly, setReadOnly] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Extract the key from URL fragment on mount
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    try {
-      // Extract key from URL fragment (#)
-      const fragment = window.location.hash.slice(1);
-
-      if (!fragment) {
-        setError(
-          "No encryption key found. Please return to the thread and use the link provided there.",
-        );
-        return;
-      }
-
-      setKey(fragment);
-    } catch (err) {
-      console.error("Error parsing key:", err);
-      setError("Could not retrieve encryption key from URL.");
-    }
-  }, [router.isReady, isViewMode, id]);
-
-  // Fetch thread title and specific message if messageIndex is provided
-  useEffect(() => {
-    if (key && id) {
-      // Generate or retrieve author ID from localStorage
-      let authorId = localStorage.getItem("encrypted-app-author-id");
-      if (!authorId) {
-        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
-        localStorage.setItem("encrypted-app-author-id", authorId);
-      }
-
-      const loadReport = messageIndex !== null && !isViewMode;
-      const messageParam = loadReport ? `&messageIndex=${messageIndex}` : "";
-
-      // First fetch thread metadata
-      fetch(`/api/download?threadId=${id}&authorId=${authorId}${messageParam}`)
-        .then((response) => response.json())
-        .then(async (data) => {
-          setThreadTitle(data.threadTitle || id);
-          setTeamName(data.threadTitle || id);
-
-          if (loadReport) {
-            const message = data.messages[0];
-
-            if (!message.metadata?.isReport) return;
-
-            const cryptoKey = await importKeyFromBase64(key);
-
-            // Convert base64 data back to ArrayBuffer
-            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
-              c.charCodeAt(0),
-            );
-
-            // Extract IV and ciphertext
-            const iv = encryptedBytes.slice(0, 12);
-            const ciphertext = encryptedBytes.slice(12);
-
-            // Decrypt the data
-            const decrypted = await decryptData(ciphertext, cryptoKey, iv);
-
-            // Parse the decrypted JSON
-            const parsedData = JSON.parse(new TextDecoder().decode(decrypted));
-
-            // Set report data for editing
-            setReportData(parsedData);
-
-            // Set read-only mode based on report status
-            setReadOnly(data.isCreator || parsedData.status === "submitted");
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching thread data:", err);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [key, id, messageIndex, isViewMode]);
+  const [state] = useMachine(ReportPageViewModel, {
+    input: {
+      key,
+      threadId: id,
+      authorId: getEncryptedAuthorId(),
+      messageIndex,
+      mode: view === "true" ? "viewer" : "form",
+    },
+  });
 
   return (
     <>
       <Head>
         <title>
-          {isViewMode
+          {state.context.mode === "viewer"
             ? "View AI Productivity Reports"
             : "Submit AI Productivity Report"}
         </title>
@@ -154,28 +75,21 @@ const ReportPage = () => {
         />
 
         <ContentContainer>
-          {error && <ErrorMessage type="error">{error}</ErrorMessage>}
+          {state.context.error && (
+            <ErrorMessage type="error">{state.context.error}</ErrorMessage>
+          )}
 
-          {isLoading ? (
+          {state.matches("loading") ? (
             <LoadingMessage>Loading...</LoadingMessage>
           ) : (
             <>
-              {isViewMode ? (
-                <ReportViewerViewModel
-                  keyFragment={key}
-                  threadTitle={threadTitle}
-                />
-              ) : (
-                <>
-                  <ReportFormViewModel
-                    keyFragment={key}
-                    teamName={teamName}
-                    reportData={reportData}
-                    readOnly={readOnly}
-                    messageIndex={messageIndex}
-                  />
-                </>
+              {state.matches("viewer") && (
+                <ReportViewerViewModel actor={state.children.reportViewer} />
               )}
+              {state.matches("form") && (
+                <ReportFormView actor={state.children.reportForm} />
+              )}
+
               <Link href={`/channel/${id}#${key}`}>
                 <BackLinkText>← Back to Channel Inbox</BackLinkText>
               </Link>

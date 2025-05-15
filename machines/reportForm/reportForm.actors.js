@@ -16,20 +16,24 @@ export const fetchReferenceData = fromPromise(async () => {
 
 // Submit the report to the server
 export const submitReport = fromPromise(async ({ input }) => {
-  const { teamMember, teamRole, rows } = input; // from context
-  const { mode, teamName, threadId, keyFragment, messageIndex } = input; // from event
+  const {
+    mode,
+    threadId,
+    authorId,
+    messageIndex,
+    teamName,
+    teamMember,
+    teamRole,
+  } = input; // from context
 
   // Process the form data
-  const reportEntries = rows.map((row) => ({
+  const reportEntries = input.rows.map((row) => ({
     ...row,
     aiToolsUsed:
       Array.isArray(row.aiToolsUsed) && row.aiToolsUsed.length > 0
         ? row.aiToolsUsed.join(", ")
         : "",
   }));
-
-  // Get author ID for multi-user identification
-  const authorId = localStorage.getItem("encrypted-app-author-id");
 
   // Create the full report object
   const reportData = {
@@ -43,7 +47,7 @@ export const submitReport = fromPromise(async ({ input }) => {
   };
 
   // Encrypt the report data
-  const encryptedData = await encryptDataToByteArray(keyFragment, reportData);
+  const encryptedData = await encryptDataToByteArray(input.key, reportData);
 
   // Prepare the report submission
   const submitData = {

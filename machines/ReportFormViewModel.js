@@ -1,10 +1,12 @@
-import { createReportFormMachine } from "./reportForm.machine";
+import { setup } from "xstate";
+
+import { reportFormMachine } from "./reportForm/reportForm.machine";
 
 import {
   fetchReferenceData,
   submitReport,
   updateReferenceData,
-} from "./reportForm.actors";
+} from "./reportForm/reportForm.actors";
 
 import {
   processReportData,
@@ -16,9 +18,9 @@ import {
   setReferenceData,
   notifyError,
   getNewRow,
-} from "./reportForm.actions";
+} from "./reportForm/reportForm.actions";
 
-const reportFormMachine = createReportFormMachine({
+const reportFormViewModel = setup({
   actors: {
     fetchReferenceData,
     submitReport,
@@ -58,7 +60,7 @@ const reportFormMachine = createReportFormMachine({
       return hasTeamMember && hasTeamRole && hasRows && hasRequiredInRows;
     },
   },
-});
+}).createMachine(reportFormMachine);
 
 export { getNewRow };
-export default reportFormMachine;
+export default reportFormViewModel;

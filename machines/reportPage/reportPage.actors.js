@@ -1,7 +1,7 @@
 import { fromPromise } from "xstate";
 import { decryptDataFromByteArray } from "../../lib/cryptoUtils";
 
-export const fetchReportData = fromPromise(async ({ input }) => {
+export const fetchReportList = fromPromise(async ({ input }) => {
   const { mode, key, threadId, authorId, messageIndex } = input;
   const isModeForm = mode === "form";
 
@@ -16,19 +16,34 @@ export const fetchReportData = fromPromise(async ({ input }) => {
 
   if (!response.ok) throw new Error(data.error);
 
-  if (isModeForm) {
-    const message = data.messages[0];
+  // Filter and decrypt reports
+  const reportList = [];
 
-    if (!message.metadata?.isReport) throw new Error("Not a report message");
+  for (const message of data.messages) {
+    if (!message.metadata?.isReport) continue;
 
-    const reportData = await decryptDataFromByteArray(key, message.data);
+    const content = await decryptDataFromByteArray(key, message.data);
 
-    return {
-      teamName: data.threadTitle,
-      reportData,
-      isReadOnly: data.isCreator || reportData.status === "submitted",
-    };
+    reportList.push({
+      id: message.index,
+      timestamp: message.metadata.timestamp || new Date().toISOString(),
+      authorId: message.metadata.authorId,
+      isCurrentUser: message.metadata.authorId === authorId,
+      ...content,
+    });
   }
 
-  return { teamName: data.threadTitle };
+  // Sort reports by timestamp, newest first
+  reportList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const context = {
+    teamName: data.threadTitle,
+    reportList,
+  };
+
+  if (isModeForm && reportList.length) {
+    context.isReadOnly = data.isCreator || reportList[0].status === "submitted";
+  }
+
+  return context;
 });

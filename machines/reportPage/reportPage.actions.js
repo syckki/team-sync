@@ -1,6 +1,6 @@
 import { assign } from "xstate";
 
-export const setReportData = assign((_, { output }) => {
+export const setReportList = assign((_, { output }) => {
   return { ...output };
 });
 

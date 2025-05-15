@@ -1,15 +1,15 @@
 import { setup } from "xstate";
 
 import { reportPageMachine } from "./reportPage/reportPage.machine";
-import { fetchReportData } from "./reportPage/reportPage.actors";
-import { setReportData, notifyError } from "./reportPage/reportPage.actions";
+import { fetchReportList } from "./reportPage/reportPage.actors";
+import { setReportList, notifyError } from "./reportPage/reportPage.actions";
 
 const reportPageViewModel = setup({
   actors: {
-    fetchReportData,
+    fetchReportList,
   },
   actions: {
-    setReportData,
+    setReportList,
     notifyError,
   },
   guards: {

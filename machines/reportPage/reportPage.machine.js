@@ -1,4 +1,5 @@
 import ReportFormViewModel, { getNewRow } from "../ReportFormViewModel";
+import ReportViewerViewModel from "../ReportViewerViewModel";
 
 export const reportPageMachine = {
   id: "reportPage",
@@ -9,7 +10,7 @@ export const reportPageMachine = {
     authorId: input.authorId,
     messageIndex: input.messageIndex,
     teamName: "",
-    reportData: null,
+    reportList: [],
     isReadOnly: false,
     mode: input.mode, // "form" | "viewer"
 
@@ -18,8 +19,8 @@ export const reportPageMachine = {
   states: {
     loading: {
       invoke: {
-        id: "fetchReportData",
-        src: "fetchReportData",
+        id: "fetchReportList",
+        src: "fetchReportList",
         input: ({ context }) => ({
           key: context.key,
           mode: context.mode,
@@ -31,7 +32,7 @@ export const reportPageMachine = {
           target: "deciding",
           actions: [
             {
-              type: "setReportData",
+              type: "setReportList",
               params: ({ event }) => ({
                 output: event.output,
               }),
@@ -63,20 +64,21 @@ export const reportPageMachine = {
           authorId: context.authorId,
           messageIndex: context.messageIndex,
           teamName: context.teamName,
-          reportData: context.reportData,
+          reportData: context.reportList[0] || null,
           isReadOnly: context.isReadOnly,
           rows: [getNewRow()],
         }),
       },
     },
     viewer: {
-      /*invoke: {
+      invoke: {
         id: "reportViewer",
-        src: reportViewerMachine,
+        src: ReportViewerViewModel,
         input: ({ context }) => ({
-          reportData: context.reportData,
+          teamName: context.teamName,
+          reportList: context.reportList,
         }),
-      },*/
+      },
     },
     failure: {},
   },

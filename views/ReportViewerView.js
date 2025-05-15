@@ -1,8 +1,15 @@
-import React from "react";
+import { useSelector } from "@xstate/react";
 import styled from "styled-components";
 import CustomSelect from "../ui/CustomSelect";
 import ResponsiveTable from "../ui/ResponsiveTable";
 import { Button } from "../ui";
+
+import AiImpactSummaryViewModel from "../viewModels/reports/AiImpactSummaryViewModel";
+import ToolEffectivenessViewModel from "../viewModels/reports/ToolEffectivenessViewModel";
+import RoleTeamAnalysisViewModel from "../viewModels/reports/RoleTeamAnalysisViewModel";
+import SdlcAnalysisViewModel from "../viewModels/reports/SdlcAnalysisViewModel";
+import ComplexityQualityViewModel from "../viewModels/reports/ComplexityQualityViewModel";
+import QualitativeInsightsViewModel from "../viewModels/reports/QualitativeInsightsViewModel";
 
 // Styled components for the report viewer
 const Container = styled.div`
@@ -58,23 +65,6 @@ const ReportTypesContainer = styled.div`
   }
 `;
 
-const ReportTypeButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  background-color: ${props => props.$active ? '#4e7fff' : '#f7fafc'};
-  color: ${props => props.$active ? 'white' : '#4a5568'};
-  border: 1px solid ${props => props.$active ? '#4e7fff' : '#e2e8f0'};
-
-  &:hover {
-    background-color: ${props => props.$active ? '#3b69e6' : '#edf2f7'};
-  }
-`;
-
 const FiltersContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -104,21 +94,6 @@ const FilterLabel = styled.label`
   font-weight: 500;
   color: #4a5568;
   margin-bottom: 0.375rem;
-`;
-
-const ClearFiltersButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #edf2f7;
-  }
 `;
 
 const ReportList = styled.div`
@@ -177,18 +152,28 @@ const EmptyState = styled.div`
 /**
  * Presentation component for the Report Viewer
  */
-const ReportViewerPresentation = ({
-  threadTitle,
-  reports,
-  isLoading,
-  error,
-  selectedReport,
-  onReportChange,
-  filters,
-  onFilterChange,
-  filterOptions,
-  customReport,
-}) => {
+const ReportViewer = ({ actor }) => {
+  const state = useSelector(actor, (s) => s);
+  const send = actor.send;
+  const sendEvent = (type, data) => send({ type, data });
+
+  const threadTitle = state.context.teamName;
+  const reports = state.context.reportList;
+  const error = state.context.error;
+  const selectedReport = state.context.selectedReport;
+  const filters = state.context.filters;
+  const filterOptions = state.context.filterOptions;
+
+  // Handle filter changes
+  const onFilterChange = (filterName, value) => {
+    sendEvent("UPDATE_FILTER", { filterName, value });
+  };
+
+  // Handle report type selection
+  const onReportChange = (reportType) => {
+    sendEvent("UPDATE_REPORT_TYPE", { reportType });
+  };
+
   // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -209,7 +194,7 @@ const ReportViewerPresentation = ({
     onFilterChange("sdlcTask", "");
   };
 
-  if (isLoading) {
+  if (state.matches("loading")) {
     return (
       <Container>
         <LoadingMessage>Loading reports...</LoadingMessage>
@@ -226,7 +211,7 @@ const ReportViewerPresentation = ({
   }
 
   // Compute filtered reports based on selected filters
-  const filteredReports = reports.filter(report => {
+  const filteredReports = reports.filter((report) => {
     // Filter by team member if specified
     if (filters.teamMember && report.teamMember !== filters.teamMember) {
       return false;
@@ -239,24 +224,24 @@ const ReportViewerPresentation = ({
 
     // If platform is specified, check entries
     if (filters.platform) {
-      const hasMatchingEntry = report.entries.some(entry => 
-        entry.platform === filters.platform
+      const hasMatchingEntry = report.entries.some(
+        (entry) => entry.platform === filters.platform,
       );
       if (!hasMatchingEntry) return false;
     }
 
     // If SDLC step is specified, check entries
     if (filters.sdlcStep) {
-      const hasMatchingEntry = report.entries.some(entry => 
-        entry.sdlcStep === filters.sdlcStep
+      const hasMatchingEntry = report.entries.some(
+        (entry) => entry.sdlcStep === filters.sdlcStep,
       );
       if (!hasMatchingEntry) return false;
     }
 
     // If SDLC task is specified, check entries
     if (filters.sdlcTask) {
-      const hasMatchingEntry = report.entries.some(entry => 
-        entry.sdlcTask === filters.sdlcTask
+      const hasMatchingEntry = report.entries.some(
+        (entry) => entry.sdlcTask === filters.sdlcTask,
       );
       if (!hasMatchingEntry) return false;
     }
@@ -270,58 +255,70 @@ const ReportViewerPresentation = ({
         <Title>Team Reports for: {threadTitle}</Title>
 
         <ReportTypesContainer>
-          <Button 
-            variant={selectedReport === 'raw' ? 'primary' : 'secondary'}
+          <Button
+            variant={selectedReport === "raw" ? "primary" : "secondary"}
             size="small"
-            onClick={() => onReportChange('raw')}
+            onClick={() => onReportChange("raw")}
           >
             Raw Reports
           </Button>
 
-          <Button 
-            variant={selectedReport === 'aiImpactSummary' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "aiImpactSummary" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('aiImpactSummary')}
+            onClick={() => onReportChange("aiImpactSummary")}
           >
             AI Impact Summary
           </Button>
 
-          <Button 
-            variant={selectedReport === 'toolEffectiveness' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "toolEffectiveness" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('toolEffectiveness')}
+            onClick={() => onReportChange("toolEffectiveness")}
           >
             Tool Effectiveness
           </Button>
 
-          <Button 
-            variant={selectedReport === 'roleTeamAnalysis' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "roleTeamAnalysis" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('roleTeamAnalysis')}
+            onClick={() => onReportChange("roleTeamAnalysis")}
           >
             Role & Team Analysis
           </Button>
 
-          <Button 
-            variant={selectedReport === 'sdlcAnalysis' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "sdlcAnalysis" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('sdlcAnalysis')}
+            onClick={() => onReportChange("sdlcAnalysis")}
           >
             SDLC Analysis
           </Button>
 
-          <Button 
-            variant={selectedReport === 'complexityQuality' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "complexityQuality" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('complexityQuality')}
+            onClick={() => onReportChange("complexityQuality")}
           >
             Complexity & Quality
           </Button>
 
-          <Button 
-            variant={selectedReport === 'qualitativeInsights' ? 'primary' : 'secondary'} 
+          <Button
+            variant={
+              selectedReport === "qualitativeInsights" ? "primary" : "secondary"
+            }
             size="small"
-            onClick={() => onReportChange('qualitativeInsights')}
+            onClick={() => onReportChange("qualitativeInsights")}
           >
             Qualitative Insights
           </Button>
@@ -331,7 +328,7 @@ const ReportViewerPresentation = ({
       <FiltersContainer>
         <FilterGroup>
           <FilterLabel>Team Member</FilterLabel>
-          <CustomSelect 
+          <CustomSelect
             value={filters.teamMember}
             onChange={(value) => onFilterChange("teamMember", value)}
             options={createOptions(filterOptions.teamMembers)}
@@ -341,7 +338,7 @@ const ReportViewerPresentation = ({
 
         <FilterGroup>
           <FilterLabel>Team Role</FilterLabel>
-          <CustomSelect 
+          <CustomSelect
             value={filters.teamRole}
             onChange={(value) => onFilterChange("teamRole", value)}
             options={createOptions(filterOptions.teamRoles)}
@@ -351,7 +348,7 @@ const ReportViewerPresentation = ({
 
         <FilterGroup>
           <FilterLabel>Platform</FilterLabel>
-          <CustomSelect 
+          <CustomSelect
             value={filters.platform}
             onChange={(value) => onFilterChange("platform", value)}
             options={createOptions(filterOptions.platforms)}
@@ -361,7 +358,7 @@ const ReportViewerPresentation = ({
 
         <FilterGroup>
           <FilterLabel>SDLC Step</FilterLabel>
-          <CustomSelect 
+          <CustomSelect
             value={filters.sdlcStep}
             onChange={(value) => onFilterChange("sdlcStep", value)}
             options={createOptions(filterOptions.sdlcSteps)}
@@ -371,7 +368,7 @@ const ReportViewerPresentation = ({
 
         <FilterGroup>
           <FilterLabel>SDLC Task</FilterLabel>
-          <CustomSelect 
+          <CustomSelect
             value={filters.sdlcTask}
             onChange={(value) => onFilterChange("sdlcTask", value)}
             options={createOptions(filterOptions.sdlcTasks)}
@@ -379,10 +376,10 @@ const ReportViewerPresentation = ({
           />
         </FilterGroup>
 
-        {selectedReport === 'aiImpactSummary' && (
+        {selectedReport === "aiImpactSummary" && (
           <FilterGroup>
             <FilterLabel>Period Type</FilterLabel>
-            <CustomSelect 
+            <CustomSelect
               value={filters.periodType}
               onChange={(value) => onFilterChange("periodType", value)}
               options={["week", "month", "quarter"]}
@@ -391,77 +388,101 @@ const ReportViewerPresentation = ({
           </FilterGroup>
         )}
 
-        <Button 
-          variant="secondary"
-          size="small"
-          onClick={clearFilters}
-        >
+        <Button variant="secondary" size="small" onClick={clearFilters}>
           Clear Filters
         </Button>
       </FiltersContainer>
 
       {/* Render custom report if selected */}
-      {customReport}
+      {{
+        aiImpactSummary: (
+          <AiImpactSummaryViewModel reports={reports} filters={filters} />
+        ),
+        toolEffectiveness: (
+          <ToolEffectivenessViewModel reports={reports} filters={filters} />
+        ),
+        roleTeamAnalysis: (
+          <RoleTeamAnalysisViewModel reports={reports} filters={filters} />
+        ),
+        sdlcAnalysis: (
+          <SdlcAnalysisViewModel reports={reports} filters={filters} />
+        ),
+        complexityQuality: (
+          <ComplexityQualityViewModel reports={reports} filters={filters} />
+        ),
+        qualitativeInsights: (
+          <QualitativeInsightsViewModel reports={reports} filters={filters} />
+        ),
+        raw: (
+          <>
+            {filteredReports.length === 0 ? (
+              <EmptyState>
+                No productivity reports match the selected filters.
+              </EmptyState>
+            ) : (
+              <ReportList>
+                {filteredReports.map((report, index) => (
+                  <ReportCard key={index}>
+                    <ReportHeader>
+                      <ReportTitle>
+                        Report from {report.teamMember} ({report.teamRole})
+                      </ReportTitle>
+                      <ReportDate>{formatDate(report.timestamp)}</ReportDate>
+                    </ReportHeader>
 
-      {/* Render raw reports if selected */}
-      {selectedReport === 'raw' && (
-        <>
-          {filteredReports.length === 0 ? (
-            <EmptyState>No productivity reports match the selected filters.</EmptyState>
-          ) : (
-            <ReportList>
-              {filteredReports.map((report, index) => (
-                <ReportCard key={index}>
-                  <ReportHeader>
-                    <ReportTitle>
-                      Report from {report.teamMember} ({report.teamRole})
-                    </ReportTitle>
-                    <ReportDate>{formatDate(report.timestamp)}</ReportDate>
-                  </ReportHeader>
-
-                  <ReportContent>
-                    <ResponsiveTable
-                      data={report.entries}
-                      keyField="id"
-                      emptyMessage="No entries available"
-                      columns={[
-                        { field: "sdlcStep", header: "SDLC Step" },
-                        { field: "sdlcTask", header: "SDLC Task" },
-                        { field: "hours", header: "Hours", width: "80px" },
-                        { field: "taskDetails", header: "Task Details" },
-                        { field: "aiTool", header: "AI Tool" },
-                        { field: "aiProductivity", header: "AI Productivity" },
-                        { field: "hoursSaved", header: "Saved", width: "80px" }
-                      ]}
-                      summaryRow={{
-                        sdlcStep: "Total",
-                        sdlcTask: "",
-                        hours: report.entries
-                          .reduce(
-                            (sum, entry) => sum + (parseFloat(entry.hours) || 0),
-                            0
-                          )
-                          .toFixed(1),
-                        taskDetails: "",
-                        aiTool: "",
-                        aiProductivity: "",
-                        hoursSaved: report.entries
-                          .reduce(
-                            (sum, entry) => sum + (parseFloat(entry.hoursSaved) || 0),
-                            0
-                          )
-                          .toFixed(1)
-                      }}
-                    />
-                  </ReportContent>
-                </ReportCard>
-              ))}
-            </ReportList>
-          )}
-        </>
-      )}
+                    <ReportContent>
+                      <ResponsiveTable
+                        data={report.entries}
+                        keyField="id"
+                        emptyMessage="No entries available"
+                        columns={[
+                          { field: "sdlcStep", header: "SDLC Step" },
+                          { field: "sdlcTask", header: "SDLC Task" },
+                          { field: "hours", header: "Hours", width: "80px" },
+                          { field: "taskDetails", header: "Task Details" },
+                          { field: "aiTool", header: "AI Tool" },
+                          {
+                            field: "aiProductivity",
+                            header: "AI Productivity",
+                          },
+                          {
+                            field: "hoursSaved",
+                            header: "Saved",
+                            width: "80px",
+                          },
+                        ]}
+                        summaryRow={{
+                          sdlcStep: "Total",
+                          sdlcTask: "",
+                          hours: report.entries
+                            .reduce(
+                              (sum, entry) =>
+                                sum + (parseFloat(entry.hours) || 0),
+                              0,
+                            )
+                            .toFixed(1),
+                          taskDetails: "",
+                          aiTool: "",
+                          aiProductivity: "",
+                          hoursSaved: report.entries
+                            .reduce(
+                              (sum, entry) =>
+                                sum + (parseFloat(entry.hoursSaved) || 0),
+                              0,
+                            )
+                            .toFixed(1),
+                        }}
+                      />
+                    </ReportContent>
+                  </ReportCard>
+                ))}
+              </ReportList>
+            )}
+          </>
+        ),
+      }[selectedReport] || <></>}
     </Container>
   );
 };
 
-export default ReportViewerPresentation;
+export default ReportViewer;

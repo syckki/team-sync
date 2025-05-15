@@ -5,10 +5,10 @@ import Head from "next/head";
 import styled from "styled-components";
 import Link from "next/link";
 import ReportPageViewModel from "../../../machines/ReportPageViewModel";
-import ReportViewerViewModel from "../../../viewModels/ReportViewerViewModel";
 import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
 import { getEncryptedAuthorId } from "../../../lib/cryptoUtils";
 import ReportFormView from "../../../views/ReportFormView";
+import ReportViewerView from "../../../views/ReportViewerView";
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -84,7 +84,7 @@ const ReportPage = () => {
           ) : (
             <>
               {state.matches("viewer") && (
-                <ReportViewerViewModel actor={state.children.reportViewer} />
+                <ReportViewerView actor={state.children.reportViewer} />
               )}
               {state.matches("form") && (
                 <ReportFormView actor={state.children.reportForm} />

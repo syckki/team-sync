@@ -3,8 +3,15 @@ import { GlobalStyles } from "../styles/globalStyles";
 import { theme } from "../styles/theme";
 import Layout from "../ui/Layout";
 import Head from "next/head";
+import { useEffect } from "react";
+import setupInspector from "../lib/xstateInspector";
 
 const App = ({ Component, pageProps }) => {
+  // Initialize the XState inspector in development mode
+  useEffect(() => {
+    setupInspector();
+  }, []);
+
   return (
     <>
       <Head>

@@ -20,6 +20,7 @@ const config = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               img-src 'self' data:;
               script-src 'self' 'unsafe-eval' 'unsafe-inline';
+              frame-src https://stately.ai;
             `
               .replace(/\s{2,}/g, " ")
               .trim(),

@@ -1,4 +1,3 @@
-import React from "react";
 import { useRouter } from "next/router";
 import { useMachine } from "@xstate/react";
 import Head from "next/head";
@@ -9,6 +8,7 @@ import { Card, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
 import { getEncryptedAuthorId } from "../../../lib/cryptoUtils";
 import ReportFormView from "../../../views/ReportFormView";
 import ReportViewerView from "../../../views/ReportViewerView";
+import { createBrowserInspector } from "@statelyai/inspect";
 
 const BackLinkText = styled.span`
   display: inline-block;
@@ -29,6 +29,14 @@ const LoadingMessage = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
+const isBrowser = typeof window !== "undefined";
+
+const inspector = createBrowserInspector({
+  // Comment out the line below to start the inspector
+  autoStart: isBrowser,
+  iframe: isBrowser && document.querySelector("#inspector-iframe"),
+});
+
 const ReportPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -38,6 +46,7 @@ const ReportPage = () => {
   const messageIndex = index ? parseInt(index, 10) : null;
 
   const [state] = useMachine(ReportPageViewModel, {
+    inspect: inspector.inspect,
     input: {
       key,
       threadId: id,
@@ -97,6 +106,16 @@ const ReportPage = () => {
           )}
         </ContentContainer>
       </Card>
+
+      <iframe
+        id="inspector-iframe"
+        title="Traffic Light State Inspector"
+        style={{
+          height: "500px",
+          width: "100%",
+        }}
+        src="https://stately.ai/inspect"
+      ></iframe>
     </>
   );
 };

@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Breakpoint } from "../lib/styles";
 import InfoTooltip from "./InfoTooltip";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // Flexbox-based responsive table container
 const TableContainer = styled.div`
@@ -319,37 +320,7 @@ const ResponsiveTable = ({
     return <EmptyState>{emptyMessage}</EmptyState>;
   }
 
-  // Track if we're on mobile viewport (using window.matchMedia if available)
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  // Media query effect to detect screen size
-  React.useEffect(() => {
-    // Check if we're in a browser environment
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia(
-        `(max-width: ${Breakpoint.LAPTOP}px)`,
-      );
-
-      // Set initial value
-      setIsMobile(mediaQuery.matches);
-
-      // Add listener for changes
-      const handleResize = (e) => {
-        setIsMobile(e.matches);
-      };
-
-      // Modern browsers
-      if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener("change", handleResize);
-        return () => mediaQuery.removeEventListener("change", handleResize);
-      }
-      // Older browsers
-      else if (mediaQuery.addListener) {
-        mediaQuery.addListener(handleResize);
-        return () => mediaQuery.removeListener(handleResize);
-      }
-    }
-  }, []);
+  const isMobile = useIsMobile();
 
   // For mobile, we'll always expand all rows
   const effectiveExpandedRows = React.useMemo(() => {

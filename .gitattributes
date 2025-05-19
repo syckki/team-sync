@@ -1,0 +1,2 @@
+archive/replit-chat-backup-*.pdf filter=lfs diff=lfs merge=lfs -text
+archive/replit-chat-backup-*.html filter=lfs diff=lfs merge=lfs -text

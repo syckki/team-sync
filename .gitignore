@@ -6,6 +6,7 @@
 public/workbox*
 public/fallback*
 public/sw.js**
+node_modules
 
 .yarn/*
 !.yarn/patches

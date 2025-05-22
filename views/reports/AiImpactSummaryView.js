@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useSelector } from "@xstate/react";
 
 // Styled components for the report
 const ReportContainer = styled.div`
@@ -18,11 +19,11 @@ const KpiCardsGrid = styled.div`
   grid-template-columns: repeat(1, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
-  
+
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   @media (min-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -108,13 +109,13 @@ const BarColumn = styled.div`
 
 const Bar = styled.div`
   width: 100%;
-  background-color: ${props => props.$color || '#4e7fff'};
+  background-color: ${(props) => props.$color || "#4e7fff"};
   border-radius: 0.25rem;
   transition: height 0.3s ease;
   min-height: 4px;
   max-width: 60px;
   position: relative;
-  
+
   &:hover {
     opacity: 0.9;
   }
@@ -136,14 +137,14 @@ const BarLabel = styled.div`
 const AxisLine = styled.div`
   position: absolute;
   background-color: #e2e8f0;
-  
+
   &.x-axis {
     left: 0;
     right: 0;
     bottom: 30px;
     height: 1px;
   }
-  
+
   &.y-axis {
     left: 0;
     top: 0;
@@ -162,7 +163,7 @@ const BarValue = styled.div`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  
+
   th {
     text-align: left;
     padding: 0.75rem;
@@ -171,13 +172,13 @@ const Table = styled.table`
     color: #718096;
     border-bottom: 2px solid #e2e8f0;
   }
-  
+
   td {
     padding: 0.75rem;
     border-bottom: 1px solid #f3f4f6;
     font-size: 0.875rem;
   }
-  
+
   tr:nth-child(even) {
     background-color: #f8fafc;
   }
@@ -194,7 +195,7 @@ const ProgressBar = styled.div`
 const ProgressFill = styled.div`
   height: 100%;
   background-color: #4e7fff;
-  width: ${props => `${Math.min(props.$percentage, 100)}%`};
+  width: ${(props) => `${Math.min(props.$percentage, 100)}%`};
 `;
 
 const NoDataMessage = styled.div`
@@ -207,28 +208,32 @@ const NoDataMessage = styled.div`
 /**
  * Presentation component for the AI Impact Summary report
  */
-const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
-  const { summary, periodData, platformData, sdlcData } = reportData;
-  
+const AiImpactSummaryView = ({ actor }) => {
+  const state = useSelector(actor, (s) => s);
+  const { summary, periodData, platformData, sdlcData } = state.context.reportData;
+  const { periodType } = state.context.filters;
+
   // Format number with commas and 1 decimal place
   const formatNumber = (num) => {
-    return num.toLocaleString(undefined, { 
+    return num.toLocaleString(undefined, {
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1 
+      maximumFractionDigits: 1,
     });
   };
-  
+
   // Format percentage with 1 decimal place
   const formatPercent = (num) => {
-    return num.toLocaleString(undefined, { 
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1 
-    }) + '%';
+    return (
+      num.toLocaleString(undefined, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }) + "%"
+    );
   };
-  
+
   // Find the maximum value for chart scaling
-  const maxHoursSaved = Math.max(...periodData.map(period => period.totalHoursSaved), 1);
-  
+  const maxHoursSaved = Math.max(...periodData.map((period) => period.totalHoursSaved), 1);
+
   // If no data is available
   if (summary.totalEntries === 0) {
     return (
@@ -242,7 +247,7 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
   return (
     <ReportContainer>
       <ReportTitle>Summary of AI's Overall Impact on Productivity</ReportTitle>
-      
+
       {/* KPI Cards */}
       <KpiCardsGrid>
         <KpiCard>
@@ -250,29 +255,31 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
           <KpiValue>{formatNumber(summary.totalHours)} hrs</KpiValue>
           <KpiSubtext>Across {summary.totalEntries} tasks</KpiSubtext>
         </KpiCard>
-        
+
         <KpiCard>
           <KpiLabel>Total Time Saved</KpiLabel>
           <KpiValue>{formatNumber(summary.totalHoursSaved)} hrs</KpiValue>
           <KpiSubtext>Using AI productivity tools</KpiSubtext>
         </KpiCard>
-        
+
         <KpiCard>
           <KpiLabel>Average Time Saved Per Task</KpiLabel>
           <KpiValue>{formatNumber(summary.averageProductivity)} hrs</KpiValue>
           <KpiSubtext>Across all reported tasks</KpiSubtext>
         </KpiCard>
-        
+
         <KpiCard>
           <KpiLabel>Productivity Ratio</KpiLabel>
           <KpiValue>{formatPercent(summary.productivityRatio)}</KpiValue>
           <KpiSubtext>Time saved vs. time spent</KpiSubtext>
         </KpiCard>
       </KpiCardsGrid>
-      
+
       {/* Time Period Analysis */}
       <Section>
-        <SectionTitle>Productivity Trends by {periodType.charAt(0).toUpperCase() + periodType.slice(1)}</SectionTitle>
+        <SectionTitle>
+          Productivity Trends by {periodType.charAt(0).toUpperCase() + periodType.slice(1)}
+        </SectionTitle>
         {periodData.length === 0 ? (
           <NoDataMessage>No period data available.</NoDataMessage>
         ) : (
@@ -280,22 +287,24 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
             <BarChartContainer>
               <AxisLine className="x-axis" />
               <AxisLine className="y-axis" />
-              
+
               <BarGroup>
                 {periodData.map((period, index) => (
                   <BarColumn key={index}>
                     <BarValue>{formatNumber(period.totalHoursSaved)}</BarValue>
-                    <Bar 
+                    <Bar
                       style={{ height: `${(period.totalHoursSaved / maxHoursSaved) * 100}%` }}
                       $color="#4e7fff"
-                      title={`${period.period}: ${formatNumber(period.totalHoursSaved)} hrs saved (${formatPercent(period.productivityRatio)} productivity ratio)`}
+                      title={`${period.period}: ${formatNumber(
+                        period.totalHoursSaved
+                      )} hrs saved (${formatPercent(period.productivityRatio)} productivity ratio)`}
                     />
                     <BarLabel>{period.period}</BarLabel>
                   </BarColumn>
                 ))}
               </BarGroup>
             </BarChartContainer>
-            
+
             <Table>
               <thead>
                 <tr>
@@ -326,7 +335,7 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
           </>
         )}
       </Section>
-      
+
       {/* Platform Analysis */}
       <Section>
         <SectionTitle>AI Productivity by Platform</SectionTitle>
@@ -362,7 +371,7 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
           </Table>
         )}
       </Section>
-      
+
       {/* SDLC Analysis */}
       <Section>
         <SectionTitle>AI Productivity by SDLC Step</SectionTitle>
@@ -402,4 +411,4 @@ const AiImpactSummaryPresentation = ({ reportData, periodType }) => {
   );
 };
 
-export default AiImpactSummaryPresentation;
+export default AiImpactSummaryView;

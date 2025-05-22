@@ -2,16 +2,13 @@ import { fromPromise } from "xstate";
 import { decryptDataFromByteArray } from "../../lib/cryptoUtils";
 
 export const fetchReportList = fromPromise(async ({ input }) => {
-  const { mode, key, threadId, authorId, messageIndex } = input;
+  const { mode, key, threadId, authorId, reportIndex } = input;
   const isModeForm = mode === "form";
 
-  if (isModeForm && !messageIndex) throw new Error("Missing message index");
+  const messageParam = isModeForm && reportIndex ? `&messageIndex=${reportIndex}` : "";
+  const authorParam = isModeForm && !reportIndex ? "" : `&authorId=${authorId}`;
 
-  const messageParam = isModeForm ? `&messageIndex=${messageIndex}` : "";
-
-  const response = await fetch(
-    `/api/download?threadId=${threadId}&authorId=${authorId}${messageParam}`,
-  );
+  const response = await fetch(`/api/download?threadId=${threadId}${authorParam}${messageParam}`);
   const data = await response.json();
 
   if (!response.ok) throw new Error(data.error);
@@ -41,8 +38,9 @@ export const fetchReportList = fromPromise(async ({ input }) => {
     reportList,
   };
 
-  if (isModeForm && reportList.length) {
-    context.isReadOnly = data.isCreator || reportList[0].status === "submitted";
+  if (isModeForm) {
+    context.isReadOnly =
+      (data.isCreator && !reportList[0]?.isThreadCreator) || reportList[0]?.status === "submitted";
   }
 
   return context;

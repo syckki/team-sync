@@ -2,14 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import {
-  Card,
-  Button,
-  Input,
-  ErrorMessage,
-  ContentContainer,
-  PageHeader,
-} from "../../../ui";
+import { Card, Button, Input, ErrorMessage, ContentContainer, PageHeader } from "../../../ui";
 
 const KeyInputForm = styled.form`
   margin: 2rem auto;
@@ -30,17 +23,14 @@ const JoinToThreadPage = () => {
     }
 
     // Update the URL with the hash to make it shareable
-    router.push(`/channel/${router.query.id}#${manualKey.trim()}`);
+    router.push(`/channel/${router.query.id}#key=${manualKey.trim()}`);
   };
 
   return (
     <>
       <Head>
         <title>Join an Existing Channel</title>
-        <meta
-          name="description"
-          content="Enter the shared access key to continue."
-        />
+        <meta name="description" content="Enter the shared access key to continue." />
       </Head>
 
       <Card
@@ -68,12 +58,7 @@ const JoinToThreadPage = () => {
               style={{ fontFamily: "monospace" }}
             />
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="large"
-              style={{ marginTop: "1rem" }}
-            >
+            <Button type="submit" variant="primary" size="large" style={{ marginTop: "1rem" }}>
               Join Channel
             </Button>
           </KeyInputForm>

@@ -16,15 +16,7 @@ export const fetchReferenceData = fromPromise(async () => {
 
 // Submit the report to the server
 export const submitReport = fromPromise(async ({ input }) => {
-  const {
-    mode,
-    threadId,
-    authorId,
-    messageIndex,
-    teamName,
-    teamMember,
-    teamRole,
-  } = input; // from context
+  const { mode, threadId, authorId, reportIndex, teamName, teamMember, teamRole } = input; // from context
 
   // Process the form data
   const reportEntries = input.rows.map((row) => ({
@@ -62,9 +54,9 @@ export const submitReport = fromPromise(async ({ input }) => {
     },
   };
 
-  // If we're editing an existing message, include the messageIndex
-  if (messageIndex !== null) {
-    submitData.messageIndex = messageIndex;
+  // If we're editing an existing report, include the reportIndex
+  if (reportIndex !== null) {
+    submitData.messageIndex = reportIndex;
   }
 
   // Send to the server
@@ -103,9 +95,7 @@ export const updateReferenceData = fromPromise(async () => {
     // For each storage key, check if there are additional items to sync
     for (const [storageKey, categoryName] of Object.entries(storageKeyMap)) {
       const storedItems = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      const alteredItems = JSON.parse(
-        localStorage.getItem(`${storageKey}-altered`) || "{}",
-      );
+      const alteredItems = JSON.parse(localStorage.getItem(`${storageKey}-altered`) || "{}");
 
       newData[categoryName] = storedItems;
       if (Object.keys(alteredItems).length > 0) {
@@ -119,9 +109,7 @@ export const updateReferenceData = fromPromise(async () => {
     const storageKey = "sdlcTaskOptionsMap";
 
     const storedTaskMap = JSON.parse(localStorage.getItem(storageKey) || "{}");
-    const alteredTaskMap = JSON.parse(
-      localStorage.getItem(`${storageKey}-altered`) || "{}",
-    );
+    const alteredTaskMap = JSON.parse(localStorage.getItem(`${storageKey}-altered`) || "{}");
 
     const updatedTasksMap = {};
 

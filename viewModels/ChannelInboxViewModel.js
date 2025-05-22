@@ -1,9 +1,6 @@
+import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import {
-  importKeyFromBase64,
-  decryptData,
-  encryptData,
-} from "../lib/cryptoUtils";
+import { importKeyFromBase64, decryptData, encryptData } from "../lib/cryptoUtils";
 import { queueMessage } from "../lib/dbService";
 import {
   initNetworkMonitoring,
@@ -81,10 +78,10 @@ const MessageBadge = styled.span`
     props.$isQueued
       ? "#f39c12"
       : props.$isCreator
-        ? "#e74c3c"
-        : props.$isCurrentUser
-          ? "#3498db"
-          : "#7f8c8d"};
+      ? "#e74c3c"
+      : props.$isCurrentUser
+      ? "#3498db"
+      : "#7f8c8d"};
   color: white;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -107,6 +104,8 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
   const [isMessageQueued, setIsMessageQueued] = useState(false);
   const [threadTitle, setThreadTitle] = useState("");
   const [secureShareLink, setSecureShareLink] = useState("");
+
+  const router = useRouter();
 
   // Initialize network monitoring
   useEffect(() => {
@@ -137,7 +136,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
 
         // Reload after a short delay to show all synced messages
         setTimeout(() => {
-          window.location.reload();
+          router.reload();
         }, 1000);
       }
     };
@@ -175,7 +174,9 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         // Generate or retrieve author ID from localStorage
         let userAuthorId = localStorage.getItem("encrypted-app-author-id");
         if (!userAuthorId) {
-          userAuthorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+          userAuthorId = `author-${Date.now().toString(36)}-${Math.random()
+            .toString(36)
+            .substring(2, 8)}`;
           localStorage.setItem("encrypted-app-author-id", userAuthorId);
         }
 
@@ -188,9 +189,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         const all = viewMode === "all" ? "" : "&all=false";
 
         // Fetch messages from the thread based on authorId and all parameter
-        const response = await fetch(
-          `/api/download?threadId=${id}&authorId=${userAuthorId}${all}`,
-        );
+        const response = await fetch(`/api/download?threadId=${id}&authorId=${userAuthorId}${all}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch thread messages");
@@ -206,9 +205,8 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
 
         // Generate the secure sharing link with the current key
         if (threadData.isCreator && key64) {
-          const origin =
-            typeof window !== "undefined" ? window.location.origin : "";
-          const secureUrl = `${origin}/channel/${id}#${key64}`;
+          const origin = typeof window !== "undefined" ? window.location.origin : "";
+          const secureUrl = `${origin}/channel/${id}#key=${key64}`;
           setSecureShareLink(secureUrl);
         }
 
@@ -221,9 +219,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         for (const message of threadData.messages) {
           try {
             // Convert base64 data back to ArrayBuffer
-            const encryptedBytes = Uint8Array.from(atob(message.data), (c) =>
-              c.charCodeAt(0),
-            );
+            const encryptedBytes = Uint8Array.from(atob(message.data), (c) => c.charCodeAt(0));
 
             // Extract IV and ciphertext
             const iv = encryptedBytes.slice(0, 12);
@@ -235,8 +231,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
             const content = JSON.parse(new TextDecoder().decode(decrypted));
 
             // Add this message's author
-            const messageAuthorId =
-              message.metadata?.authorId || content.authorId || null;
+            const messageAuthorId = message.metadata?.authorId || content.authorId || null;
 
             // Check if this is a productivity report
             const isReport = message.metadata?.isReport;
@@ -276,10 +271,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
               });
             }
           } catch (decryptError) {
-            console.error(
-              `Error decrypting message ${message.index}:`,
-              decryptError,
-            );
+            console.error(`Error decrypting message ${message.index}:`, decryptError);
           }
         }
 
@@ -356,17 +348,13 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         setShowAddForm(false);
 
         // Show success message and reload after a delay
-        alert(
-          "Message added successfully! The page will refresh to show the updated thread.",
-        );
+        alert("Message added successfully! The page will refresh to show the updated thread.");
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } else {
         // Offline - queue the message for later sending
-        console.log(
-          "You are offline. Message will be queued for later upload.",
-        );
+        console.log("You are offline. Message will be queued for later upload.");
 
         // Metadata for the queued message
         const metadata = {
@@ -379,7 +367,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         await queueMessage(
           id, // threadId
           combinedData, // encrypted data
-          metadata, // metadata about the message
+          metadata // metadata about the message
         );
 
         // Let the user know the message was queued
@@ -401,7 +389,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
 
         // No reload - queued messages will be sent when back online
         alert(
-          "You are currently offline. Your message has been saved and will be sent when you're back online.",
+          "You are currently offline. Your message has been saved and will be sent when you're back online."
         );
       }
     } catch (err) {
@@ -419,9 +407,9 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
   // Handle click on a report message - navigate to appropriate route
   const handleReportClick = (message) => {
     // Use the standard view=false parameter for all reports
-    // The messageIndex is used to identify the specific message
+    // The reportIndex is used to identify the specific report
     if (message.isReport) {
-      window.location.href = `/channel/${id}/report?view=false&index=${message.index}#${key64}`;
+      router.push(`/channel/${id}/report/${message.index}#key=${key64}`);
     }
   };
 
@@ -447,16 +435,15 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
       {/* Show offline notification when needed */}
       {!networkStatus && (
         <WarningMessage title="You are offline">
-          Messages will be queued and sent automatically when your connection is
-          restored.
+          Messages will be queued and sent automatically when your connection is restored.
         </WarningMessage>
       )}
 
       {/* Show queued message notification */}
       {isMessageQueued && (
         <InfoMessage title="Message Queued">
-          Your message has been queued and will be sent automatically when your
-          connection is restored.
+          Your message has been queued and will be sent automatically when your connection is
+          restored.
         </InfoMessage>
       )}
 
@@ -488,9 +475,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
             <Button
               variant="success"
               size="small"
-              onClick={() =>
-                (window.location.href = `/channel/${id}/report?view=true#${key64}`)
-              }
+              onClick={() => router.push(`/channel/${id}/report?all=true#key=${key64}`)}
             >
               View Reports
             </Button>
@@ -499,9 +484,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
 
         {/* If user is not the creator, show info message about visibility */}
         {!isThreadCreator && (
-          <InfoMessage>
-            Note: You can only see messages you've created in this thread.
-          </InfoMessage>
+          <InfoMessage>Note: You can only see messages you've created in this thread.</InfoMessage>
         )}
 
         {/* Show SecureLink for thread creator only */}
@@ -545,44 +528,32 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
         <MessagesList>
           {filteredMessages.map((message, index) => {
             // Determine if message should be clickable/editable (user's own draft reports)
-            const isEditable = message.isCurrentUser && message.isReport;
+            const isClickable = message.isReport;
 
             return (
               <Card
                 key={index}
-                clickable={isEditable}
-                onClick={() =>
-                  message.isReport ? handleReportClick(message) : null
-                }
+                clickable={isClickable}
+                onClick={() => (message.isReport ? handleReportClick(message) : null)}
                 headerRight={
-                  message.timestamp && (
-                    <MessageDate>{formatDate(message.timestamp)}</MessageDate>
-                  )
+                  message.timestamp && <MessageDate>{formatDate(message.timestamp)}</MessageDate>
                 }
                 title={
                   <div style={{ display: "flex", alignItems: "center" }}>
                     {message.title}
-                    {message.isQueued && (
-                      <MessageBadge $isQueued={true}>Queued</MessageBadge>
-                    )}
+                    {message.isQueued && <MessageBadge $isQueued={true}>Queued</MessageBadge>}
                     {message.isReport && message.reportStatus === "draft" && (
-                      <MessageBadge style={{ backgroundColor: "#F59E0B" }}>
-                        Draft
-                      </MessageBadge>
+                      <MessageBadge style={{ backgroundColor: "#F59E0B" }}>Draft</MessageBadge>
                     )}
                     {!message.isQueued && message.isCurrentUser && (
                       <MessageBadge $isCurrentUser={true}>You</MessageBadge>
                     )}
-                    {!message.isQueued &&
-                      message.isCreator &&
-                      !message.isCurrentUser && (
-                        <MessageBadge $isCreator={true}>Creator</MessageBadge>
-                      )}
-                    {!message.isQueued &&
-                      !message.isCreator &&
-                      !message.isCurrentUser && (
-                        <MessageBadge>Other</MessageBadge>
-                      )}
+                    {!message.isQueued && message.isCreator && !message.isCurrentUser && (
+                      <MessageBadge $isCreator={true}>Creator</MessageBadge>
+                    )}
+                    {!message.isQueued && !message.isCreator && !message.isCurrentUser && (
+                      <MessageBadge>Other</MessageBadge>
+                    )}
                   </div>
                 }
               >
@@ -594,11 +565,11 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
                             message.reportData.entries
                               .map((entry) => entry.aiToolsUsed)
                               .join(",")
-                              .split(","),
+                              .split(",")
                           ),
                         ]
                       : "")}
-                  {isEditable && (
+                  {isClickable && message.isCurrentUser && message.reportStatus === "draft" && (
                     <div
                       style={{
                         marginTop: "0.5rem",
@@ -623,9 +594,7 @@ const ChannelInboxViewModel = ({ id, key64 }) => {
           </Button>
 
           <Button
-            onClick={() =>
-              (window.location.href = `/channel/${id}/report#${key64}`)
-            }
+            onClick={() => router.push(`/channel/${id}/report#key=${key64}`)}
             variant="success"
           >
             Submit AI Productivity Report

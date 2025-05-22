@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  generateKey,
-  encryptData,
-  exportKeyToBase64,
-} from "../lib/cryptoUtils";
+import { generateKey, encryptData, exportKeyToBase64 } from "../lib/cryptoUtils";
 import { queueMessage } from "../lib/dbService";
 import {
   initNetworkMonitoring,
@@ -158,7 +154,9 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
       // Generate or retrieve author ID from localStorage
       let authorId = localStorage.getItem("encrypted-app-author-id");
       if (!authorId) {
-        authorId = `author-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+        authorId = `author-${Date.now().toString(36)}-${Math.random()
+          .toString(36)
+          .substring(2, 8)}`;
         localStorage.setItem("encrypted-app-author-id", authorId);
       }
 
@@ -208,18 +206,13 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
           // Try to get more detailed error message from response
           const errorData = await response.json();
 
-          if (
-            response.status === 409 &&
-            errorData.code === "DUPLICATE_THREAD_TITLE"
-          ) {
+          if (response.status === 409 && errorData.code === "DUPLICATE_THREAD_TITLE") {
             // Specific error for duplicate thread title
             // throw new Error(errorData.error || 'A thread with this title already exists.');
             router.push(`/channel/${slugify(content.title)}/join`);
             return;
           } else {
-            throw new Error(
-              errorData.error || "Failed to upload encrypted data",
-            );
+            throw new Error(errorData.error || "Failed to upload encrypted data");
           }
         } else {
           // Parse the response body as JSON
@@ -232,19 +225,14 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
         const keyBase64 = await exportKeyToBase64(key);
 
         // Create a complete URL with the key as a fragment
-        const secureUrl = `${responseUrl}#${keyBase64}`;
-        sessionStorage.setItem(
-          "secureUrl",
-          `${window.location.origin}${secureUrl}`,
-        );
+        const secureUrl = `${responseUrl}#key=${keyBase64}`;
+        sessionStorage.setItem("secureUrl", `${window.location.origin}${secureUrl}`);
         setEncryptedResult({ url: `${window.location.origin}${secureUrl}` });
 
         router.push(secureUrl);
       } else {
         // Offline - queue the message for later sending
-        console.log(
-          "You are offline. Message will be queued for later upload.",
-        );
+        console.log("You are offline. Message will be queued for later upload.");
 
         // Metadata for the queued message
         const metadata = {
@@ -257,7 +245,7 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
         await queueMessage(
           replyToId, // threadId (null for new threads)
           combinedData, // encrypted data
-          metadata, // metadata about the message
+          metadata // metadata about the message
         );
 
         // Let the user know the message was queued
@@ -271,8 +259,8 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
 
           // Create a pseudo "secure link" for when we're back online
           const tempLink = replyToId
-            ? `/channel/${replyToId}#${keyBase64}`
-            : `/channel/pending_${Date.now().toString(36)}#${keyBase64}`;
+            ? `/channel/${replyToId}#key=${keyBase64}`
+            : `/channel/pending_${Date.now().toString(36)}#key=${keyBase64}`;
 
           // Set a result so the user can see something was encrypted
           setEncryptedResult({
@@ -306,16 +294,14 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
 
   return (
     <>
-      {isReply && replyToId && (
-        <ReplyBadge>Replying to thread: {replyToId}</ReplyBadge>
-      )}
+      {isReply && replyToId && <ReplyBadge>Replying to thread: {replyToId}</ReplyBadge>}
 
       {/* Network status indicator */}
       {!networkStatus && (
         <Message type="warning">
           <div>
-            <strong>You are offline.</strong> Messages will be queued and sent
-            automatically when your connection is restored.
+            <strong>You are offline.</strong> Messages will be queued and sent automatically when
+            your connection is restored.
           </div>
         </Message>
       )}
@@ -330,8 +316,8 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
       {/* Show queued message notification */}
       {isQueued && (
         <Message type="info">
-          Your message has been queued and will be sent automatically when your
-          connection is restored.
+          Your message has been queued and will be sent automatically when your connection is
+          restored.
         </Message>
       )}
 
@@ -347,35 +333,25 @@ const ChannelFormViewModel = ({ isReply = false, replyToId = null }) => {
             <>
               <p>Your message will be accessible once you're back online.</p>
               <p>
-                The encryption key has been stored securely and will be used
-                when your connection is restored.
+                The encryption key has been stored securely and will be used when your connection is
+                restored.
               </p>
               {encryptedResult.replyToId && (
-                <p>
-                  Your message will be added to thread:{" "}
-                  {encryptedResult.replyToId}
-                </p>
+                <p>Your message will be added to thread: {encryptedResult.replyToId}</p>
               )}
             </>
           ) : (
             <>
-              <p>
-                Share this secure link (includes the encryption key after the #
-                symbol):
-              </p>
-              <SecureLink
-                href={encryptedResult.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <p>Share this secure link (includes the encryption key after the # symbol):</p>
+              <SecureLink href={encryptedResult.url} target="_blank" rel="noopener noreferrer">
                 {encryptedResult.url}
               </SecureLink>
               <Button variant="primary" size="medium" onClick={copyToClipboard}>
                 {copySuccess ? "Copied!" : "Copy Secure Link"}
               </Button>
               <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
-                Note: The encryption key is only included in the URL fragment
-                (after the #) and is never sent to the server.
+                Note: The encryption key is only included in the URL fragment (after the #) and is
+                never sent to the server.
               </p>
               {isReply && !encryptedResult.queued && (
                 <p style={{ fontStyle: "italic", marginTop: "0.5rem" }}>

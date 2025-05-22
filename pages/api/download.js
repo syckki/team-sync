@@ -25,33 +25,30 @@ async function handler(req, res) {
     const threadMetadata = await getThreadMetadata(threadId);
 
     if (!creatorId) {
-      return res
-        .status(404)
-        .json({ error: "No messages found in this thread" });
+      return res.status(404).json({ error: "No messages found in this thread" });
     }
 
     // Check if the requesting user is the thread creator
     const isCreator = creatorId && authorId === creatorId;
+    const allMessages = all !== "false";
 
     // Get messages based on permissions and filter parameters
-    let messages;
+    let messages = await getThreadMessages(threadId);
 
-    if (isCreator && all !== "false") {
+    if (isCreator && allMessages) {
       // Thread creator gets all messages by default unless they explicitly filter to their own
-      messages = await getThreadMessages(threadId);
-    } else if (isCreator && all === "false") {
-      // Creator wants to see only their messages
-      messages = await getMessagesByAuthor(threadId, authorId);
     } else {
-      // Non-creator users only see their own messages
-      messages = await getMessagesByAuthor(threadId, authorId);
+      // Filter messages by the specified author ID
+      messages = messages.filter(
+        ({ metadata }) =>
+          metadata &&
+          (metadata.authorId === authorId || (metadata.isThreadCreator && !metadata.isReport))
+      );
     }
 
     // If messageIndex is provided, get that specific message
     if (messageIndex !== undefined) {
-      const message = messages.find(
-        (msg) => msg.index === parseInt(messageIndex),
-      );
+      const message = messages.find((msg) => msg.index === parseInt(messageIndex));
 
       if (!message) {
         return res.status(404).json({ error: "Message not found in thread" });

@@ -31,7 +31,7 @@ export const GlobalStyles = createGlobalStyle`
       > iframe {
         width: 100%;
         height: 100dvh;
-        position: static;
+        position: sticky;
       }
     }
   }
@@ -66,8 +66,7 @@ const FAB = styled.button`
   font-size: 24px;
 
   &:hover {
-    background-color: ${(props) =>
-      props.theme.colors.primaryDark || props.theme.colors.primary};
+    background-color: ${(props) => props.theme.colors.primaryDark || props.theme.colors.primary};
     transform: scale(1.05);
     box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
   }
@@ -81,8 +80,7 @@ const SplitLayout = styled(FAB)`
   background-color: ${(props) => props.theme.colors.secondary || "#4caf50"};
 
   &:hover {
-    background-color: ${(props) =>
-      props.theme.colors.secondaryDark || "#388e3c"};
+    background-color: ${(props) => props.theme.colors.secondaryDark || "#388e3c"};
   }
 `;
 
@@ -166,10 +164,7 @@ const XStateInspectorButton = () => {
       <FABWrapper>
         <FABContainer>
           {isOpen && !isMobile && (
-            <SplitLayout
-              onClick={toggleLayout}
-              aria-label="Split view with XState inspector"
-            >
+            <SplitLayout onClick={toggleLayout} aria-label="Split view with XState inspector">
               <svg
                 width="24"
                 height="24"

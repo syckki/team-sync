@@ -278,9 +278,7 @@ const ReportForm = ({ actor }) => {
       render: (value, row) => (
         <CreatableComboBox
           value={value}
-          onChange={(newValue) =>
-            handleRowChange(row.id, "projectInitiative", newValue)
-          }
+          onChange={(newValue) => handleRowChange(row.id, "projectInitiative", newValue)}
           options={referenceData.projectInitiatives}
           placeholder="Initiative"
           storageKey="projectOptions"
@@ -335,9 +333,7 @@ const ReportForm = ({ actor }) => {
             localStorage.setItem(key, JSON.stringify(mapItems));
             localStorage.setItem(alteredKey, JSON.stringify(items));
           }}
-          options={
-            row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []
-          }
+          options={row.sdlcStep ? referenceData.sdlcTasksMap[row.sdlcStep] || [] : []}
           placeholder="SDLC Task"
           // storageKey="sdlcTaskOptions"
           readonly={readOnly}
@@ -352,14 +348,11 @@ const ReportForm = ({ actor }) => {
       field: "taskCategory",
       tooltip:
         "High-level categorization of task type, independent of SDLC. Useful for cross-analysis (e.g., which tools work best for 'Code Generation').",
-      actionHint:
-        "Select or create a task category that best describes the work.",
+      actionHint: "Select or create a task category that best describes the work.",
       render: (value, row) => (
         <CreatableComboBox
           value={value}
-          onChange={(newValue) =>
-            handleRowChange(row.id, "taskCategory", newValue)
-          }
+          onChange={(newValue) => handleRowChange(row.id, "taskCategory", newValue)}
           options={referenceData.taskCategories}
           placeholder="Task Category"
           storageKey="taskCategoryOptions"
@@ -375,17 +368,14 @@ const ReportForm = ({ actor }) => {
       width: "115px",
       tooltip:
         "Time the task would have taken without AI tools. Establishes the baseline for measuring time savings.",
-      actionHint:
-        "Enter your honest estimate of how long this would have taken without AI.",
+      actionHint: "Enter your honest estimate of how long this would have taken without AI.",
       render: (value, row) => (
         <CustomInput
           type="number"
           min="0"
           step="0.25"
           value={value}
-          onChange={(e) =>
-            handleRowChange(row.id, "estimatedTimeWithoutAI", e.target.value)
-          }
+          onChange={(e) => handleRowChange(row.id, "estimatedTimeWithoutAI", e.target.value)}
           required
           placeholder="Est (Hrs)"
           autoComplete="new-password"
@@ -412,9 +402,7 @@ const ReportForm = ({ actor }) => {
           min="0"
           step="0.25"
           value={value}
-          onChange={(e) =>
-            handleRowChange(row.id, "actualTimeWithAI", e.target.value)
-          }
+          onChange={(e) => handleRowChange(row.id, "actualTimeWithAI", e.target.value)}
           required
           placeholder="Act (Hrs)"
           autoComplete="new-password"
@@ -428,18 +416,13 @@ const ReportForm = ({ actor }) => {
           style={{
             color:
               row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                ? parseFloat(row.actualTimeWithAI) <
-                  parseFloat(row.estimatedTimeWithoutAI)
+                ? parseFloat(row.actualTimeWithAI) < parseFloat(row.estimatedTimeWithoutAI)
                   ? "#16a34a"
-                  : parseFloat(row.actualTimeWithAI) >
-                      parseFloat(row.estimatedTimeWithoutAI)
-                    ? "#dc2626"
-                    : "inherit"
+                  : parseFloat(row.actualTimeWithAI) > parseFloat(row.estimatedTimeWithoutAI)
+                  ? "#dc2626"
+                  : "inherit"
                 : "inherit",
-            fontWeight:
-              row.estimatedTimeWithoutAI && row.actualTimeWithAI
-                ? "500"
-                : "normal",
+            fontWeight: row.estimatedTimeWithoutAI && row.actualTimeWithAI ? "500" : "normal",
           }}
         />
       ),
@@ -453,9 +436,7 @@ const ReportForm = ({ actor }) => {
       render: (value, row) => (
         <CustomSelect
           value={value}
-          onChange={(newValue) =>
-            handleRowChange(row.id, "complexity", newValue)
-          }
+          onChange={(newValue) => handleRowChange(row.id, "complexity", newValue)}
           options={referenceData.complexityLevels}
           placeholder="Complexity"
           readonly={readOnly}
@@ -473,9 +454,7 @@ const ReportForm = ({ actor }) => {
       render: (value, row) => (
         <CreatableComboBox
           value={value}
-          onChange={(newValue) =>
-            handleRowChange(row.id, "qualityImpact", newValue)
-          }
+          onChange={(newValue) => handleRowChange(row.id, "qualityImpact", newValue)}
           options={referenceData.qualityImpacts}
           placeholder="Quality Impact"
           storageKey="qualityImpactOptions"
@@ -528,7 +507,7 @@ const ReportForm = ({ actor }) => {
   useEffect(() => {
     if (!success) return;
     // Redirect to the thread page after successful submission
-    router.push(`/channel/${threadId}#${keyFragment}`);
+    router.push(`/channel/${threadId}#${state.context.key}`);
   }, [success]);
 
   return (
@@ -622,9 +601,7 @@ const ReportForm = ({ actor }) => {
                           marginBottom: "0.5rem",
                         }}
                       >
-                        <InnerLabel style={{ margin: 0 }}>
-                          AI Tools used
-                        </InnerLabel>
+                        <InnerLabel style={{ margin: 0 }}>AI Tools used</InnerLabel>
                         <InfoTooltip
                           title="AI Tools Used"
                           content="Identifies specific AI tools used for the task. Crucial for comparing tool effectiveness across different tasks."
@@ -633,9 +610,7 @@ const ReportForm = ({ actor }) => {
                       </div>
                       <CreatableMultiSelect
                         value={row.aiToolsUsed}
-                        onChange={(value) =>
-                          handleRowChange(row.id, "aiToolsUsed", value)
-                        }
+                        onChange={(value) => handleRowChange(row.id, "aiToolsUsed", value)}
                         options={referenceData.aiTools}
                         placeholder="Select AI Tools"
                         storageKey="aiToolOptions"
@@ -652,9 +627,7 @@ const ReportForm = ({ actor }) => {
                             marginBottom: "0.5rem",
                           }}
                         >
-                          <InnerLabel style={{ margin: 0 }}>
-                            Task Details
-                          </InnerLabel>
+                          <InnerLabel style={{ margin: 0 }}>Task Details</InnerLabel>
                           <InfoTooltip
                             title="Task Details"
                             content="Specific and concise task description. Context is essential for interpreting the entry and understanding where AI was applied."
@@ -663,13 +636,7 @@ const ReportForm = ({ actor }) => {
                         </div>
                         <AutoResizeTextArea
                           value={row.taskDetails}
-                          onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "taskDetails",
-                              e.target.value,
-                            )
-                          }
+                          onChange={(e) => handleRowChange(row.id, "taskDetails", e.target.value)}
                           required
                           placeholder="Enter task details..."
                           rows={3}
@@ -701,11 +668,7 @@ const ReportForm = ({ actor }) => {
                         <AutoResizeTextArea
                           value={row.notesHowAIHelped}
                           onChange={(e) =>
-                            handleRowChange(
-                              row.id,
-                              "notesHowAIHelped",
-                              e.target.value,
-                            )
+                            handleRowChange(row.id, "notesHowAIHelped", e.target.value)
                           }
                           required
                           placeholder="Describe how AI helped with this task"
@@ -735,22 +698,13 @@ const ReportForm = ({ actor }) => {
                       fontWeight: 500,
                     }}
                   >
-                    {rows.length} {rows.length === 1 ? "entry" : "entries"} |
-                    Total Est (h):{" "}
+                    {rows.length} {rows.length === 1 ? "entry" : "entries"} | Total Est (h):{" "}
                     {rows
-                      .reduce(
-                        (sum, row) =>
-                          sum + (parseFloat(row.estimatedTimeWithoutAI) || 0),
-                        0,
-                      )
+                      .reduce((sum, row) => sum + (parseFloat(row.estimatedTimeWithoutAI) || 0), 0)
                       .toFixed(1)}{" "}
                     | Total Act (h):{" "}
                     {rows
-                      .reduce(
-                        (sum, row) =>
-                          sum + (parseFloat(row.actualTimeWithAI) || 0),
-                        0,
-                      )
+                      .reduce((sum, row) => sum + (parseFloat(row.actualTimeWithAI) || 0), 0)
                       .toFixed(1)}
                   </div>
                 )}
@@ -788,11 +742,7 @@ const ReportForm = ({ actor }) => {
                     {isSubmitting ? "Saving..." : "Save as Draft"}
                   </Button>
 
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    variant="primary"
-                  >
+                  <Button type="submit" disabled={isSubmitting} variant="primary">
                     {isSubmitting ? "Submitting..." : "Submit Report"}
                   </Button>
                 </div>

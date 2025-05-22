@@ -13,7 +13,7 @@ const reportPageViewModel = setup({
     notifyError,
   },
   guards: {
-    modeForm: ({ context }) => context.mode === "form" && context.messageIndex,
+    modeForm: ({ context }) => context.mode === "form",
     modeViewer: ({ context }) => context.mode === "viewer",
   },
 }).createMachine(reportPageMachine);

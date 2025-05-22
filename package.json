@@ -18,6 +18,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "styled-components": "6.1.18",
+    "ws": "8.18.2",
     "xstate": "5.19.3"
   },
   "packageManager": "yarn@4.9.1"

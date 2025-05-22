@@ -1,3 +1,5 @@
+import aiImpactSummaryViewModel from "../AiImpactSummaryViewModel";
+
 export const reportViewerMachine = {
   id: "reportViewer",
   initial: "loading",
@@ -19,7 +21,6 @@ export const reportViewerMachine = {
       sdlcTask: "",
       periodType: "week",
     },
-    selectedReport: "raw",
 
     error: null,
   }),
@@ -32,15 +33,27 @@ export const reportViewerMachine = {
           params: ({ context }) => ({ reportList: context.reportList }),
         },
       ],
-      always: {
-        target: "ready",
-      },
+      always: [
+        {
+          target: "ready",
+        },
+      ],
     },
     // Ready state (ready for user interaction)
     ready: {
-      initial: "idle",
+      initial: "raw",
       states: {
-        idle: { type: "final" },
+        raw: {},
+        aiImpactSummary: {
+          invoke: {
+            id: "aiImpactSummary",
+            src: aiImpactSummaryViewModel,
+            input: ({ context }) => ({
+              reports: context.reportList,
+              filters: context.filters,
+            }),
+          },
+        },
       },
       on: {
         UPDATE_FILTER: {
@@ -51,14 +64,16 @@ export const reportViewerMachine = {
             },
           ],
         },
-        UPDATE_REPORT_TYPE: {
-          actions: [
-            {
-              type: "updateReportType",
-              params: ({ event }) => ({ ...event.data }),
-            },
-          ],
-        },
+        UPDATE_REPORT_TYPE: [
+          {
+            guard: "selectedReportIsRaw",
+            target: "ready.raw",
+          },
+          {
+            guard: "selectedReportIsAiImpactSummary",
+            target: "ready.aiImpactSummary",
+          },
+        ],
       },
     },
   },

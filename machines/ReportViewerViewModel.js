@@ -1,17 +1,20 @@
 import { setup } from "xstate";
 
 import { reportViewerMachine } from "./reportViewer/reportViewer.machine";
-import {
-  extractFilterOptions,
-  updateFilter,
-  updateReportType,
-} from "./reportViewer/reportViewer.actions";
+import { extractFilterOptions, updateFilter } from "./reportViewer/reportViewer.actions";
 
 const reportViewerViewModel = setup({
   actions: {
     extractFilterOptions,
     updateFilter,
-    updateReportType,
+  },
+  guards: {
+    selectedReportIsRaw: ({ event }) => {
+      return event.data.reportType === "raw";
+    },
+    selectedReportIsAiImpactSummary: ({ event }) => {
+      return event.data.reportType === "aiImpactSummary";
+    },
   },
 }).createMachine(reportViewerMachine);
 

@@ -4,6 +4,7 @@ import ChannelInboxViewModel from "../../../viewModels/ChannelInboxViewModel";
 import Head from "next/head";
 import styled from "styled-components";
 import { Card, ContentContainer, ErrorMessage, PageHeader } from "../../../ui";
+import { getAllParamsFromURL } from "../../../lib/cryptoUtils";
 
 const LoadingMessage = styled.div`
   text-align: center;
@@ -25,20 +26,18 @@ const ViewPage = () => {
 
     try {
       // Extract key from URL fragment (#)
-      const fragment = window.location.hash.slice(1);
+      const { key } = getAllParamsFromURL(window.location.hash);
 
       // Handle the case where no key is provided in the URL
-      if (!fragment) {
+      if (!key) {
         router.push(`/channel/${id}/join`);
         return;
       }
 
-      setKey(fragment);
+      setKey(key);
     } catch (err) {
       console.error("Error parsing key from URL:", err);
-      setError(
-        "Could not retrieve encryption key from URL. Make sure you have the complete link.",
-      );
+      setError("Could not retrieve encryption key from URL. Make sure you have the complete link.");
     } finally {
       setIsLoading(false);
     }

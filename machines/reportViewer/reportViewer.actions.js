@@ -43,9 +43,3 @@ export const updateFilter = assign((_, { filters, filterName, value }) => {
     },
   };
 });
-
-export const updateReportType = assign((_, { reportType }) => {
-  return {
-    selectedReport: reportType,
-  };
-});
